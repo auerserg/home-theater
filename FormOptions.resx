@@ -117,4 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="labelFileNameDescription.Text" xml:space="preserve">
+    <value>{Type}  - Наименование списка сериала
+{Сollection}  - Наименование подборки сериала
+{SerialName}  - Название Сериала
+{Season}  - Номер Сезона
+{Episode}  - Номер Эпизода
+{Translate}  - Наименование Озвучки
+{OriginalName} - Оригинальное название файла</value>
+  </data>
 </root>
