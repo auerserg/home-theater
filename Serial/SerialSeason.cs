@@ -142,6 +142,11 @@ namespace HomeTheater.Serial
                 }
             }
         }
+        private string type_old;
+        public string TypeOLD
+        {
+            get => type_old;
+        }
         private string type;
         public string Type
         {
@@ -250,6 +255,7 @@ namespace HomeTheater.Serial
                     case "marks_current": result = marks_current.ToString(); break;
                     case "marks_last": result = marks_last.ToString(); break;
                     case "secure_mark": result = secure_mark.ToString(); break;
+                    case "type": result = secure_mark.ToString(); break;
                     case "site_updated": result = site_updated.ToString(DB.DATE_FORMAT); break;
                 }
 
@@ -269,6 +275,7 @@ namespace HomeTheater.Serial
                         case "marks_current": marks_current = value; break;
                         case "marks_last": marks_last = value; break;
                         case "secure_mark": secure_mark = value; break;
+                        case "type": type_old = value; break;
                         case "serial_id": serial_id = IntVal(value); break;
                         case "season": season = IntVal(value); break;
                         case "site_updated": site_updated = DateVal(value, DB.DATE_FORMAT); break;
