@@ -110,7 +110,6 @@
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
     <Compile Include="Helper\DBCache.cs" />
-    <Compile Include="Helper\DBSeason.cs" />
     <Compile Include="Helper\SimpleJson.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -177,9 +176,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\gear.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\arrow-circle-double.png" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

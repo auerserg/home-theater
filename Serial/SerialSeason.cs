@@ -9,8 +9,6 @@ namespace HomeTheater.Serial
 {
     class SerialSeason : APIServerParent
     {
-        public string Type = "none";
-
         public List<SerialSeason> Seasons = new List<SerialSeason>();
         public List<SerialSeason> Related = new List<SerialSeason>();
         public Dictionary<int, string> Tags = new Dictionary<int, string>();
@@ -144,6 +142,24 @@ namespace HomeTheater.Serial
                 }
             }
         }
+        private string type;
+        public string Type
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(type))
+                    return "None";
+                return type;
+            }
+            set
+            {
+                if (type != value && !string.IsNullOrWhiteSpace(value))
+                {
+                    needSave.Add("type");
+                    type = value;
+                }
+            }
+        }
         private string marks_last;
         public string marksLast
         {
@@ -181,12 +197,13 @@ namespace HomeTheater.Serial
             }
         }
         private DateTime site_updated;
+        private DateTime updated_date;
         public DateTime SiteUpdated
         {
             get => site_updated;
             set
             {
-                if (site_updated != value)
+                if (site_updated != value && new DateTime() != value)
                 {
                     needSave.Add("site_updated");
                     site_updated = value;
@@ -215,7 +232,7 @@ namespace HomeTheater.Serial
             }
         }
 
-        public string this[string index]
+        private string this[string index]
         {
             get
             {
@@ -233,28 +250,33 @@ namespace HomeTheater.Serial
                     case "marks_current": result = marks_current.ToString(); break;
                     case "marks_last": result = marks_last.ToString(); break;
                     case "secure_mark": result = secure_mark.ToString(); break;
-                    case "site_updated": result = site_updated.ToString("yyyy-MM-dd"); break;
+                    case "site_updated": result = site_updated.ToString(DB.DATE_FORMAT); break;
                 }
 
                 return result;
             }
             set
             {
-                switch (index)
+                if (!string.IsNullOrWhiteSpace(value))
                 {
-                    case "serial_id": serial_id = IntVal(value); break;
-                    case "season": season = IntVal(value); break;
-                    case "url": url = value.ToString().Trim(); break;
-                    case "title": title = value.ToString().Trim(); break;
-                    case "title_ru": title_ru = value.ToString().Trim(); break;
-                    case "title_en": title_en = value.ToString().Trim(); break;
-                    case "description": description = value.ToString().Trim(); break;
-                    case "marks_current": marks_current = value.ToString().Trim(); break;
-                    case "marks_last": marks_last = value.ToString().Trim(); break;
-                    case "secure_mark": secure_mark = value.ToString().Trim(); break;
-                    case "site_updated": site_updated = DateVal(value, "yyyy-MM-dd"); break;
-                    case "create_date": create_date = DateVal(value, "yyyy-MM-dd hh:mm:ss"); break;
+                    value = value.ToString().Trim(); switch (index)
+                    {
+                        case "url": url = value; break;
+                        case "title": title = value; break;
+                        case "title_ru": title_ru = value; break;
+                        case "title_en": title_en = value; break;
+                        case "description": description = value; break;
+                        case "marks_current": marks_current = value; break;
+                        case "marks_last": marks_last = value; break;
+                        case "secure_mark": secure_mark = value; break;
+                        case "serial_id": serial_id = IntVal(value); break;
+                        case "season": season = IntVal(value); break;
+                        case "site_updated": site_updated = DateVal(value, DB.DATE_FORMAT); break;
+                        case "create_date": create_date = DateVal(value, DB.TIME_FORMAT); break;
+                        case "updated_date": updated_date = DateVal(value, DB.TIME_FORMAT); break;
+                    }
                 }
+
             }
         }
 
@@ -285,9 +307,9 @@ namespace HomeTheater.Serial
         {
             this.SeasonID = IntVal(Match(url, "serial-([0-9]+)-", REGEX_IC, 1));
 
-            Load();
+            Init();
 
-            Match matchurl = Regex.Match(url, "^(.*?)#rewind=([0-9-]+)_seriya$", REGEX_IC);
+            Match matchurl = Regex.Match(url, "^(.*?)#rewind=(.*?)_seriya$", REGEX_IC);
             if (matchurl.Success)
             {
                 this.serialUrl = matchurl.Groups[1].ToString();
@@ -302,7 +324,7 @@ namespace HomeTheater.Serial
         {
             this.SeasonID = id;
 
-            Load();
+            Init();
         }
         public void setIsChild(bool child = true)
         {
@@ -310,25 +332,38 @@ namespace HomeTheater.Serial
         }
         private void Init()
         {
-            Console.WriteLine("\tInit: {0:S}", this.serialUrl);
-            // UNDONE: Добавить инициализацию с БД
+            Console.WriteLine("\tInit: {0:S}", !string.IsNullOrEmpty(this.serialUrl) ? this.serialUrl : this.SeasonID.ToString());
+            Load();
         }
-        public void Load()
+        public SerialSeason Load()
         {
-            Console.WriteLine("\tLoad: {0:S}", this.SeasonID.ToString());
-            // UNDONE: Загружать все доступные поля из БД
+            Dictionary<string, string> data = DB.Instance.getSeason(this.id);
+            if (0 < data.Count)
+            {
+                foreach (KeyValuePair<string, string> item in data)
+                    this[item.Key] = item.Value;
+                Console.WriteLine("\t\tLoaded: {0:S}", !string.IsNullOrEmpty(this.serialUrl) ? this.serialUrl : this.SeasonID.ToString());
+            }
+
+            return this;
         }
-        public void Save()
+        public SerialSeason Save()
         {
+            if (0 >= id || 0 >= needSave.Count)
+                return this;
             Dictionary<string, string> data = new Dictionary<string, string>();
             for (var i = 0; i < needSave.Count; i++)
             {
                 string field = needSave[i];
-                data.Add(field, this[field]);
+                string value = this[field];
+                if (!string.IsNullOrWhiteSpace(value) && !data.ContainsKey(field))
+                    data.Add(field, value);
             }
-            Console.WriteLine("\tSave: {0:S}", this.SeasonID.ToString());
+            needSave.Clear();
+            if (DB.Instance.setSeason(this.id, data))
+                Console.WriteLine("\tSaved:  {0:S}", !string.IsNullOrEmpty(this.serialUrl) ? this.serialUrl : this.SeasonID.ToString());
 
-            // UNDONE: Сохранять все доступные поля в БД
+            return this;
         }
         public void parseSidebar(string html)
         {
@@ -339,7 +374,7 @@ namespace HomeTheater.Serial
                 if (3 <= matchseason.Count)
                 {
                     Season = IntVal(matchseason[1]);
-                    marksLast = Regex.Replace(matchseason[2], " (\\([^\\(\\)]+\\)|серия)", "");
+                    marksLast = Regex.Replace(matchseason[2], " (\\([^\\(\\)]+\\)|серия)", "").Replace("Только трейлер", "");
                 }
             }
 
@@ -352,7 +387,7 @@ namespace HomeTheater.Serial
         {
             Season = IntVal(Match(html, "<div class=\"pgs-marks-seas\">(.*?)</div>", REGEX_ICS, 1));
             TitleRU = Match(html, "<div class=\"pgs-marks-name\">(.*?)</div>", REGEX_ICS, 1);
-            marksLast = Match(html, "<div class=\"pgs-marks-current\">[^<>]*<strong>(.*?)</strong>[^<>]*</div>", REGEX_ICS, 1);
+            marksLast = Match(html, "<div class=\"pgs-marks-current\">[^<>]*<strong>(.*?)</strong>[^<>]*</div>", REGEX_ICS, 1).Replace("Только трейлер", "");
             SiteUpdated = DateVal(Match(html, "<div class=\"pgs-marks-mess\">(.*?)</div>", REGEX_ICS, 1), "dd.MM.yyyy");
             Save();
         }
@@ -382,8 +417,8 @@ namespace HomeTheater.Serial
 
         public void syncPage(bool forsed = false)
         {
-            string html = downloadPage(forsed);
-            parsePage(html);
+            if ((timeout < DateTime.UtcNow.Subtract(create_date).TotalSeconds || timeout < DateTime.UtcNow.Subtract(updated_date).TotalSeconds) || forsed)
+                parsePage(downloadPage(forsed));
 
         }
         private string _parseData4Play(string html)
@@ -404,12 +439,11 @@ namespace HomeTheater.Serial
             if (string.IsNullOrEmpty(html))
                 return;
 
-            html = Regex.Replace(html, "^>>> ", string.Empty);
+            html = Regex.Replace(WebUtility.HtmlDecode(html), "^>>> ", string.Empty);
             html = Regex.Replace(html, "<[^<>]+>[^<>]+</[^<>]+>", string.Empty).Trim();
             html = Regex.Replace(html, "(^сериал | онлайн$)", string.Empty, REGEX_IC);
             _o.Season = IntVal(Match(html, "([0-9]+) сезон$", REGEX_ICS, 1));
-            html = Regex.Replace(html, " [0-9]+ сезон$", string.Empty, REGEX_IC);
-            html = html.Trim();
+            html = Regex.Replace(html, " [0-9]+ сезон$", string.Empty, REGEX_IC).Trim();
             _o.Title = html;
             if (!string.IsNullOrEmpty(_o.TitleRU))
             {
@@ -467,8 +501,7 @@ namespace HomeTheater.Serial
                 SerialSeason season = new SerialSeason(url);
                 season.setIsChild();
                 season.TitleRU = Match(matchInfo.Groups[3].ToString(), "<div>(.+?)</div>", REGEX_ICS, 1);
-                season.secureMark = this.secureMark;
-
+                season.Save();
                 this.Related.Add(season);
             }
         }
@@ -510,8 +543,7 @@ namespace HomeTheater.Serial
                 season.TitleRU = this.TitleRU;
                 season.TitleEN = this.TitleEN;
                 season.SerialID = this.SerialID;
-                season.secureMark = this.secureMark;
-
+                season.Save();
                 this.Seasons.Add(season);
             }
         }

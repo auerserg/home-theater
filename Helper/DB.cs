@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.Globalization;
@@ -11,6 +12,8 @@ namespace HomeTheater.Helper
         static DB _i;
         public string baseName = AppDomain.CurrentDomain.FriendlyName.Replace(".exe", ".db3");
         public SQLiteConnection connection;
+        public const string TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+        public const string DATE_FORMAT = "yyyy-MM-dd";
         public DB()
         {
             CreateDataBase();
@@ -86,7 +89,9 @@ CREATE TABLE IF NOT EXISTS [season] (
     [marks_current] text,
     [marks_last] text,
     [secure_mark] text,
-    [site_updated] text
+    [type] text,
+    [site_updated] text,
+    [updated_date] text
 );
 CREATE TABLE IF NOT EXISTS [season_related] (
     [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -145,7 +150,7 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
                     connection = _connection;
                 }
             }
-            catch (Exception ex)
+            catch (SQLiteException ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -194,7 +199,7 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
                 }
 
             }
-            catch (Exception ex)
+            catch (SQLiteException ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -229,10 +234,6 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
             CheckConnectDataBase();
             try
             {
-                string time_format = "yyyy-MM-dd hh:mm:ss";
-                DateTime create_date = DateTime.UtcNow;
-
-
                 SQLiteCommand sql = new SQLiteCommand(connection);
                 switch (action)
                 {
@@ -253,14 +254,14 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
                 sql.CommandType = CommandType.Text;
                 sql.Parameters.AddWithValue("@url", url);
                 sql.Parameters.AddWithValue("@content", content);
-                sql.Parameters.AddWithValue("@create_date", create_date.ToString(time_format));
+                sql.Parameters.AddWithValue("@create_date", DateTime.UtcNow.ToString(TIME_FORMAT));
                 if ("SELECT" == action || null == action)
                 {
                     SQLiteDataReader reader = sql.ExecuteReader();
                     while (reader.Read())
                     {
                         DBCache item = new DBCache(reader["url"].ToString(), reader["content"].ToString(), period);
-                        DateTime.TryParseExact(reader["create_date"].ToString(), time_format, new CultureInfo("en-US"), DateTimeStyles.None, out item.date);
+                        DateTime.TryParseExact(reader["create_date"].ToString(), TIME_FORMAT, new CultureInfo("en-US"), DateTimeStyles.None, out item.date);
                         return item;
                     }
                 }
@@ -270,7 +271,7 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
                 }
 
             }
-            catch (Exception ex)
+            catch (SQLiteException ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -305,14 +306,93 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
             return _cache(url, null, null, period);
         }
 
-        public void setSeason(int id, string url = "")
+        public bool setSeason(int id, Dictionary<string, string> data)
         {
-            // UNDONE: получать сезон по айди
+            if (0 == data.Count)
+                return false;
+            CheckConnectDataBase();
+            try
+            {
+                SQLiteCommand sql = new SQLiteCommand(connection);
+                Dictionary<string, string> dataOld = getSeason(id);
+                // TODO: Добавить проверку нужно ли обновить
+                if (0 < dataOld.Count)
+                {
+                    string fields = "";
+                    int counts = 0;
+                    foreach (KeyValuePair<string, string> item in data)
+                    {
+                        if (dataOld.ContainsKey(item.Key) && dataOld[item.Key] == item.Value)
+                            continue;
+                        fields += item.Key + " = @" + item.Key + ", ";
+                        sql.Parameters.AddWithValue("@" + item.Key, item.Value);
+                        counts++;
+                    }
+                    if (0 >= counts)
+                    {
+                        return false;
+                    }
+                    sql.Parameters.AddWithValue("@updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
+                    sql.Parameters.AddWithValue("@id", id.ToString());
+                    sql.CommandText = @"UPDATE season SET " + fields + "updated_date = @updated_date WHERE id = @id";
+                }
+                else
+                {
+                    data.Add("id", id.ToString());
+                    string fields = "";
+                    string values = "";
+                    foreach (KeyValuePair<string, string> item in data)
+                    {
+                        fields += item.Key + ",";
+                        values += "@" + item.Key + ",";
+                        sql.Parameters.AddWithValue("@" + item.Key, item.Value);
+                    }
+                    sql.Parameters.AddWithValue("@updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
+                    sql.CommandText = @"INSERT INTO season (" + fields + "updated_date) VALUES (" + values + "@updated_date)";
+                }
+                int updatedRows = sql.ExecuteNonQuery();
+                return 0 < updatedRows;
+            }
+            catch (SQLiteException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
         }
-
-        public void getSeason(int id, int period = 24 * 60 * 60)
+        public void removeSeason(int id)
         {
+            // UNDONE: удаление сезон по айди
+        }
+        public Dictionary<string, string> getSeason(int id)
+        {
+            Dictionary<string, string> data = new Dictionary<string, string>();
+            CheckConnectDataBase();
+            try
+            {
+                SQLiteCommand sql = new SQLiteCommand(connection);
+                sql.CommandText = @"SELECT season.*,http_cache.create_date  FROM season LEFT JOIN http_cache ON season.url = http_cache.url WHERE season.id = @id";
+                sql.CommandType = CommandType.Text;
+                sql.Parameters.AddWithValue("@id", id.ToString());
+                SQLiteDataReader reader = sql.ExecuteReader();
+                while (reader.Read())
+                {
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        string field = reader.GetName(i);
+                        string value = reader[field].ToString();
+                        if (!string.IsNullOrWhiteSpace(value))
+                            data.Add(field, value);
+                    }
+                    return data;
+                }
+            }
+            catch (SQLiteException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
             // UNDONE: получать сезон по айди
+            return data;
         }
 
     }
