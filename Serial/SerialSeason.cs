@@ -407,7 +407,7 @@ namespace HomeTheater.Serial
             }
             SerialID = IntVal(Match(html, "data-id-serial=\"([0-9]+)\"", REGEX_ICS, 1));
             SeasonID = IntVal(Match(html, "data-id-season=\"([0-9]+)\"", REGEX_ICS, 1));
-            Description = WebUtility.HtmlDecode(Match(html, "<p itemprop=\"description\">(.*?)</p>", REGEX_ICS, 1));
+            Description = Regex.Replace(Regex.Replace(WebUtility.HtmlDecode(Match(html, "<p itemprop=\"description\">(.*?)</p>", REGEX_ICS, 1)), "<br[^<>]*>", "\r\n"), "(\r\n){2,}>", "\r\n");
             secureMark = _parseData4Play(Match(html, "data4play = ({.*?})", REGEX_ICS, 1));
 
             _parseTitle(Match(html, "<h1 class=\"pgs-sinfo-title\"[^<>]*>(.*?)</h1>", REGEX_ICS, 1), this);
