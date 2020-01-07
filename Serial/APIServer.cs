@@ -15,8 +15,11 @@ namespace HomeTheater.Serial
         const string PAUSE_PATH = "/?mod=pause";
         const string MARK_PATH = "/jsonMark.php";
         const string AJAX_PATH = "/ajax.php";
+
         protected string PROFILE_PATH;
+#pragma warning disable CS0649 // Полю "APIServer.secureMark" нигде не присваивается значение, поэтому оно всегда будет иметь значение по умолчанию null.
         public static string secureMark;
+#pragma warning restore CS0649 // Полю "APIServer.secureMark" нигде не присваивается значение, поэтому оно всегда будет иметь значение по умолчанию null.
         public int ProfileID;
         public string login;
         private string password;
@@ -88,18 +91,26 @@ namespace HomeTheater.Serial
 
         public bool LogedIn(string _login = null, string _password = null)
         {
-            if (String.IsNullOrEmpty(_login))
+            string __login = login;
+            string __password = password;
+            bool result = false;
+            try
             {
-                _login = login;
-            }
-            if (String.IsNullOrEmpty(_password))
-            {
-                _password = password;
-            }
+                if (String.IsNullOrEmpty(_login))
+                {
+                    _login = __login;
+                }
+                if (String.IsNullOrEmpty(_password))
+                {
+                    _password = __password;
+                }
 
-            string content = Download(getURLLogin(), new NameValueCollection { { "login", _login }, { "password", _password } });
+                string content = Download(getURLLogin(), new NameValueCollection { { "login", _login }, { "password", _password } });
 
-            return isLogedIn(content);
+                result = isLogedIn(content);
+            }
+            catch (Exception e) { Console.WriteLine(e); }
+            return result;
         }
 
         public bool isLogedIn(string content = null)
@@ -109,7 +120,7 @@ namespace HomeTheater.Serial
                 content = Download(getURLLogin());
             }
 
-            bool result = !Regex.IsMatch(content, @"loginbox-login", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            bool result = !Regex.IsMatch(content, @"loginbox-login", REGEX_IC);
 
             if (result)
             {
@@ -121,18 +132,18 @@ namespace HomeTheater.Serial
 
         private void setURLProfile(string content)
         {
-            string url = Match(content, "<a[^<>]*href=\"(/profile/[0-9]+)\"[^<>]*>", RegexOptions.IgnoreCase | RegexOptions.Compiled, 1);
+            string url = Match(content, "<a[^<>]*href=\"(/profile/[0-9]+)\"[^<>]*>", REGEX_IC, 1);
             if (!string.IsNullOrEmpty(url))
             {
                 PROFILE_PATH = url;
-                ProfileID = int.Parse(Match(url, "/([0-9]+)$", RegexOptions.Compiled, 1));
+                ProfileID = int.Parse(Match(url, "/([0-9]+)$", REGEX_C, 1));
             }
         }
 
         public string downloadPause(bool forsed = false)
         {
             string url = getURLPause();
-            string content = DB.Instance.getCache(url, 30 * 60);
+            string content = DB.Instance.getCacheContent(url, 30 * 60);
             if (string.IsNullOrWhiteSpace(content) || forsed)
             {
                 content = Download(url);
@@ -142,44 +153,23 @@ namespace HomeTheater.Serial
 
             return content;
         }
-        public static string Match(string input, string pattern, RegexOptions options, int index = 0)
-        {
-            string result = null;
-            Match resultmatch = Regex.Match(input, pattern, options);
-            if (resultmatch.Success && index < resultmatch.Groups.Count)
-            {
-                result = resultmatch.Groups[index].ToString().Trim();
-            }
-            return result;
-        }
 
-        public List<Serial> getPause(bool forsed = false)
+        public List<SerialSeason> getPause(bool forsed = false)
         {
-            string content = this.downloadPause(forsed);
-            var results = new List<Serial>();
+            string content = downloadPause(forsed);
+            var results = new List<SerialSeason>();
             if (!string.IsNullOrWhiteSpace(content))
             {
-                string tabs_result = Match(content, "<ul[^<>]*class=\"tabs-result\"[^<>]*>(.*?)</ul>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                string tabs_result = Match(content, "<ul[^<>]*class=\"tabs-result\"[^<>]*>(.*?)</ul>", REGEX_ICS);
                 if (!string.IsNullOrEmpty(tabs_result))
                 {
-                    foreach (Match tab in Regex.Matches(tabs_result, "<li[^<>]*data-tabr=\"([^\"]*)\"[^<>]*>(.*?)</li>", RegexOptions.IgnoreCase | RegexOptions.Singleline))
+                    foreach (Match tab in Regex.Matches(tabs_result, "<li[^<>]*data-tabr=\"([^\"]*)\"[^<>]*>(.*?)</li>", REGEX_ICS))
                     {
-                        string type = Regex.Replace(tab.Groups[1].ToString(), "^marks-", "", RegexOptions.IgnoreCase);
-                        foreach (Match serial in Regex.Matches(tab.Value, "<a[^<>]*href=\"([^\"]*)\"[^<>]*>(.*?)</a>", RegexOptions.IgnoreCase | RegexOptions.Singleline))
+                        string type = Regex.Replace(tab.Groups[1].ToString(), "^marks-", "", REGEX_IC);
+                        foreach (Match serial in Regex.Matches(tab.Value, "<a[^<>]*href=\"([^\"]*)\"[^<>]*>(.*?)</a>", REGEX_ICS))
                         {
-                            var cserial = new Serial(serial.Groups[1].ToString());
-                            string text_serial = Match(serial.Groups[2].ToString(), "<div class=\"pgs-marks-seas\">(.*?)</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline, 1);
-                            if (!string.IsNullOrEmpty(text_serial))
-                                cserial.Season = int.Parse(Regex.Replace(text_serial, "[^0-9]*", ""));
-
-                            text_serial = Match(serial.Groups[2].ToString(), "<div class=\"pgs-marks-name\">(.*?)</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline, 1);
-                            if (!string.IsNullOrEmpty(text_serial))
-                                cserial.TitleRU = text_serial;
-
-                            text_serial = Match(serial.Groups[2].ToString(), "<div class=\"pgs-marks-current\">[^<>]*<strong>(.*?)</strong>[^<>]*</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline, 1);
-                            if (!string.IsNullOrEmpty(text_serial))
-                                cserial.marksLast = text_serial;
-
+                            var cserial = new SerialSeason(serial.Groups[1].ToString());
+                            cserial.parsePause(serial.Groups[2].ToString());
                             if (type != cserial.Type)
                                 cserial.Type = type;
 
@@ -191,67 +181,15 @@ namespace HomeTheater.Serial
             return results;
         }
 
-        private string doMarks(NameValueCollection postData = null)
+        public string doMarks(NameValueCollection postData = null)
         {
             return DownloadXHR(getURLMark(), postData);
         }
 
-        private bool setMarks(NameValueCollection postData = null)
+        public string downloadSidebar(string mode = "new", bool forsed = false)
         {
-            string result = doMarks(postData);
-            dynamic resultjson = SimpleJson.SimpleJson.DeserializeObject<dynamic>(result);
-            string msg = null;
-            bool auth = false;
-            foreach (var id in resultjson)
+            switch (mode)
             {
-                switch (id.Key)
-                {
-                    case "msg":
-                        msg = id.Value.ToString();
-                        break;
-                    case "auth":
-                        auth = id.Value;
-                        break;
-                }
-            }
-            return auth && "success" == msg;
-        }
-
-        public bool setWantToSee(int ID)
-        {
-            if (0 >= ID)
-                return false;
-            return this.setMarks(new NameValueCollection { { "id", ID.ToString() }, { "seria", "-1" }, { "wanttosee", "true" }, { "minute", "0" }, { "second", "0" } });
-        }
-
-        public bool setDelSee(int ID)
-        {
-            if (0 >= ID)
-                return false;
-            return this.setMarks(new NameValueCollection { { "delId", ID.ToString() } });
-        }
-
-        public bool setWatched(int ID)
-        {
-            if (0 >= ID)
-                return false;
-            return this.setMarks(new NameValueCollection { { "id", ID.ToString() }, { "seria", "-2" }, { "watched", "true" }, { "minute", "0" }, { "second", "0" } });
-        }
-
-        public bool setPauseAdd(int ID, string Series = "")
-        {
-            if (0 >= ID || string.IsNullOrWhiteSpace(Series))
-                return false;
-            return this.setMarks(new NameValueCollection { { "id", ID.ToString() }, { "seria", Series }, { "pauseadd", "true" }, { "minute", "0" }, { "second", "0" }, { "tran", "0" } });
-        }
-
-        private string doAjax(string url = "", NameValueCollection postData = null)
-        {
-            return DownloadXHR(String.Concat(getURLAjax(), url), postData);
-        }
-
-        public string downloadSidebar(string mode = "new", bool forsed = false) {
-            switch (mode) {
                 case "pop":
                 case "newest":
                 case "new":
@@ -261,7 +199,7 @@ namespace HomeTheater.Serial
                     break;
             }
             string url = String.Concat(getURLAjax(), "?mode=", mode);
-            string content = DB.Instance.getCache(url, 60 * 60);
+            string content = DB.Instance.getCacheContent(url, 60 * 60);
 
             if (string.IsNullOrWhiteSpace(content) || forsed)
             {
@@ -273,43 +211,47 @@ namespace HomeTheater.Serial
             return content;
         }
 
-        public List<Serial> getSidebar(string mode = "new", bool forsed = false)
+        public List<SerialSeason> getSidebar(string mode = "new", bool forsed = false)
         {
             string content = this.downloadSidebar(mode, forsed);
-            var results = new List<Serial>();
+            var results = new List<SerialSeason>();
             if (!string.IsNullOrWhiteSpace(content))
             {
-                foreach (Match serial in Regex.Matches(content, "<a[^<>]*href=\"([^\"]*)\"[^<>]*>(.*?)</a>", RegexOptions.IgnoreCase | RegexOptions.Singleline))
+                foreach (Match serial in Regex.Matches(content, "<a[^<>]*href=\"([^\"]*)\"[^<>]*>(.*?)</a>", REGEX_ICS))
                 {
-                    var cserial = new Serial(String.Concat(SERVER_URL,serial.Groups[1].ToString()));
-                    string text_serial = Match(serial.Groups[2].ToString(), "<div class=\"rside-ss\">(.*?)</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline, 1);
-                    if (!string.IsNullOrEmpty(text_serial)) {
-                        Match matchseason = Regex.Match(text_serial, "^(.*?)<span>([^<>]*)</span>$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                        if (matchseason.Success)
-                        {
-                            text_serial = Regex.Replace(matchseason.Groups[1].ToString(), "[^0-9]*", "");
-                            if (!string.IsNullOrEmpty(text_serial))
-                            {
-                                cserial.Season = int.Parse(text_serial);
-                            }
-                            cserial.marksLast = Regex.Replace(matchseason.Groups[2].ToString(), " (\\([^\\(\\)]+\\)|серия)", "");
-                        }
-                        
-                    }
-                        
-
-                    text_serial = Match(serial.Groups[2].ToString(), "<div class=\"rside-t\">(.*?)</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline, 1);
-                    if (!string.IsNullOrEmpty(text_serial))
-                        cserial.TitleRU = text_serial;
-
-                    text_serial = Match(serial.Groups[2].ToString(), "<div class=\"rside-t_en\">(.*?)</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline, 1);
-                    if (!string.IsNullOrEmpty(text_serial))
-                        cserial.TitleEN = text_serial;
+                    var cserial = new SerialSeason(String.Concat(SERVER_URL, serial.Groups[1].ToString()));
+                    cserial.parseSidebar(serial.Groups[2].ToString());
 
                     results.Add(cserial);
                 }
             }
             return results;
+        }
+        public string downloadCompilation(int compilationList = 0, bool forsed = false)
+        {
+            string url = string.Concat(getURLAjax(), "?compilationList=", compilationList.ToString(), "&user=", ProfileID.ToString());
+            string content = DB.Instance.getCacheContent(url, 30 * 60);
+            if (string.IsNullOrWhiteSpace(content) || forsed)
+            {
+                content = DownloadXHR(getURLAjax(), new NameValueCollection { { "compilationList", compilationList.ToString() }, { "user", ProfileID.ToString() } });
+                if (!string.IsNullOrWhiteSpace(content))
+                    DB.Instance.setCache(url, content);
+            }
+
+            return content;
+        }
+        public string downloadProfile(bool forsed = false)
+        {
+            string url = getURLProfile();
+            string content = DB.Instance.getCacheContent(url, 30 * 60);
+            if (string.IsNullOrWhiteSpace(content) || forsed)
+            {
+                content = Download(url);
+                if (!string.IsNullOrWhiteSpace(content))
+                    DB.Instance.setCache(url, content);
+            }
+
+            return content;
         }
     }
 }

@@ -57,7 +57,7 @@ namespace HomeTheater
                 DB.Instance.setOption("Login", textBoxLogin.Text);
                 DB.Instance.setOption("Password", textBoxPassword.Text);
                 this.Close();
-                this.mainForm.SyncSerials();
+                this.mainForm.Sync(true);
             }
         }
 

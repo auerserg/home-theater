@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SQLite;
+using System.Globalization;
 using System.IO;
 
 namespace HomeTheater.Helper
@@ -13,6 +14,7 @@ namespace HomeTheater.Helper
         public DB()
         {
             CreateDataBase();
+            CreateTables();
         }
 
         public static DB Instance
@@ -38,10 +40,29 @@ namespace HomeTheater.Helper
             {
                 SQLiteConnection.CreateFile(this.baseName);
 
-                CheckConnectDataBase();
-                using (SQLiteCommand sql = new SQLiteCommand(connection))
-                {
-                    sql.CommandText = @"
+                CreateTables();
+
+                DefaultValues();
+            }
+        }
+
+        private void DefaultValues()
+        {
+            setOption("cacheTimeSerial_new", (1 * 24 * 60 * 60).ToString());
+            setOption("cacheTimeSerial_nonew", (3 * 24 * 60 * 60).ToString());
+            setOption("cacheTimeSerial_want", (3 * 24 * 60 * 60).ToString());
+            setOption("cacheTimeSerial_watched", (7 * 24 * 60 * 60).ToString());
+            setOption("cacheTimeSerial_none", (20 * 24 * 60 * 60).ToString());
+            setOption("SimultaneousDownloads", (3).ToString());
+            setOption("NameFiles", "{Collection}\\{SerialName} {Season}\\{SerialName} S{Season}E{Episode} {Translate} {OriginalName}");
+        }
+
+        private void CreateTables()
+        {
+            CheckConnectDataBase();
+            using (SQLiteCommand sql = new SQLiteCommand(connection))
+            {
+                sql.CommandText = @"
 CREATE TABLE IF NOT EXISTS [options] (
     [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
     [name] text NOT NULL,
@@ -51,7 +72,43 @@ CREATE TABLE IF NOT EXISTS [http_cache] (
     [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
     [url] text,
     [content] text,
-    [create_date] integer
+    [create_date] text
+);
+CREATE TABLE IF NOT EXISTS [season] (
+    [id] integer PRIMARY KEY NOT NULL,
+    [serial_id] integer,
+    [url] text,
+    [title] text,
+    [title_ru] text,
+    [title_en] text,
+    [season] integer,
+    [description] text,
+    [marks_current] text,
+    [marks_last] text,
+    [secure_mark] text,
+    [site_updated] text
+);
+CREATE TABLE IF NOT EXISTS [season_related] (
+    [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    [season_id] integer NOT NULL,
+    [serial_id] integer NOT NULL,
+    [season_related_id] integer NOT NULL,
+    [serial_related_id] integer NOT NULL
+);
+CREATE TABLE IF NOT EXISTS [season_meta] (
+    [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    [season_id] integer NOT NULL,
+    [name] text,
+    [value] text
+);
+CREATE TABLE IF NOT EXISTS [tags] (
+    [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    [name] text
+);
+CREATE TABLE IF NOT EXISTS [season_tags] (
+    [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    [season_id] integer NOT NULL,
+    [tag_id] integer NOT NULL
 );
 CREATE TABLE IF NOT EXISTS [compilation] (
     [id] integer PRIMARY KEY NOT NULL,
@@ -63,16 +120,8 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
     [serial_id] integer
 );
 ";
-                    sql.CommandType = CommandType.Text;
-                    sql.ExecuteNonQuery();
-                }
-
-                setOption("cacheTimeSerial_new", (1 * 24 * 60 * 60).ToString());
-                setOption("cacheTimeSerial_nonew", (3 * 24 * 60 * 60).ToString());
-                setOption("cacheTimeSerial_want", (3 * 24 * 60 * 60).ToString());
-                setOption("cacheTimeSerial_watched", (7 * 24 * 60 * 60).ToString());
-                setOption("SimultaneousDownloads", (3).ToString());
-                setOption("NameFiles", "{Collection}\\{SerialName} {Season}\\{SerialName} S{Season}E{Episode} {Translate} {OriginalName}");
+                sql.CommandType = CommandType.Text;
+                sql.ExecuteNonQuery();
             }
         }
 
@@ -171,15 +220,16 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
             return _option(name);
         }
 
-        private string _cache(string url, string action = null, string content = null, int period = 0)
+        private DBCache _cache(string url, string action = null, string content = null, int period = 0)
         {
-            if (("INSERT" == action || "UPDATE" == action) && null == content)
+            if (("INSERT" == action || "UPDATE" == action) && string.IsNullOrWhiteSpace(content))
             {
                 return _cache(url, "DETETE");
             }
             CheckConnectDataBase();
             try
             {
+                string time_format = "yyyy-MM-dd hh:mm:ss";
                 DateTime create_date = DateTime.UtcNow;
 
 
@@ -197,24 +247,21 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
                         break;
                     case "SELECT":
                     default:
-                        sql.CommandText = @"SELECT content, create_date FROM http_cache WHERE url = @url";
+                        sql.CommandText = @"SELECT url, content, create_date FROM http_cache WHERE url = @url";
                         break;
                 }
                 sql.CommandType = CommandType.Text;
                 sql.Parameters.AddWithValue("@url", url);
                 sql.Parameters.AddWithValue("@content", content);
-                sql.Parameters.AddWithValue("@create_date", create_date.Ticks);
+                sql.Parameters.AddWithValue("@create_date", create_date.ToString(time_format));
                 if ("SELECT" == action || null == action)
                 {
                     SQLiteDataReader reader = sql.ExecuteReader();
                     while (reader.Read())
                     {
-                        DateTime created_date = new DateTime(Convert.ToInt64(reader["create_date"].ToString()));
-                        int tsInterval = Convert.ToInt32(create_date.Subtract(created_date).TotalSeconds);
-                        if (0 == period || period > tsInterval)
-                        {
-                            return reader["content"].ToString();
-                        }
+                        DBCache item = new DBCache(reader["url"].ToString(), reader["content"].ToString(), period);
+                        DateTime.TryParseExact(reader["create_date"].ToString(), time_format, new CultureInfo("en-US"), DateTimeStyles.None, out item.date);
+                        return item;
                     }
                 }
                 else
@@ -228,14 +275,14 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
                 Console.WriteLine(ex.Message);
             }
 
-            return "";
+            return null;
         }
 
 
         public void setCache(string url, string content = null)
         {
-            string _content = _cache(url);
-            if ("" == _content)
+            DBCache item = getCache(url);
+            if (null == item || "" == item.content)
             {
                 _cache(url, "INSERT", content);
             }
@@ -244,9 +291,28 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
                 _cache(url, "UPDATE", content);
             }
         }
-        public string getCache(string url, int period = 24 * 60 * 60)
+        public string getCacheContent(string url, int period = 24 * 60 * 60)
+        {
+            DBCache item = getCache(url, period);
+            if (null == item)
+                return null;
+
+            return item.isActual ? item.content : null;
+        }
+
+        public DBCache getCache(string url, int period = 24 * 60 * 60)
         {
             return _cache(url, null, null, period);
+        }
+
+        public void setSeason(int id, string url = "")
+        {
+            // UNDONE: получать сезон по айди
+        }
+
+        public void getSeason(int id, int period = 24 * 60 * 60)
+        {
+            // UNDONE: получать сезон по айди
         }
 
     }
