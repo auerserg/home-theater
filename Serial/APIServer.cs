@@ -227,13 +227,13 @@ namespace HomeTheater.Serial
             }
             return results;
         }
-        public string downloadCompilation(int compilationList = 0, bool forsed = false)
+        public string downloadCompilation(int compilationList = 0, int page = 1, bool forsed = false)
         {
-            string url = string.Concat(getURLAjax(), "?compilationList=", compilationList.ToString(), "&user=", ProfileID.ToString());
+            string url = string.Concat(getURLAjax(), "?compilationList=", compilationList.ToString(), "&page=", page.ToString(), "&user=", ProfileID.ToString());
             string content = DB.Instance.getCacheContent(url, 30 * 60);
             if (string.IsNullOrWhiteSpace(content) || forsed)
             {
-                content = DownloadXHR(getURLAjax(), new NameValueCollection { { "compilationList", compilationList.ToString() }, { "user", ProfileID.ToString() } });
+                content = DownloadXHR(getURLAjax(), new NameValueCollection { { "compilationList", compilationList.ToString() }, { "page", page.ToString() }, { "user", ProfileID.ToString() } });
                 if (!string.IsNullOrWhiteSpace(content))
                     DB.Instance.setCache(url, content);
             }

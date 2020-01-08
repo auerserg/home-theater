@@ -14,6 +14,8 @@ namespace HomeTheater.Helper
         public SQLiteConnection connection;
         public const string TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
         public const string DATE_FORMAT = "yyyy-MM-dd";
+
+        private Dictionary<string, string> cachedOptions = new Dictionary<string, string>();
         public DB()
         {
             CreateDataBase();
@@ -84,45 +86,27 @@ CREATE TABLE IF NOT EXISTS [season] (
     [title] text,
     [title_ru] text,
     [title_en] text,
+    [title_original] text,
     [season] integer,
+    [genre] text,
+    [country] text,
+    [release] text,
+    [limitation] text,
+    [imdb] text,
+    [kinopoisk] text,
     [description] text,
     [marks_current] text,
     [marks_last] text,
     [secure_mark] text,
     [type] text,
+    [compilation] Text,
     [site_updated] text,
     [updated_date] text
 );
 CREATE TABLE IF NOT EXISTS [season_related] (
     [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
     [season_id] integer NOT NULL,
-    [serial_id] integer NOT NULL,
-    [season_related_id] integer NOT NULL,
-    [serial_related_id] integer NOT NULL
-);
-CREATE TABLE IF NOT EXISTS [season_meta] (
-    [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-    [season_id] integer NOT NULL,
-    [name] text,
-    [value] text
-);
-CREATE TABLE IF NOT EXISTS [tags] (
-    [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-    [name] text
-);
-CREATE TABLE IF NOT EXISTS [season_tags] (
-    [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-    [season_id] integer NOT NULL,
-    [tag_id] integer NOT NULL
-);
-CREATE TABLE IF NOT EXISTS [compilation] (
-    [id] integer PRIMARY KEY NOT NULL,
-    [text] text
-);
-CREATE TABLE IF NOT EXISTS [compilation_serial] (
-    [id] integer PRIMARY KEY NOT NULL,
-    [compilation_id] integer,
-    [serial_id] integer
+    [related_id] integer NOT NULL
 );
 ";
                 sql.CommandType = CommandType.Text;
@@ -156,11 +140,22 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
             }
         }
 
-        private string _option(string name, string action = null, string value = null)
+        private string _option(string name, string action = null, string value = "")
         {
-            if (("INSERT" == action || "UPDATE" == action) && null == value)
+            if (("INSERT" == action || "UPDATE" == action) && string.IsNullOrEmpty(value))
             {
                 return _option(name, "DETETE");
+            }
+            if (cachedOptions.ContainsKey(name))
+            {
+                if (("INSERT" == action || "UPDATE" == action || "DETETE" == action))
+                {
+                    cachedOptions.Remove(name);
+                }
+                else
+                {
+                    return cachedOptions[name];
+                }
             }
             CheckConnectDataBase();
             try
@@ -190,7 +185,11 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
                     SQLiteDataReader reader = sql.ExecuteReader();
                     while (reader.Read())
                     {
-                        return reader["value"].ToString();
+                        value = reader["value"].ToString();
+                        if (cachedOptions.ContainsKey(name))
+                            cachedOptions.Remove(name);
+                        cachedOptions.Add(name, value);
+                        return value;
                     }
                 }
                 else
@@ -203,7 +202,9 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
             {
                 Console.WriteLine(ex.Message);
             }
-
+            if (cachedOptions.ContainsKey(name))
+                cachedOptions.Remove(name);
+            cachedOptions.Add(name, "");
             return "";
         }
 
@@ -315,7 +316,6 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
             {
                 SQLiteCommand sql = new SQLiteCommand(connection);
                 Dictionary<string, string> dataOld = getSeason(id);
-                // TODO: Добавить проверку нужно ли обновить
                 if (0 < dataOld.Count)
                 {
                     string fields = "";
@@ -359,9 +359,22 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
             }
             return false;
         }
-        public void removeSeason(int id)
+        public bool removeSeason(int id)
         {
-            // UNDONE: удаление сезон по айди
+            CheckConnectDataBase();
+            try
+            {
+                SQLiteCommand sql = new SQLiteCommand(connection);
+                sql.CommandText = @"DELETE FROM season WHERE id = @id";
+                sql.Parameters.AddWithValue("@id", id.ToString());
+                int updatedRows = sql.ExecuteNonQuery();
+                return 0 < updatedRows;
+            }
+            catch (SQLiteException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
         }
         public Dictionary<string, string> getSeason(int id)
         {
@@ -391,9 +404,34 @@ CREATE TABLE IF NOT EXISTS [compilation_serial] (
                 Console.WriteLine(ex.Message);
             }
 
-            // UNDONE: получать сезон по айди
             return data;
         }
 
+        public Dictionary<int, int> getSeasons(int serial_id, int id = 0)
+        {
+            Dictionary<int, int> data = new Dictionary<int, int>();
+            CheckConnectDataBase();
+            try
+            {
+                SQLiteCommand sql = new SQLiteCommand(connection);
+                sql.CommandText = @"SELECT id,season FROM season WHERE serial_id = @serial_id AND id <> @id ORDER BY season";
+                sql.CommandType = CommandType.Text;
+                sql.Parameters.AddWithValue("@serial_id", serial_id.ToString());
+                sql.Parameters.AddWithValue("@id", id.ToString());
+                SQLiteDataReader reader = sql.ExecuteReader();
+                while (reader.Read())
+                {
+                    int season = !string.IsNullOrEmpty(reader["season"].ToString()) ? int.Parse(reader["season"].ToString()) : 0;
+                    if (!data.ContainsKey(season))
+                        data.Add(season, int.Parse(reader["id"].ToString()));
+                }
+            }
+            catch (SQLiteException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return data;
+        }
     }
 }

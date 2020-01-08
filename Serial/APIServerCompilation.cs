@@ -6,13 +6,11 @@ namespace HomeTheater.Serial
 {
     class APIServerCompilation
     {
-        const string ACTIVE_COMPILATION = "Active";
-        const string WANT_COMPILATION = "Want";
+        public const string ACTIVE_COMPILATION = "Active";
+        public const string WANT_COMPILATION = "Want";
         static APIServerCompilation _i;
-        private int ACTIVE_ID = 0;
-        private int WANT_ID = 0;
         private Dictionary<int, string> compilation;
-        private Dictionary<int, List<int>> serialRelation;
+        private Dictionary<int, int> serialRelation;
         public static APIServerCompilation Instance
         {
             get
@@ -38,16 +36,84 @@ namespace HomeTheater.Serial
 
             return this;
         }
-        private string getCompilationName(int compid)
+        public string getCompilation(int serialid)
         {
-            var result = "";
-            if (compilation.ContainsKey(compid))
+            if (serialRelation.ContainsKey(serialid))
             {
-                result = compilation[compid];
+                int compId = serialRelation[serialid];
+                if (0 < compId)
+                {
+                    if (compilation.ContainsKey(compId))
+                    {
+                        return compilation[compId];
+                    }
+                    else
+                    {
+                        removeCompilation(serialid, compId);
+                    }
+                }
+
+            }
+            return "";
+        }
+        public string setCompilation(int serialid, string name)
+        {
+            int compid = _getCompilationId(name);
+            if (0 < compid)
+            {
+                return setCompilation(serialid, compid);
+            }
+            else
+            {
+                _setCompilation(serialid, name);
+            }
+            return getCompilation(serialid);
+        }
+        public string setCompilation(int serialid, int compid)
+        {
+            if (0 < compid && !serialRelation.ContainsKey(serialid))
+            {
+                _setCompilation(serialid, compid);
+            }
+
+            return getCompilation(serialid);
+        }
+
+        public bool removeCompilation(int serialid, string name)
+        {
+            bool result = false;
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                int compid = _getCompilationId(name);
+                if (0 < compid)
+                    result = removeCompilation(serialid, compid);
             }
             return result;
         }
-        private int getCompilationId(string name)
+        public bool removeCompilation(int serialid)
+        {
+            if (serialRelation.ContainsKey(serialid))
+            {
+                return removeCompilation(serialid, serialRelation[serialid]);
+            }
+            return false;
+        }
+
+        public bool removeCompilation(int serialid, int compid)
+        {
+            bool result = false;
+            if (compid > 0 && serialid > 0)
+            {
+                result = doCompilation(new NameValueCollection { { "serial_id", serialid.ToString() }, { "compilationRemove", compid.ToString() } });
+                if (result && serialRelation.ContainsKey(serialid) && serialRelation[serialid] == compid)
+                {
+                    serialRelation.Remove(serialid);
+                }
+            }
+            return result;
+        }
+
+        private int _getCompilationId(string name)
         {
             foreach (KeyValuePair<int, string> kvp in compilation)
             {
@@ -58,173 +124,66 @@ namespace HomeTheater.Serial
             }
             return 0;
         }
-        private List<int> getSerialCompilationId(int serialid)
+        private bool _setCompilation(int serialid, string name)
         {
-            if (serialRelation.ContainsKey(serialid))
-            {
-                return serialRelation[serialid];
-            }
-
-            return new List<int>();
-        }
-        private int getActiveId()
-        {
-            if (ACTIVE_ID == 0)
-            {
-                ACTIVE_ID = getCompilationId(ACTIVE_COMPILATION);
-            }
-            return ACTIVE_ID;
-        }
-        private int getWantId()
-        {
-            if (WANT_ID == 0)
-            {
-                WANT_ID = getCompilationId(WANT_COMPILATION);
-            }
-            return WANT_ID;
-        }
-        private List<int> getBasicId()
-        {
-            List<int> result = new List<int>();
-            result.Add(getWantId());
-            result.Add(getActiveId());
-            result.Remove(0);
-            result.Remove(0);
-
-            return result;
-        }
-        public string setCompilation(int serialid, string name)
-        {
-            if (compilationSet(serialid, name))
-            {
-                List<int> _compilation = getSerialCompilationId(serialid);
-                bool update = false;
-                for (var i = 0; i < _compilation.Count; i++)
-                {
-                    if (name != getCompilationName(_compilation[i]))
-                    {
-                        if (compilationRemovebyId(serialid, _compilation[i], false))
-                        {
-                            update = true;
-                        }
-                    }
-                }
-                if (update)
-                {
-                    Update();
-                }
-
-            }
-
-            return getCompilation(serialid);
-        }
-
-        public string getCompilation(int serialid)
-        {
-            string result = "";
-            int compId;
-            List<int> _compilation = getSerialCompilationId(serialid);
-            bool update = false;
-            List<int> _compilationBasic = getBasicId();
-            for (var i = 0; i < _compilationBasic.Count; i++)
-            {
-                compId = _compilationBasic[i];
-                if (1 < _compilation.Count && _compilation.Contains(compId))
-                {
-                    if (compilationRemovebyId(serialid, compId, false))
-                    {
-                        update = true;
-                    }
-                }
-            }
-            if (update)
-            {
-                Update();
-                _compilation = getSerialCompilationId(serialid);
-            }
-            update = false;
-            for (var i = 0; i < _compilation.Count; i++)
-            {
-                compId = _compilation[i];
-                /*
-                if (_compilationBasic.Contains(compId)) {
-                    continue;
-                }
-                */
-                string name = getCompilationName(compId);
-                if (!string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(result))
-                {
-                    result = name;
-                }
-                else
-                {
-                    if (compilationRemovebyId(serialid, compId, false))
-                    {
-                        update = true;
-                    }
-                }
-            }
-            if (update)
-            {
-                Update();
-            }
-
-
-            return result;
-        }
-        public bool compilationRemove(int serialid, string name, bool update = true)
-        {
-            int compid = getCompilationId(name);
-            bool result = compilationRemovebyId(serialid, compid, update);
-            return result;
-        }
-        private bool compilationRemovebyId(int serialid, int compid, bool update = true)
-        {
+            int compid = _getCompilationId(name);
             bool result = false;
-            if (compid > 0 && serialRelation.ContainsKey(serialid) && serialRelation[serialid].Contains(compid))
+            if (0 < compid)
             {
-                result = doCompilation(new NameValueCollection { { "serial_id", serialid.ToString() }, { "compilationRemove", compid.ToString() } });
-                if (result && update)
-                    Update();
-            }
-            return result;
-        }
-
-        private bool compilationSet(int serialid, string name)
-        {
-            int compid = getCompilationId(name);
-            bool result = false;
-            if (compid > 0)
-            {
-                if (serialRelation.ContainsKey(serialid) && serialRelation[serialid].Contains(compid))
-                {
-                    return true;
-                }
-                result = doCompilation(new NameValueCollection { { "serial_id", serialid.ToString() }, { "compilationSet", compid.ToString() } });
+                result = _setCompilation(serialid, compid);
             }
             else
             {
                 result = doCompilation(new NameValueCollection { { "serial_id", serialid.ToString() }, { "compilationAdd", name } });
-
+                if (result)
+                {
+                    Update();
+                }
             }
-            if (result)
-                Update();
-
             return result;
         }
+        private bool _setCompilation(int serialid, int compid)
+        {
+            bool result = false;
+            if (compid > 0 && serialid > 0)
+            {
+                result = doCompilation(new NameValueCollection { { "serial_id", serialid.ToString() }, { "compilationSet", compid.ToString() } });
+                if (result)
+                {
+                    if (serialRelation.ContainsKey(serialid))
+                    {
+                        serialRelation[serialid] = compid;
+
+                    }
+                    else
+                    {
+                        serialRelation.Add(serialid, compid);
+                    }
+                }
+
+            }
+            return result;
+        }
+
+
         private bool doCompilation(NameValueCollection postData = null)
         {
             string result = APIServer.Instance.DownloadXHR(APIServer.Instance.getURLAjax(), postData);
+
             dynamic resultjson = SimpleJson.SimpleJson.DeserializeObject<dynamic>(result);
-            bool status = false;
+            string id = "", status = "";
             foreach (var _id in resultjson)
-            {
-                if (_id.Key == "status")
+                switch (_id.Key)
                 {
-                    status = _id.Value.ToString() == "ok";
+                    case "status": status = _id.Value.ToString(); break;
+                    case "id": id = _id.Value.ToString(); break;
                 }
+            if (status == "error" && id == "Сериал уже назначен в данную подборку")
+            {
+                Update();
             }
-            return status;
+
+            return status == "ok" || (status == "error" && id == "Сериал уже назначен в данную подборку");
         }
 
         private string downloadProfile(bool forsed = false)
@@ -232,18 +191,16 @@ namespace HomeTheater.Serial
             return APIServer.Instance.downloadProfile(forsed);
         }
 
-        private string downloadCompilation(int compilationList = 0, bool forsed = false)
+        private string downloadCompilation(int compilationList = 0, int page = 1, bool forsed = false)
         {
-            return APIServer.Instance.downloadCompilation(compilationList, forsed);
+            return APIServer.Instance.downloadCompilation(compilationList, page, forsed);
         }
         private void parseCompilation(int compilationList = 0, bool forsed = false)
         {
-            List<int> value;
             string content = downloadProfile(forsed);
             if (!string.IsNullOrWhiteSpace(content))
             {
                 compilation = new Dictionary<int, string>();
-                serialRelation = new Dictionary<int, List<int>>();
                 foreach (Match __ in Regex.Matches(content, "<a[^<>]*data-compid=\"(\\d+)\"[^<>]*>(.*?)</a>", RegexOptions.IgnoreCase | RegexOptions.Singleline))
                 {
                     int compid = int.Parse(__.Groups[1].ToString());
@@ -254,9 +211,25 @@ namespace HomeTheater.Serial
                 }
             }
 
-            content = downloadCompilation(0, forsed);
+            content = downloadCompilation(compilationList, 1, forsed);
             if (!string.IsNullOrWhiteSpace(content))
             {
+                int page = 1;
+                foreach (Match __ in Regex.Matches(content, " data-page=\"([0-9]+)\"", RegexOptions.IgnoreCase | RegexOptions.Singleline))
+                {
+                    int _page = int.Parse(__.Groups[1].ToString());
+                    if (page < _page)
+                        page = _page;
+                }
+                if (1 < page)
+                {
+                    for (var i = 2; i <= page; i++)
+                    {
+                        content += downloadCompilation(compilationList, i, forsed);
+                    }
+                }
+
+                serialRelation = new Dictionary<int, int>();
                 foreach (Match __ in Regex.Matches(content, "<span[^<>]*data-serialid=\"(\\d+)\"[^<>]*data-compid=\"(\\d+)\"[^<>]*>", RegexOptions.IgnoreCase | RegexOptions.Singleline))
                 {
                     int compid = int.Parse(__.Groups[2].ToString());
@@ -264,15 +237,11 @@ namespace HomeTheater.Serial
 
                     if (serialRelation.ContainsKey(serialid))
                     {
-                        value = serialRelation[serialid];
-                        value.Add(compid);
-                        serialRelation[serialid] = value;
+                        removeCompilation(serialid, compid);
                     }
                     else
                     {
-                        value = new List<int>();
-                        value.Add(compid);
-                        serialRelation.Add(serialid, value);
+                        serialRelation.Add(serialid, compid);
                     }
                 }
             }

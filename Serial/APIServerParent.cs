@@ -97,7 +97,7 @@ namespace HomeTheater.Serial
 
             return this.CookieContainer;
         }
-        public static string Match(string input, string pattern, RegexOptions options, int index = 0)
+        public static string Match(string input, string pattern, RegexOptions options = REGEX_C, int index = 0)
         {
             string result = "";
 
@@ -109,7 +109,7 @@ namespace HomeTheater.Serial
 
             return result;
         }
-        public static List<string> Matches(string input, string pattern, RegexOptions options)
+        public static List<string> Matches(string input, string pattern, RegexOptions options = REGEX_C)
         {
             List<string> result = new List<string>();
             Match resultmatch = Regex.Match(input, pattern, options);
