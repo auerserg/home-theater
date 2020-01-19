@@ -45,6 +45,7 @@
             this.textBoxLogin.TabIndex = 1;
             this.textBoxLogin.Text = "E-mail";
             this.textBoxLogin.Enter += new System.EventHandler(this.TextBoxEmail_Enter);
+            this.textBoxLogin.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxLogin_KeyDown);
             this.textBoxLogin.Leave += new System.EventHandler(this.TextBoxEmail_Leave);
             // 
             // textBoxPassword
@@ -57,6 +58,7 @@
             this.textBoxPassword.TabIndex = 2;
             this.textBoxPassword.Text = "Пароль";
             this.textBoxPassword.Enter += new System.EventHandler(this.TextBoxPassword_Enter);
+            this.textBoxPassword.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxPassword_KeyDown);
             this.textBoxPassword.Leave += new System.EventHandler(this.TextBoxPassword_Leave);
             // 
             // buttonEnter
@@ -66,7 +68,7 @@
             this.buttonEnter.Location = new System.Drawing.Point(12, 64);
             this.buttonEnter.Name = "buttonEnter";
             this.buttonEnter.Size = new System.Drawing.Size(216, 22);
-            this.buttonEnter.TabIndex = 0;
+            this.buttonEnter.TabIndex = 3;
             this.buttonEnter.Text = "Войти";
             this.buttonEnter.UseVisualStyleBackColor = true;
             this.buttonEnter.Click += new System.EventHandler(this.ButtonEnter_Click);
@@ -77,7 +79,7 @@
             this.linkLabelReg.Location = new System.Drawing.Point(12, 89);
             this.linkLabelReg.Name = "linkLabelReg";
             this.linkLabelReg.Size = new System.Drawing.Size(72, 13);
-            this.linkLabelReg.TabIndex = 3;
+            this.linkLabelReg.TabIndex = 4;
             this.linkLabelReg.TabStop = true;
             this.linkLabelReg.Text = "Регистрация";
             this.linkLabelReg.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelReg_LinkClicked);
@@ -89,7 +91,7 @@
             this.linkLabelForgot.Location = new System.Drawing.Point(137, 89);
             this.linkLabelForgot.Name = "linkLabelForgot";
             this.linkLabelForgot.Size = new System.Drawing.Size(91, 13);
-            this.linkLabelForgot.TabIndex = 4;
+            this.linkLabelForgot.TabIndex = 5;
             this.linkLabelForgot.TabStop = true;
             this.linkLabelForgot.Text = "Забыли пароль?";
             this.linkLabelForgot.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelForgot_LinkClicked);

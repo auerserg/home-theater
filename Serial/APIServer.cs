@@ -1,4 +1,5 @@
 ﻿using HomeTheater.Helper;
+using HomeTheater.Serial.data;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -17,12 +18,12 @@ namespace HomeTheater.Serial
         const string AJAX_PATH = "/ajax.php";
 
         protected string PROFILE_PATH;
-#pragma warning disable CS0649 // Полю "APIServer.secureMark" нигде не присваивается значение, поэтому оно всегда будет иметь значение по умолчанию null.
         public static string secureMark;
-#pragma warning restore CS0649 // Полю "APIServer.secureMark" нигде не присваивается значение, поэтому оно всегда будет иметь значение по умолчанию null.
         public int ProfileID;
         public string login;
         private string password;
+
+
         public static APIServer Instance
         {
             get
@@ -45,9 +46,9 @@ namespace HomeTheater.Serial
             login = _login;
             password = _password;
             if (string.IsNullOrWhiteSpace(login))
-                login = DB.Instance.getOption("Login");
+                login = DB.Instance.OptionGet("Login");
             if (string.IsNullOrWhiteSpace(password))
-                password = DB.Instance.getOption("Password");
+                password = DB.Instance.OptionGet("Password");
         }
 
         public string getURLForgon()
@@ -93,23 +94,26 @@ namespace HomeTheater.Serial
         {
             string __login = login;
             string __password = password;
+            if (String.IsNullOrEmpty(_login))
+            {
+                _login = __login;
+            }
+            if (String.IsNullOrEmpty(_password))
+            {
+                _password = __password;
+            }
             bool result = false;
             try
             {
-                if (String.IsNullOrEmpty(_login))
-                {
-                    _login = __login;
-                }
-                if (String.IsNullOrEmpty(_password))
-                {
-                    _password = __password;
-                }
-
                 string content = Download(getURLLogin(), new NameValueCollection { { "login", _login }, { "password", _password } });
-
                 result = isLogedIn(content);
             }
-            catch (Exception e) { Console.WriteLine(e); }
+            catch (Exception e)
+            {
+#if DEBUG
+                Console.WriteLine(e);
+#endif
+            }
             return result;
         }
 
@@ -143,12 +147,12 @@ namespace HomeTheater.Serial
         public string downloadPause(bool forsed = false)
         {
             string url = getURLPause();
-            string content = DB.Instance.getCacheContent(url, 30 * 60);
+            string content = DB.Instance.CacheGetContent(url, 30 * 60);
             if (string.IsNullOrWhiteSpace(content) || forsed)
             {
                 content = Download(url);
                 if (!string.IsNullOrWhiteSpace(content))
-                    DB.Instance.setCache(url, content);
+                    DB.Instance.CacheSet(url, content);
             }
 
             return content;
@@ -172,7 +176,6 @@ namespace HomeTheater.Serial
                             cserial.parsePause(serial.Groups[2].ToString());
                             if (type != cserial.Type)
                                 cserial.Type = type;
-
                             results.Add(cserial);
                         }
                     }
@@ -181,9 +184,11 @@ namespace HomeTheater.Serial
             return results;
         }
 
-        public string doMarks(NameValueCollection postData = null)
+        public markresponse doMarks(NameValueCollection postData = null)
         {
-            return DownloadXHR(getURLMark(), postData);
+            string result = DownloadXHR(getURLMark(), postData);
+            markresponse resultjson = SimpleJson.SimpleJson.DeserializeObject<markresponse>(result);
+            return resultjson;
         }
 
         public string downloadSidebar(string mode = "new", bool forsed = false)
@@ -199,13 +204,13 @@ namespace HomeTheater.Serial
                     break;
             }
             string url = String.Concat(getURLAjax(), "?mode=", mode);
-            string content = DB.Instance.getCacheContent(url, 60 * 60);
+            string content = DB.Instance.CacheGetContent(url, 60 * 60);
 
             if (string.IsNullOrWhiteSpace(content) || forsed)
             {
                 content = DownloadXHR(url, new NameValueCollection { { "ganre", "" }, { "country", "" }, { "block", "0" }, { "main", "1" } });
                 if (!string.IsNullOrWhiteSpace(content))
-                    DB.Instance.setCache(url, content);
+                    DB.Instance.CacheSet(url, content);
             }
 
             return content;
@@ -230,12 +235,12 @@ namespace HomeTheater.Serial
         public string downloadCompilation(int compilationList = 0, int page = 1, bool forsed = false)
         {
             string url = string.Concat(getURLAjax(), "?compilationList=", compilationList.ToString(), "&page=", page.ToString(), "&user=", ProfileID.ToString());
-            string content = DB.Instance.getCacheContent(url, 30 * 60);
+            string content = DB.Instance.CacheGetContent(url, 30 * 60);
             if (string.IsNullOrWhiteSpace(content) || forsed)
             {
                 content = DownloadXHR(getURLAjax(), new NameValueCollection { { "compilationList", compilationList.ToString() }, { "page", page.ToString() }, { "user", ProfileID.ToString() } });
                 if (!string.IsNullOrWhiteSpace(content))
-                    DB.Instance.setCache(url, content);
+                    DB.Instance.CacheSet(url, content);
             }
 
             return content;
@@ -243,12 +248,12 @@ namespace HomeTheater.Serial
         public string downloadProfile(bool forsed = false)
         {
             string url = getURLProfile();
-            string content = DB.Instance.getCacheContent(url, 30 * 60);
+            string content = DB.Instance.CacheGetContent(url, 30 * 60);
             if (string.IsNullOrWhiteSpace(content) || forsed)
             {
                 content = Download(url);
                 if (!string.IsNullOrWhiteSpace(content))
-                    DB.Instance.setCache(url, content);
+                    DB.Instance.CacheSet(url, content);
             }
 
             return content;

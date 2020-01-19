@@ -25,7 +25,9 @@ namespace HomeTheater.Serial
         {
             using (WebClientEx wc = new WebClientEx(this.GetCookie()))
             {
-                Console.WriteLine("Live Request: {0:S}", url);
+#if DEBUG
+                DateTime start = DateTime.UtcNow;
+#endif
                 Uri uri = new Uri(url);
                 WebHeaderCollection _header = new WebHeaderCollection();
                 _header.Add(HttpRequestHeader.Referer, SERVER_URL);
@@ -37,9 +39,9 @@ namespace HomeTheater.Serial
 
                 }
                 wc.Headers = _header;
-                if ("1" == DB.Instance.getOption("proxy.Use"))
+                if ("1" == DB.Instance.OptionGet("proxy.Use"))
                 {
-                    wc.Proxy = new WebProxy(DB.Instance.getOption("proxy.Host"), int.Parse(DB.Instance.getOption("proxy.Port")));
+                    wc.Proxy = new WebProxy(DB.Instance.OptionGet("proxy.Host"), int.Parse(DB.Instance.OptionGet("proxy.Port")));
                 }
                 wc.Encoding = Encoding.UTF8;
                 string content = null;
@@ -52,6 +54,9 @@ namespace HomeTheater.Serial
                     byte[] responsebytes = wc.UploadValues(uri, "POST", postData);
                     content = Encoding.UTF8.GetString(responsebytes);
                 }
+#if DEBUG
+                Console.WriteLine("Live Request: {0:S} - {1:S}", url, DateTime.UtcNow.Subtract(start).TotalMilliseconds.ToString());
+#endif
                 if (0 < wc.CookieContainer.Count)
                 {
                     this.saveCookies(wc.CookieContainer);
@@ -60,6 +65,35 @@ namespace HomeTheater.Serial
                 return content;
             }
         }
+        public Stream DownloadStream(string url, WebHeaderCollection header = null)
+        {
+#if DEBUG
+            DateTime start = DateTime.UtcNow;
+#endif
+            HttpWebRequest wc = (HttpWebRequest)WebRequest.Create(url);
+            Uri uri = new Uri(url);
+            WebHeaderCollection _header = new WebHeaderCollection();
+            if (null != header && 0 < header.Count)
+            {
+                for (int i = 0; i < header.Count; i++)
+                    _header.Set(header.GetKey(i), header.Get(i));
+
+            }
+            wc.Referer = SERVER_URL;
+            wc.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36";
+            wc.Headers = _header;
+            if ("1" == DB.Instance.OptionGet("proxy.Use"))
+            {
+                wc.Proxy = new WebProxy(DB.Instance.OptionGet("proxy.Host"), int.Parse(DB.Instance.OptionGet("proxy.Port")));
+            }
+            WebResponse resp = wc.GetResponse();
+            Stream respStream = resp.GetResponseStream();
+#if DEBUG
+            Console.WriteLine("Live Request: {0:S} - {1:S}", url, DateTime.UtcNow.Subtract(start).TotalMilliseconds.ToString());
+#endif
+            return respStream;
+        }
+
         public string DownloadXHR(string url, NameValueCollection postData = null, WebHeaderCollection header = null)
         {
             WebHeaderCollection _header = new WebHeaderCollection();

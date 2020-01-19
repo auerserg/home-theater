@@ -1,6 +1,7 @@
 ﻿using HomeTheater.Helper;
 using HomeTheater.Serial;
 using System;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace HomeTheater
@@ -48,19 +49,51 @@ namespace HomeTheater
 
         private void ButtonEnter_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(textBoxLogin.Text) || string.IsNullOrWhiteSpace(textBoxPassword.Text))
+            string login = textBoxLogin.Text;
+            string password = textBoxPassword.Text;
+            buttonEnter.Enabled = false;
+
+            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
             {
                 return;
             }
-            if (APIServer.Instance.LogedIn(textBoxLogin.Text, textBoxPassword.Text))
+            AnimatedButtonEnter();
+            Task.Run(() =>
             {
-                DB.Instance.setOption("Login", textBoxLogin.Text);
-                DB.Instance.setOption("Password", textBoxPassword.Text);
-                this.Close();
-                this.mainForm.Sync(true);
-            }
+                bool status = APIServer.Instance.LogedIn(login, password);
+                if (status)
+                {
+                    DB.Instance.OptionSet("Login", login);
+                    DB.Instance.OptionSet("Password", password);
+                    Invoke(new Action(() =>
+                    {
+                        buttonEnter.Enabled = true;
+                        buttonEnter.Text = "Войти";
+                        this.mainForm.setStatusMessage(FormMain.SUCS_AUTH);
+                        this.Close();
+                        this.mainForm.SyncAsync(true);
+                    }));
+                }
+                else
+                    Invoke(new Action(() =>
+                    {
+                        buttonEnter.Enabled = true;
+                        buttonEnter.Text = "Войти";
+                        this.mainForm.setStatusMessage(FormMain.ERROR_AUTH);
+                    }));
+            });
         }
-
+        private async void AnimatedButtonEnter()
+        {
+            string[] animation = new[] { "|", "/", "-", "\\" };
+            while (!buttonEnter.Enabled)
+                for (int i = 0; i < animation.Length; i++)
+                {
+                    buttonEnter.Text = animation[i];
+                    await Task.Delay(100);
+                }
+            buttonEnter.Text = "Войти";
+        }
         private void LinkLabelReg_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start(APIServer.Instance.getURLRegister());
@@ -73,10 +106,29 @@ namespace HomeTheater
 
         private void FormAuth_Load(object sender, EventArgs e)
         {
-            textBoxLogin.Text = DB.Instance.getOption("Login");
-            textBoxPassword.Text = DB.Instance.getOption("Password");
+            textBoxLogin.Text = DB.Instance.OptionGet("Login");
+            textBoxPassword.Text = DB.Instance.OptionGet("Password");
+            buttonEnter.Text = "Войти";
             TextBoxEmail_Leave(sender, e);
             TextBoxPassword_Leave(sender, e);
+        }
+
+        private void textBoxLogin_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                textBoxPassword.Focus();
+                e.Handled = true;
+            }
+        }
+
+        private void textBoxPassword_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                ButtonEnter_Click(null, null);
+                e.Handled = true;
+            }
         }
     }
 }

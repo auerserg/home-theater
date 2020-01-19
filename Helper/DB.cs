@@ -10,7 +10,7 @@ namespace HomeTheater.Helper
     public class DB
     {
         static DB _i;
-        public string baseName = AppDomain.CurrentDomain.FriendlyName.Replace(".exe", ".db3");
+        private string baseName = AppDomain.CurrentDomain.FriendlyName.Replace(".exe", ".db3");
         public SQLiteConnection connection;
         public const string TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
         public const string DATE_FORMAT = "yyyy-MM-dd";
@@ -18,8 +18,13 @@ namespace HomeTheater.Helper
         private Dictionary<string, string> cachedOptions = new Dictionary<string, string>();
         public DB()
         {
-            CreateDataBase();
-            CreateTables();
+            if (!File.Exists(this.baseName))
+            {
+                SQLiteConnection.CreateFile(this.baseName);
+                _createTables();
+                _defaultValues();
+            }
+            else _createTables();
         }
 
         public static DB Instance
@@ -28,46 +33,20 @@ namespace HomeTheater.Helper
             {
                 if (_i == null)
                 {
-                    Load();
+                    _load();
                 }
                 return _i;
             }
         }
 
-        public static void Load()
+        public static void _load()
         {
             _i = new DB();
         }
 
-        private void CreateDataBase()
+        private void _createTables()
         {
-            if (!File.Exists(this.baseName))
-            {
-                SQLiteConnection.CreateFile(this.baseName);
-
-                CreateTables();
-
-                DefaultValues();
-            }
-        }
-
-        private void DefaultValues()
-        {
-            setOption("cacheTimeSerial_new", (1 * 24 * 60 * 60).ToString());
-            setOption("cacheTimeSerial_nonew", (3 * 24 * 60 * 60).ToString());
-            setOption("cacheTimeSerial_want", (3 * 24 * 60 * 60).ToString());
-            setOption("cacheTimeSerial_watched", (7 * 24 * 60 * 60).ToString());
-            setOption("cacheTimeSerial_none", (20 * 24 * 60 * 60).ToString());
-            setOption("SimultaneousDownloads", (3).ToString());
-            setOption("NameFiles", "{Collection}\\{SerialName} {Season}\\{SerialName} S{Season}E{Episode} {Translate} {OriginalName}");
-        }
-
-        private void CreateTables()
-        {
-            CheckConnectDataBase();
-            using (SQLiteCommand sql = new SQLiteCommand(connection))
-            {
-                sql.CommandText = @"
+            _ExecuteNonQuery(@"
 CREATE TABLE IF NOT EXISTS [options] (
     [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
     [name] text NOT NULL,
@@ -87,6 +66,7 @@ CREATE TABLE IF NOT EXISTS [season] (
     [title_ru] text,
     [title_en] text,
     [title_original] text,
+    [title_full] text,
     [season] integer,
     [genre] text,
     [country] text,
@@ -94,12 +74,13 @@ CREATE TABLE IF NOT EXISTS [season] (
     [limitation] text,
     [imdb] text,
     [kinopoisk] text,
+    [user_comments] integer,
+    [user_views_last_day] integer,
     [description] text,
     [marks_current] text,
     [marks_last] text,
     [secure_mark] text,
     [type] text,
-    [compilation] Text,
     [site_updated] text,
     [updated_date] text
 );
@@ -108,22 +89,35 @@ CREATE TABLE IF NOT EXISTS [season_related] (
     [season_id] integer NOT NULL,
     [related_id] integer NOT NULL
 );
-";
-                sql.CommandType = CommandType.Text;
-                sql.ExecuteNonQuery();
-            }
+CREATE TABLE IF NOT EXISTS [compilation] (
+    [id] integer PRIMARY KEY NOT NULL,
+    [name] text NOT NULL
+);
+CREATE TABLE IF NOT EXISTS [season_compilation] (
+    [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    [serial_id] integer NOT NULL,
+    [compilation_id] integer NOT NULL
+);
+");
         }
-
-        private void CheckConnectDataBase()
+        private void _defaultValues()
+        {
+            OptionSet("cacheTimeSerial_new", (1 * 24 * 60 * 60).ToString());
+            OptionSet("cacheTimeSerial_nonew", (3 * 24 * 60 * 60).ToString());
+            OptionSet("cacheTimeSerial_want", (3 * 24 * 60 * 60).ToString());
+            OptionSet("cacheTimeSerial_watched", (7 * 24 * 60 * 60).ToString());
+            OptionSet("cacheTimeSerial_none", (20 * 24 * 60 * 60).ToString());
+            OptionSet("SimultaneousDownloads", (3).ToString());
+            OptionSet("NameFiles", "{Collection}\\{SerialName} {Season}\\{SerialName} S{Season}E{Episode} {Translate} {OriginalName}");
+            OptionSet("listViewSerialsDisplayIndex", "[3,17,2,1,0,4,5,6,18,19,7,8,9,10,11,12,13,14,15,21,20,16]");
+            OptionSet("listViewSerialsWidth", "[0,290,0,0,0,0,0,0,25,155,0,0,0,0,0,0,0,0,0,77,56,0]");
+            OptionSet("listViewSerialsAutoSize", "[0,0,0,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1]");
+            OptionSet("listViewDownloadWidth", "[464,100,100,200]");
+            OptionSet("listViewSerialsView", "");
+        }
+        private void _checkConnectDataBase()
         {
             if (null == connection || (null != connection && (connection.State.Equals(ConnectionState.Closed) || connection.State.Equals(ConnectionState.Broken))))
-            {
-                ConnectDataBase();
-            }
-        }
-        private void ConnectDataBase()
-        {
-            try
             {
                 SQLiteFactory factory = (SQLiteFactory)System.Data.Common.DbProviderFactories.GetFactory("System.Data.SQLite");
                 SQLiteConnection _connection = (SQLiteConnection)factory.CreateConnection();
@@ -134,304 +128,327 @@ CREATE TABLE IF NOT EXISTS [season_related] (
                     connection = _connection;
                 }
             }
-            catch (SQLiteException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
         }
-
-        private string _option(string name, string action = null, string value = "")
+        private int _ExecuteNonQuery(string sql)
         {
-            if (("INSERT" == action || "UPDATE" == action) && string.IsNullOrEmpty(value))
-            {
-                return _option(name, "DETETE");
-            }
-            if (cachedOptions.ContainsKey(name))
-            {
-                if (("INSERT" == action || "UPDATE" == action || "DETETE" == action))
-                {
-                    cachedOptions.Remove(name);
-                }
-                else
-                {
-                    return cachedOptions[name];
-                }
-            }
-            CheckConnectDataBase();
+            return _ExecuteNonQuery(sql, new Dictionary<string, string> { });
+        }
+        private int _ExecuteNonQuery(string sql, Dictionary<string, string> data)
+        {
+            int result = 0;
+            if (string.IsNullOrEmpty(sql))
+                return result;
             try
             {
-                SQLiteCommand sql = new SQLiteCommand(connection);
-                switch (action)
-                {
-                    case "INSERT":
-                        sql.CommandText = @"INSERT INTO options (name,value) VALUES (@name,@value)";
-                        break;
-                    case "UPDATE":
-                        sql.CommandText = @"UPDATE options SET value = @value WHERE name = @name";
-                        break;
-                    case "DETETE":
-                        sql.CommandText = @"DELETE FROM options WHERE name = @name";
-                        break;
-                    case "SELECT":
-                    default:
-                        sql.CommandText = @"SELECT value FROM options WHERE name = @name";
-                        break;
-                }
-                sql.CommandType = CommandType.Text;
-                sql.Parameters.AddWithValue("@name", name);
-                sql.Parameters.AddWithValue("@value", value);
-                if ("SELECT" == action || null == action)
-                {
-                    SQLiteDataReader reader = sql.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        value = reader["value"].ToString();
-                        if (cachedOptions.ContainsKey(name))
-                            cachedOptions.Remove(name);
-                        cachedOptions.Add(name, value);
-                        return value;
-                    }
-                }
-                else
-                {
-                    sql.ExecuteNonQuery();
-                }
-
+                _checkConnectDataBase();
+                SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.CommandType = CommandType.Text;
+                foreach (var item in data)
+                    command.Parameters.AddWithValue("@" + item.Key, item.Value);
+                result = command.ExecuteNonQuery();
             }
             catch (SQLiteException ex)
             {
+#if DEBUG
                 Console.WriteLine(ex.Message);
+#endif
             }
+            return result;
+        }
+        private List<Dictionary<string, string>> _ExecuteReader(string sql)
+        {
+            return _ExecuteReader(sql, new Dictionary<string, string> { });
+        }
+        private List<Dictionary<string, string>> _ExecuteReader(string sql, Dictionary<string, string> data)
+        {
+            List<Dictionary<string, string>> result = new List<Dictionary<string, string>>();
+            try
+            {
+                _checkConnectDataBase();
+                SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.CommandType = CommandType.Text;
+                foreach (var item in data)
+                    command.Parameters.AddWithValue("@" + item.Key, item.Value);
+                SQLiteDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Dictionary<string, string> _result = new Dictionary<string, string>();
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        string field = reader.GetName(i);
+                        string value = reader[field].ToString();
+                        _result.Add(field, value);
+                    }
+                    result.Add(_result);
+                }
+            }
+            catch (SQLiteException ex)
+            {
+#if DEBUG
+                Console.WriteLine(ex.Message);
+#endif
+            }
+            return result;
+        }
+
+        public void OptionSet(string name, string value = null)
+        {
+            if (string.IsNullOrEmpty(value))
+                value = "";
+
+            var data = new Dictionary<string, string> { { "name", name }, { "value", value } };
+            if ("" == OptionGet(name))
+            {
+                if ("" != value)
+                    if (0 < _ExecuteNonQuery(@"INSERT INTO options (name,value) VALUES (@name,@value)", data))
+                        cachedOptions.Add(name, value);
+            }
+            else if ("" != value)
+            {
+                if (0 < _ExecuteNonQuery(@"UPDATE options SET value = @value WHERE name = @name", data))
+                    cachedOptions[name] = value;
+            }
+            else
+            {
+                if (0 < _ExecuteNonQuery(@"DELETE FROM options WHERE name = @name", data))
+                    cachedOptions.Remove(name);
+            }
+        }
+        public string OptionGet(string name)
+        {
             if (cachedOptions.ContainsKey(name))
-                cachedOptions.Remove(name);
-            cachedOptions.Add(name, "");
+            {
+                return cachedOptions[name];
+            }
+            var result = _ExecuteReader(@"SELECT value FROM options WHERE name = @name LIMIT 1", new Dictionary<string, string> { { "name", name } });
+            if (0 < result.Count)
+            {
+                cachedOptions.Add(name, result[0]["value"]);
+                return cachedOptions[name];
+            }
+
             return "";
         }
 
-        public void setOption(string name, string value = null)
+        public void CacheSet(string url, string content = null)
         {
-            string _value = _option(name);
-            if ("" == _value)
+            DBCache item = CacheGet(url);
+            var data = new Dictionary<string, string> { { "url", url }, { "content", content }, { "create_date", DateTime.UtcNow.ToString(TIME_FORMAT) } };
+            if (null == item)
             {
-                _option(name, "INSERT", value);
+                if (!string.IsNullOrWhiteSpace(content))
+                    _ExecuteNonQuery(@"INSERT INTO http_cache (url,content,create_date) VALUES (@url,@content,@create_date)", data);
+            }
+            else if (!string.IsNullOrWhiteSpace(content))
+            {
+                _ExecuteNonQuery(@"UPDATE http_cache SET content = @content, create_date = @create_date WHERE url = @url", data);
             }
             else
             {
-                _option(name, "UPDATE", value);
+                _ExecuteNonQuery(@"DELETE FROM http_cache WHERE url = @url", data);
             }
         }
-
-        public string getOption(string name)
+        public string CacheGetContent(string url, int period = 24 * 60 * 60)
         {
-            return _option(name);
-        }
-
-        private DBCache _cache(string url, string action = null, string content = null, int period = 0)
-        {
-            if (("INSERT" == action || "UPDATE" == action) && string.IsNullOrWhiteSpace(content))
-            {
-                return _cache(url, "DETETE");
-            }
-            CheckConnectDataBase();
-            try
-            {
-                SQLiteCommand sql = new SQLiteCommand(connection);
-                switch (action)
-                {
-                    case "INSERT":
-                        sql.CommandText = @"INSERT INTO http_cache (url,content,create_date) VALUES (@url,@content,@create_date)";
-                        break;
-                    case "UPDATE":
-                        sql.CommandText = @"UPDATE http_cache SET content = @content, create_date = @create_date WHERE url = @url";
-                        break;
-                    case "DETETE":
-                        sql.CommandText = @"DELETE FROM http_cache WHERE url = @url";
-                        break;
-                    case "SELECT":
-                    default:
-                        sql.CommandText = @"SELECT url, content, create_date FROM http_cache WHERE url = @url";
-                        break;
-                }
-                sql.CommandType = CommandType.Text;
-                sql.Parameters.AddWithValue("@url", url);
-                sql.Parameters.AddWithValue("@content", content);
-                sql.Parameters.AddWithValue("@create_date", DateTime.UtcNow.ToString(TIME_FORMAT));
-                if ("SELECT" == action || null == action)
-                {
-                    SQLiteDataReader reader = sql.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        DBCache item = new DBCache(reader["url"].ToString(), reader["content"].ToString(), period);
-                        DateTime.TryParseExact(reader["create_date"].ToString(), TIME_FORMAT, new CultureInfo("en-US"), DateTimeStyles.None, out item.date);
-                        return item;
-                    }
-                }
-                else
-                {
-                    sql.ExecuteNonQuery();
-                }
-
-            }
-            catch (SQLiteException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-
-            return null;
-        }
-
-
-        public void setCache(string url, string content = null)
-        {
-            DBCache item = getCache(url);
-            if (null == item || "" == item.content)
-            {
-                _cache(url, "INSERT", content);
-            }
-            else
-            {
-                _cache(url, "UPDATE", content);
-            }
-        }
-        public string getCacheContent(string url, int period = 24 * 60 * 60)
-        {
-            DBCache item = getCache(url, period);
+            DBCache item = CacheGet(url, period);
             if (null == item)
                 return null;
 
             return item.isActual ? item.content : null;
         }
-
-        public DBCache getCache(string url, int period = 24 * 60 * 60)
+        public DBCache CacheGet(string url, int period = 24 * 60 * 60)
         {
-            return _cache(url, null, null, period);
+            var result = _ExecuteReader(@"SELECT url, content, create_date FROM http_cache WHERE url = @url LIMIT 1", new Dictionary<string, string> { { "url", url } });
+            if (0 < result.Count)
+            {
+                DBCache item = new DBCache(result[0]["url"].ToString(), result[0]["content"].ToString(), period);
+                DateTime.TryParseExact(result[0]["create_date"].ToString(), TIME_FORMAT, new CultureInfo("en-US"), DateTimeStyles.None, out item.date);
+                return item;
+            }
+
+            return null;
         }
 
-        public bool setSeason(int id, Dictionary<string, string> data)
+        public bool SeasonSet(int id, Dictionary<string, string> data)
         {
             if (0 == data.Count)
                 return false;
-            CheckConnectDataBase();
-            try
+            var dataOld = SeasonGet(id);
+            if (0 < dataOld.Count)
             {
-                SQLiteCommand sql = new SQLiteCommand(connection);
-                Dictionary<string, string> dataOld = getSeason(id);
-                if (0 < dataOld.Count)
-                {
-                    string fields = "";
-                    int counts = 0;
-                    foreach (KeyValuePair<string, string> item in data)
+                var fields = new List<string>();
+                foreach (KeyValuePair<string, string> item in data)
+                    if (!dataOld.ContainsKey(item.Key) || dataOld[item.Key] != item.Value)
                     {
-                        if (dataOld.ContainsKey(item.Key) && dataOld[item.Key] == item.Value)
-                            continue;
-                        fields += item.Key + " = @" + item.Key + ", ";
-                        sql.Parameters.AddWithValue("@" + item.Key, item.Value);
-                        counts++;
+                        fields.Add(item.Key + " = @" + item.Key);
                     }
-                    if (0 >= counts)
-                    {
-                        return false;
-                    }
-                    sql.Parameters.AddWithValue("@updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
-                    sql.Parameters.AddWithValue("@id", id.ToString());
-                    sql.CommandText = @"UPDATE season SET " + fields + "updated_date = @updated_date WHERE id = @id";
-                }
-                else
-                {
-                    data.Add("id", id.ToString());
-                    string fields = "";
-                    string values = "";
-                    foreach (KeyValuePair<string, string> item in data)
-                    {
-                        fields += item.Key + ",";
-                        values += "@" + item.Key + ",";
-                        sql.Parameters.AddWithValue("@" + item.Key, item.Value);
-                    }
-                    sql.Parameters.AddWithValue("@updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
-                    sql.CommandText = @"INSERT INTO season (" + fields + "updated_date) VALUES (" + values + "@updated_date)";
-                }
-                int updatedRows = sql.ExecuteNonQuery();
-                return 0 < updatedRows;
+                data.Add("id", id.ToString());
+                data.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
+                if (0 < fields.Count)
+                    return 0 < _ExecuteNonQuery(@"UPDATE season SET " + String.Join(", ", fields.ToArray()) + ", updated_date = @updated_date WHERE id = @id", data);
             }
-            catch (SQLiteException ex)
+            else
             {
-                Console.WriteLine(ex.Message);
+                data.Add("id", id.ToString());
+                data.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
+                var fields = new List<string>(data.Keys);
+                return 0 < _ExecuteNonQuery(@"INSERT INTO season (" + String.Join(", ", fields.ToArray()) + ") VALUES (@" + String.Join(", @", fields.ToArray()) + ")", data);
             }
+
             return false;
         }
-        public bool removeSeason(int id)
+        public bool SeasonRemove(int id)
         {
-            CheckConnectDataBase();
-            try
-            {
-                SQLiteCommand sql = new SQLiteCommand(connection);
-                sql.CommandText = @"DELETE FROM season WHERE id = @id";
-                sql.Parameters.AddWithValue("@id", id.ToString());
-                int updatedRows = sql.ExecuteNonQuery();
-                return 0 < updatedRows;
-            }
-            catch (SQLiteException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            return false;
+            return 0 < _ExecuteNonQuery(@"DELETE FROM season WHERE id = @id", new Dictionary<string, string> { { "id", id.ToString() } });
         }
-        public Dictionary<string, string> getSeason(int id)
+        public Dictionary<string, string> SeasonGet(int id)
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
-            CheckConnectDataBase();
-            try
+            var result = _ExecuteReader(@"SELECT season.*, http_cache.create_date  FROM season LEFT JOIN http_cache ON season.url = http_cache.url WHERE season.id = @id LIMIT 1", new Dictionary<string, string> { { "id", id.ToString() } });
+            if (0 < result.Count)
+                data = result[0];
+            return data;
+        }
+
+        public Dictionary<int, int> SeasonsGet(int serial_id, int id = 0)
+        {
+            var data = new Dictionary<int, int>();
+            var result = _ExecuteReader(@"SELECT id,season FROM season WHERE serial_id = @serial_id AND id <> @id ORDER BY season", new Dictionary<string, string> { { "serial_id", serial_id.ToString() }, { "id", id.ToString() } });
+
+            for (int i = 0; i < result.Count; i++)
             {
-                SQLiteCommand sql = new SQLiteCommand(connection);
-                sql.CommandText = @"SELECT season.*,http_cache.create_date  FROM season LEFT JOIN http_cache ON season.url = http_cache.url WHERE season.id = @id";
-                sql.CommandType = CommandType.Text;
-                sql.Parameters.AddWithValue("@id", id.ToString());
-                SQLiteDataReader reader = sql.ExecuteReader();
-                while (reader.Read())
-                {
-                    for (int i = 0; i < reader.FieldCount; i++)
-                    {
-                        string field = reader.GetName(i);
-                        string value = reader[field].ToString();
-                        if (!string.IsNullOrWhiteSpace(value))
-                            data.Add(field, value);
-                    }
-                    return data;
-                }
+                int season = !string.IsNullOrEmpty(result[i]["season"].ToString()) ? int.Parse(result[i]["season"].ToString()) : 0;
+                if (!data.ContainsKey(season))
+                    data.Add(season, int.Parse(result[i]["id"].ToString()));
             }
-            catch (SQLiteException ex)
+            return data;
+        }
+
+        public List<int> RelatedGet(int seasonId)
+        {
+            List<int> data = new List<int>();
+            var result = _ExecuteReader(@"SELECT DISTINCT related_id FROM season_related WHERE season_id = @season_id ORDER BY related_id", new Dictionary<string, string> { { "season_id", seasonId.ToString() } });
+            for (int i = 0; i < result.Count; i++)
             {
-                Console.WriteLine(ex.Message);
+                int season = int.Parse(result[i]["related_id"].ToString());
+                if (0 < season && !data.Contains(season))
+                    data.Add(season);
             }
 
             return data;
         }
-
-        public Dictionary<int, int> getSeasons(int serial_id, int id = 0)
+        public bool RelatedSet(int seasonId, List<int> related)
         {
-            Dictionary<int, int> data = new Dictionary<int, int>();
-            CheckConnectDataBase();
-            try
-            {
-                SQLiteCommand sql = new SQLiteCommand(connection);
-                sql.CommandText = @"SELECT id,season FROM season WHERE serial_id = @serial_id AND id <> @id ORDER BY season";
-                sql.CommandType = CommandType.Text;
-                sql.Parameters.AddWithValue("@serial_id", serial_id.ToString());
-                sql.Parameters.AddWithValue("@id", id.ToString());
-                SQLiteDataReader reader = sql.ExecuteReader();
-                while (reader.Read())
-                {
-                    int season = !string.IsNullOrEmpty(reader["season"].ToString()) ? int.Parse(reader["season"].ToString()) : 0;
-                    if (!data.ContainsKey(season))
-                        data.Add(season, int.Parse(reader["id"].ToString()));
-                }
-            }
-            catch (SQLiteException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            if (0 >= related.Count)
+                return false;
+            var keysOld = RelatedGet(seasonId);
 
+            var data = new Dictionary<string, string> { { "season_id", seasonId.ToString() } };
+            var fields = new List<string>();
+            for (int i = 0; i < related.Count; i++)
+                if (!keysOld.Contains(related[i]))
+                {
+                    fields.Add("(@season_id, @related_id" + i + ")");
+                    data.Add("related_id" + i, related[i].ToString());
+                }
+                else
+                    keysOld.Remove(related[i]);
+            string sql = "";
+            if (0 < keysOld.Count)
+                sql += @"DELETE FROM season_related WHERE season_id = @season_id AND related_id IN(" + String.Join(", ", keysOld.ToArray()) + ");";
+            if (0 < fields.Count)
+                sql += @"INSERT INTO season_related (season_id, related_id) VALUES " + String.Join(", ", fields.ToArray()) + ";";
+
+            return 0 < _ExecuteNonQuery(sql, data);
+        }
+        public bool RelatedRemove(int seasonId)
+        {
+            return 0 < _ExecuteNonQuery(@"DELETE FROM season_related WHERE  season_id = @season_id;", new Dictionary<string, string> { { "season_id", seasonId.ToString() } });
+        }
+
+        public Dictionary<int, string> CompilationGet()
+        {
+            var data = new Dictionary<int, string>();
+            var result = _ExecuteReader(@"SELECT id,name FROM compilation");
+            for (int i = 0; i < result.Count; i++)
+            {
+                int id = !string.IsNullOrEmpty(result[i]["id"].ToString()) ? int.Parse(result[i]["id"].ToString()) : 0;
+                if (!data.ContainsKey(id))
+                    data.Add(id, result[i]["name"]);
+            }
             return data;
+        }
+        public bool CompilationSet(Dictionary<int, string> compilation)
+        {
+            if (0 == compilation.Count)
+                return false;
+            var keysOld = new List<int>(CompilationGet().Keys);
+            var fields = new List<string>();
+            var data = new Dictionary<string, string>();
+            int i = 0;
+            foreach (var item in compilation)
+                if (!keysOld.Contains(item.Key))
+                {
+                    fields.Add("(@id" + i + ", @name" + i + ")");
+                    data.Add("id" + i, item.Key.ToString());
+                    data.Add("name" + i, item.Value);
+                    i++;
+                }
+                else
+                    keysOld.Remove(item.Key);
+            string sql = "";
+            if (0 < keysOld.Count)
+                sql += @"DELETE FROM compilation WHERE id IN(" + String.Join(", ", keysOld.ToArray()) + ");";
+            if (0 < fields.Count)
+                sql += @"INSERT INTO compilation (id, name) VALUES " + String.Join(", ", fields.ToArray()) + ";";
+            return 0 < _ExecuteNonQuery(sql, data);
+        }
+
+        public Dictionary<int, int> CompilationRelationGet()
+        {
+            var data = new Dictionary<int, int>();
+            var result = _ExecuteReader(@"SELECT DISTINCT serial_id,compilation_id FROM season_compilation ORDER BY serial_id ASC;");
+            for (int i = 0; i < result.Count; i++)
+            {
+                int serial_id = int.Parse(result[i]["serial_id"].ToString());
+                int compilation_id = int.Parse(result[i]["compilation_id"].ToString());
+                if (!data.ContainsKey(serial_id))
+                    data.Add(serial_id, compilation_id);
+            }
+            return data;
+        }
+        public bool CompilationRelationSet(Dictionary<int, int> compilation)
+        {
+            if (0 == compilation.Count)
+                return false;
+            var keysOld = new List<int>(CompilationRelationGet().Keys);
+            var fields = new List<string>();
+            var data = new Dictionary<string, string>();
+            int i = 0;
+            foreach (var item in compilation)
+                if (!keysOld.Contains(item.Key))
+                {
+                    fields.Add("(@serial_id" + i + ", @compilation_id" + i + ")");
+                    data.Add("serial_id" + i, item.Key.ToString());
+                    data.Add("compilation_id" + i, item.Value.ToString());
+                    i++;
+                }
+                else
+                    keysOld.Remove(item.Key);
+            string sql = "";
+            if (0 < keysOld.Count)
+                sql += @"DELETE FROM season_compilation WHERE serial_id IN(" + String.Join(", ", keysOld.ToArray()) + ");";
+            if (0 < fields.Count)
+                sql += @"INSERT INTO season_compilation (serial_id, compilation_id) VALUES " + String.Join(", ", fields.ToArray()) + ";";
+            return 0 < _ExecuteNonQuery(sql, data);
+        }
+        public bool CompilationRelationSet(int serialId, int compilationId)
+        {
+            return 0 < _ExecuteNonQuery(@"INSERT INTO season_compilation (serial_id, compilation_id) VALUES (@serial_id, @compilation_id);", new Dictionary<string, string> { { "serial_id", serialId.ToString() }, { "compilation_id", compilationId.ToString() } });
+        }
+        public bool CompilationRelationRemove(int serialId)
+        {
+            return 0 < _ExecuteNonQuery(@"DELETE FROM season_compilation WHERE serial_id = @serial_id;", new Dictionary<string, string> { { "serial_id", serialId.ToString() } });
         }
     }
 }

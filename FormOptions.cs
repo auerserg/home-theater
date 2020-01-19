@@ -18,14 +18,14 @@ namespace HomeTheater
 
         private void FormOptions_Load(object sender, EventArgs e)
         {
-            textBoxDownloadDir.Text = DB.Instance.getOption("DownloadDir");
-            textBoxNameFiles.Text = DB.Instance.getOption("NameFiles");
-            numericUpDownSimultaneousDownloads.Value = int.Parse(DB.Instance.getOption("SimultaneousDownloads"));
-            checkBoxUseProxy.Checked = DB.Instance.getOption("proxy.Use") == "1";
+            textBoxDownloadDir.Text = DB.Instance.OptionGet("DownloadDir");
+            textBoxNameFiles.Text = DB.Instance.OptionGet("NameFiles");
+            numericUpDownSimultaneousDownloads.Value = int.Parse(DB.Instance.OptionGet("SimultaneousDownloads"));
+            checkBoxUseProxy.Checked = DB.Instance.OptionGet("proxy.Use") == "1";
             if (checkBoxUseProxy.Checked)
             {
-                textBoxProxyAddress.Text = DB.Instance.getOption("proxy.Host");
-                textBoxProxyPort.Text = DB.Instance.getOption("proxy.Port");
+                textBoxProxyAddress.Text = DB.Instance.OptionGet("proxy.Host");
+                textBoxProxyPort.Text = DB.Instance.OptionGet("proxy.Port");
             }
         }
 
@@ -40,12 +40,12 @@ namespace HomeTheater
         }
         private void UpdateSettings()
         {
-            DB.Instance.setOption("DownloadDir", textBoxDownloadDir.Text);
-            DB.Instance.setOption("NameFiles", textBoxNameFiles.Text);
-            DB.Instance.setOption("SimultaneousDownloads", numericUpDownSimultaneousDownloads.Value.ToString());
-            DB.Instance.setOption("proxy.Use", checkBoxUseProxy.Checked ? "1" : "0");
-            DB.Instance.setOption("proxy.Host", textBoxProxyAddress.Text);
-            DB.Instance.setOption("proxy.Port", textBoxProxyPort.Text);
+            DB.Instance.OptionSet("DownloadDir", textBoxDownloadDir.Text);
+            DB.Instance.OptionSet("NameFiles", textBoxNameFiles.Text);
+            DB.Instance.OptionSet("SimultaneousDownloads", numericUpDownSimultaneousDownloads.Value.ToString());
+            DB.Instance.OptionSet("proxy.Use", checkBoxUseProxy.Checked ? "1" : "0");
+            DB.Instance.OptionSet("proxy.Host", textBoxProxyAddress.Text);
+            DB.Instance.OptionSet("proxy.Port", textBoxProxyPort.Text);
         }
 
         private void ButtonDownloadFolder_Click(object sender, EventArgs e)
