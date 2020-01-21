@@ -96,12 +96,12 @@ namespace HomeTheater
         }
         private void LinkLabelReg_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start(APIServer.Instance.getURLRegister());
+            System.Diagnostics.Process.Start(APIServer.Instance.getURLRegister);
         }
 
         private void LinkLabelForgot_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start(APIServer.Instance.getURLForgon());
+            System.Diagnostics.Process.Start(APIServer.Instance.getURLForgon);
         }
 
         private void FormAuth_Load(object sender, EventArgs e)

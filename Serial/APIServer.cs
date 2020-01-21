@@ -15,6 +15,7 @@ namespace HomeTheater.Serial
         const string FORGOT_PATH = "/?mod=recover";
         const string PAUSE_PATH = "/?mod=pause";
         const string MARK_PATH = "/jsonMark.php";
+        const string PLAYER_PATH = "/player.php";
         const string AJAX_PATH = "/ajax.php";
 
         protected string PROFILE_PATH;
@@ -51,43 +52,41 @@ namespace HomeTheater.Serial
                 password = DB.Instance.OptionGet("Password");
         }
 
-        public string getURLForgon()
+        public string getURLForgon
         {
-            return String.Concat(SERVER_URL, FORGOT_PATH);
+            get => SERVER_URL + FORGOT_PATH;
         }
 
-        public string getURLRegister()
+        public string getURLRegister
         {
-            return String.Concat(SERVER_URL, REGISTER_PATH);
+            get => SERVER_URL + REGISTER_PATH;
         }
 
-        public string getURLLogin()
+        public string getURLLogin
         {
-            return String.Concat(SERVER_URL, LOGIN_PATH);
+            get => SERVER_URL + LOGIN_PATH;
         }
 
-        public string getURLPause()
+        public string getURLPause
         {
-            return String.Concat(SERVER_URL, PAUSE_PATH);
+            get => SERVER_URL + PAUSE_PATH;
         }
 
-        public string getURLMark()
+        public string getURLMark
         {
-            return String.Concat(SERVER_URL, MARK_PATH);
+            get => SERVER_URL + MARK_PATH;
         }
-
-        public string getURLProfile()
+        public string getURLProfile
         {
-            if (String.IsNullOrEmpty(PROFILE_PATH))
-            {
-                return "";
-            }
-            return String.Concat(SERVER_URL, PROFILE_PATH);
+            get => !string.IsNullOrEmpty(PROFILE_PATH) ? SERVER_URL + PROFILE_PATH : "";
         }
-
-        public string getURLAjax()
+        public string getURLAjax
         {
-            return String.Concat(SERVER_URL, AJAX_PATH);
+            get => SERVER_URL + AJAX_PATH;
+        }
+        public string getURLPlayer
+        {
+            get => SERVER_URL + PLAYER_PATH;
         }
 
         public bool LogedIn(string _login = null, string _password = null)
@@ -105,7 +104,7 @@ namespace HomeTheater.Serial
             bool result = false;
             try
             {
-                string content = Download(getURLLogin(), new NameValueCollection { { "login", _login }, { "password", _password } });
+                string content = Download(getURLLogin, new NameValueCollection { { "login", _login }, { "password", _password } });
                 result = isLogedIn(content);
             }
             catch (Exception e)
@@ -121,7 +120,7 @@ namespace HomeTheater.Serial
         {
             if (string.IsNullOrWhiteSpace(content))
             {
-                content = Download(getURLLogin());
+                content = Download(getURLLogin);
             }
 
             bool result = !Regex.IsMatch(content, @"loginbox-login", REGEX_IC);
@@ -146,7 +145,7 @@ namespace HomeTheater.Serial
 
         public string downloadPause(bool forsed = false)
         {
-            string url = getURLPause();
+            string url = getURLPause;
             string content = DB.Instance.CacheGetContent(url, 30 * 60);
             if (string.IsNullOrWhiteSpace(content) || forsed)
             {
@@ -186,7 +185,7 @@ namespace HomeTheater.Serial
 
         public markresponse doMarks(NameValueCollection postData = null)
         {
-            string result = DownloadXHR(getURLMark(), postData);
+            string result = DownloadXHR(getURLMark, postData);
             markresponse resultjson = SimpleJson.SimpleJson.DeserializeObject<markresponse>(result);
             return resultjson;
         }
@@ -203,7 +202,7 @@ namespace HomeTheater.Serial
                     mode = "new";
                     break;
             }
-            string url = String.Concat(getURLAjax(), "?mode=", mode);
+            string url = String.Concat(getURLAjax, "?mode=", mode);
             string content = DB.Instance.CacheGetContent(url, 60 * 60);
 
             if (string.IsNullOrWhiteSpace(content) || forsed)
@@ -234,21 +233,36 @@ namespace HomeTheater.Serial
         }
         public string downloadCompilation(int compilationList = 0, int page = 1, bool forsed = false)
         {
-            string url = string.Concat(getURLAjax(), "?compilationList=", compilationList.ToString(), "&page=", page.ToString(), "&user=", ProfileID.ToString());
+            string url = string.Concat(getURLAjax, "?compilationList=", compilationList.ToString(), "&page=", page.ToString(), "&user=", ProfileID.ToString());
             string content = DB.Instance.CacheGetContent(url, 30 * 60);
             if (string.IsNullOrWhiteSpace(content) || forsed)
             {
-                content = DownloadXHR(getURLAjax(), new NameValueCollection { { "compilationList", compilationList.ToString() }, { "page", page.ToString() }, { "user", ProfileID.ToString() } });
+                content = DownloadXHR(getURLAjax, new NameValueCollection { { "compilationList", compilationList.ToString() }, { "page", page.ToString() }, { "user", ProfileID.ToString() } });
                 if (!string.IsNullOrWhiteSpace(content))
                     DB.Instance.CacheSet(url, content);
             }
 
             return content;
         }
-        public string downloadProfile(bool forsed = false)
+        public bool doCompilation(NameValueCollection postData = null)
         {
-            string url = getURLProfile();
-            string content = DB.Instance.CacheGetContent(url, 30 * 60);
+            string result = DownloadXHR(APIServer.Instance.getURLAjax, postData);
+            dynamic resultjson = SimpleJson.SimpleJson.DeserializeObject<dynamic>(result);
+            string id = "", status = "";
+            foreach (var _id in resultjson)
+                switch (_id.Key)
+                {
+                    case "status": status = _id.Value.ToString(); break;
+                    case "id": id = _id.Value.ToString(); break;
+                }
+
+            return status == "ok" || (status == "error" && id == "Сериал уже назначен в данную подборку");
+        }
+
+        public string downloadProfile(bool forsed = false, int timeout = 30 * 60)
+        {
+            string url = getURLProfile;
+            string content = DB.Instance.CacheGetContent(url, timeout);
             if (string.IsNullOrWhiteSpace(content) || forsed)
             {
                 content = Download(url);

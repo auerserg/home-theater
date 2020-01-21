@@ -159,18 +159,7 @@ namespace HomeTheater.Serial
 
         private bool _do(NameValueCollection postData = null)
         {
-            string result = APIServer.Instance.DownloadXHR(APIServer.Instance.getURLAjax(), postData);
-
-            dynamic resultjson = SimpleJson.SimpleJson.DeserializeObject<dynamic>(result);
-            string id = "", status = "";
-            foreach (var _id in resultjson)
-                switch (_id.Key)
-                {
-                    case "status": status = _id.Value.ToString(); break;
-                    case "id": id = _id.Value.ToString(); break;
-                }
-
-            return status == "ok" || (status == "error" && id == "Сериал уже назначен в данную подборку");
+            return APIServer.Instance.doCompilation(postData);
         }
         public async void UpdateAsync(bool forsed = true, bool compilation = true, bool relation = true)
         {
