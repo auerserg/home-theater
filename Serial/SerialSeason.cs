@@ -391,6 +391,7 @@ namespace HomeTheater.Serial
             {
                 if (__marks_last != value && !string.IsNullOrWhiteSpace(value))
                 {
+                    __needSave.Add("player_updated_forsed");
                     __needSave.Add("marks_last");
                     __marks_last = value;
                 }
@@ -663,6 +664,8 @@ namespace HomeTheater.Serial
                     data.Add(field, value);
             }
             this.__forsed_update_playlist = this.__forsed_update_player = this.__forsed_update_page = __needSave.Contains("site_updated_forsed");
+            if (__needSave.Contains("player_updated_forsed"))
+                this.__forsed_update_playlist = this.__forsed_update_player = true;
             __needSave.Clear();
             DB.Instance.SeasonSet(this.__id, data);
             ToListViewItem();
