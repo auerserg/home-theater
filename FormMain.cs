@@ -85,11 +85,16 @@ namespace HomeTheater
                 {
                     string title = Serials[i].TitleFull;
                     Invoke(new Action(() => setStatusMessage("Обработка страницы: " + title)));
-                    Serials[i].syncPage(serials || i == 0);
+                    Serials[i].syncPage(i == 0 || serials && "watched" != Serials[i].Type);
+                    if (i == 0)
+                    {
+                        string SecureMark = Serials[i].SecureMark;
+                        Invoke(new Action(() => APIServer.secureMark = SecureMark));
+                    }
                     Invoke(new Action(() => setStatusMessage("Обработка плейлистов: " + title)));
-                    Serials[i].syncPlayer(playlists);
+                    Serials[i].syncPlayer(playlists && "watched" != Serials[i].Type);
                     Invoke(new Action(() => setStatusMessage("Обработка видео: " + title)));
-                    Serials[i].syncPlaylists(videos);
+                    Serials[i].syncPlaylists(videos && "watched" != Serials[i].Type);
                     Invoke(new Action(() =>
                     {
                         Serials[i].ToListViewItem();
@@ -280,7 +285,7 @@ namespace HomeTheater
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            notifyIconMain.Visible = false;
+            notifyIconTray.Visible = false;
             SaveFormView();
         }
 
@@ -532,7 +537,7 @@ namespace HomeTheater
 
         private void listViewSerials_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listViewSerials.SelectedItems.Count > 0)
+            if (0 < listViewSerials.SelectedItems.Count)
             {
                 var item = (listViewSerials.SelectedItems[0].Tag as SerialSeason);
                 if (item.SerialUrl != pictureBoxInfo.Tag)
@@ -562,6 +567,21 @@ namespace HomeTheater
             decimal widthParent = statusStripMain.Width - 20;
             for (int i = 0; i < statusStripMain.Items.Count; i++)
                 statusStripMain.Items[i].Width = Decimal.ToInt32(Math.Floor(widthParent * statusStripMain.Items[i].Width / width));
+        }
+
+        private void моиСериалыToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tabControlMain.SelectedTab = tabPageMain;
+        }
+
+        private void поискToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tabControlMain.SelectedTab = tabPageSearch;
+        }
+
+        private void новинкиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tabControlMain.SelectedTab = tabPageUpdates;
         }
     }
 }

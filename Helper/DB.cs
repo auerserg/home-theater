@@ -110,9 +110,9 @@ CREATE TABLE IF NOT EXISTS [season_compilation] (
             OptionSet("SimultaneousDownloads", (3).ToString());
             OptionSet("NameFiles", "{Collection}\\{SerialName} {Season}\\{SerialName} S{Season}E{Episode} {Translate} {OriginalName}");
             OptionSet("listViewSerialsDisplayIndex", "[3,17,2,1,0,4,5,6,18,19,7,8,9,10,11,12,13,14,15,21,20,16]");
-            OptionSet("listViewSerialsWidth", "[0,290,0,0,0,0,0,0,25,155,0,0,0,0,0,0,0,0,0,77,56,0]");
+            OptionSet("listViewSerialsWidth", "[0,367,0,0,0,0,0,0,25,150,0,0,0,0,0,0,0,0,0,84,56,0]");
             OptionSet("listViewSerialsAutoSize", "[0,0,0,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1]");
-            OptionSet("listViewDownloadWidth", "[464,100,100,200]");
+            OptionSet("listViewDownloadWidth", "[556,100,100,200]");
             OptionSet("listViewSerialsView", "");
         }
         private void _checkConnectDataBase()
