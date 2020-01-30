@@ -19,8 +19,8 @@ namespace HomeTheater.Serial
         private const string PLAYER_PATH = "/player.php";
         private const string PLAYLIST_PATH = "/playls2/{0:S}/trans{1:S}/{2}/plist.txt";
         private static APIServer _i;
-        public string login;
         private readonly string password;
+        public string login;
 
         protected string PROFILE_PATH;
         public int ProfileID;
@@ -300,12 +300,13 @@ namespace HomeTheater.Serial
 
             return new DBCache(url, timeout);
         }
+
         public int GetFileSize(string url)
         {
 #if DEBUG
             var start = DateTime.UtcNow;
 #endif
-            int result = 0;
+            var result = 0;
             try
             {
                 var webRequest = WebRequest.Create(url);

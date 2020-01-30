@@ -54,6 +54,7 @@ namespace HomeTheater.Serial
                 if (!Playlists.ContainsKey(id))
                     Playlists.Add(id, new SerialSeasonPlayerPlaylist(id, SeasonID, SerialID, data[i], timeout));
             }
+
             __forsed_update = 0 == Playlists.Count;
         }
 

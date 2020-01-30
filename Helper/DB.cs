@@ -262,10 +262,12 @@ CREATE TABLE IF NOT EXISTS [video] (
 
             return false;
         }
+
         public Dictionary<string, string> VideoGet(int ID)
         {
             var data = new Dictionary<string, string>();
-            var result = _ExecuteReader( @"SELECT * FROM video WHERE id=@id LIMIT 1;", new Dictionary<string, string> {{"id", ID.ToString()}});
+            var result = _ExecuteReader(@"SELECT * FROM video WHERE id=@id LIMIT 1;",
+                new Dictionary<string, string> {{"id", ID.ToString()}});
             if (0 < result.Count)
                 data = result[0];
 

@@ -7,10 +7,9 @@ namespace HomeTheater.Serial
 {
     internal class SerialSeasonPlayerPlaylistTranslate : APIParent
     {
+        private readonly List<string> __needSave = new List<string>();
         private int __key = -1;
         private string __name = "";
-
-        private readonly List<string> __needSave = new List<string>();
         private string __slug = "";
 
         public SerialSeasonPlayerPlaylistTranslate(int Key)
