@@ -1,6 +1,6 @@
-﻿using HomeTheater.Helper;
-using System;
+﻿using System;
 using System.Windows.Forms;
+using HomeTheater.Helper;
 
 namespace HomeTheater
 {
@@ -13,7 +13,6 @@ namespace HomeTheater
 
         private void CheckBoxUseProxy_CheckedChanged(object sender, EventArgs e)
         {
-
         }
 
         private void FormOptions_Load(object sender, EventArgs e)
@@ -38,6 +37,7 @@ namespace HomeTheater
         {
             UpdateSettings();
         }
+
         private void UpdateSettings()
         {
             DB.Instance.OptionSet("DownloadDir", textBoxDownloadDir.Text);
@@ -52,11 +52,9 @@ namespace HomeTheater
         {
             using (var fbd = new FolderBrowserDialog())
             {
-                DialogResult result = fbd.ShowDialog();
+                var result = fbd.ShowDialog();
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
-                {
                     textBoxDownloadDir.Text = fbd.SelectedPath;
-                }
             }
         }
     }

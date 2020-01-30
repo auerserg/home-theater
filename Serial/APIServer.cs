@@ -1,46 +1,30 @@
-﻿using HomeTheater.Helper;
-using HomeTheater.Serial.data;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Net;
 using System.Text.RegularExpressions;
+using HomeTheater.Helper;
+using HomeTheater.Serial.data;
 
 namespace HomeTheater.Serial
 {
-    class APIServer : APIServerParent
+    internal class APIServer : APIServerParent
     {
-        static APIServer _i;
-        const string LOGIN_PATH = "/?mod=login";
-        const string REGISTER_PATH = "/?mod=reg";
-        const string FORGOT_PATH = "/?mod=recover";
-        const string PAUSE_PATH = "/?mod=pause";
-        const string MARK_PATH = "/jsonMark.php";
-        const string PLAYER_PATH = "/player.php";
-        const string AJAX_PATH = "/ajax.php";
+        private const string LOGIN_PATH = "/?mod=login";
+        private const string REGISTER_PATH = "/?mod=reg";
+        private const string FORGOT_PATH = "/?mod=recover";
+        private const string PAUSE_PATH = "/?mod=pause";
+        private const string MARK_PATH = "/jsonMark.php";
+        private const string AJAX_PATH = "/ajax.php";
+        private const string PLAYER_PATH = "/player.php";
+        private const string PLAYLIST_PATH = "/playls2/{0:S}/trans{1:S}/{2}/plist.txt";
+        private static APIServer _i;
+        public string login;
+        private readonly string password;
 
         protected string PROFILE_PATH;
-        public static string secureMark;
         public int ProfileID;
-        public string login;
-        private string password;
-
-
-        public static APIServer Instance
-        {
-            get
-            {
-                if (_i == null)
-                {
-                    Load();
-                }
-                return _i;
-            }
-        }
-
-        public static void Load()
-        {
-            _i = new APIServer();
-        }
+        public string secureMark;
 
         public APIServer(string _login = null, string _password = null)
         {
@@ -52,90 +36,72 @@ namespace HomeTheater.Serial
                 password = DB.Instance.OptionGet("Password");
         }
 
-        public string getURLForgon
+
+        public static APIServer Instance
         {
-            get => SERVER_URL + FORGOT_PATH;
+            get
+            {
+                if (_i == null) Load();
+                return _i;
+            }
         }
 
-        public string getURLRegister
-        {
-            get => SERVER_URL + REGISTER_PATH;
-        }
+        public string getURLForgon => SERVER_URL + FORGOT_PATH;
 
-        public string getURLLogin
-        {
-            get => SERVER_URL + LOGIN_PATH;
-        }
+        public string getURLRegister => SERVER_URL + REGISTER_PATH;
 
-        public string getURLPause
-        {
-            get => SERVER_URL + PAUSE_PATH;
-        }
+        public string getURLLogin => SERVER_URL + LOGIN_PATH;
 
-        public string getURLMark
+        public string getURLPause => SERVER_URL + PAUSE_PATH;
+
+        public string getURLMark => SERVER_URL + MARK_PATH;
+
+        public string getURLProfile => !string.IsNullOrEmpty(PROFILE_PATH) ? SERVER_URL + PROFILE_PATH : "";
+
+        public string getURLAjax => SERVER_URL + AJAX_PATH;
+
+        public string getURLPlayer => SERVER_URL + PLAYER_PATH;
+
+        public static void Load()
         {
-            get => SERVER_URL + MARK_PATH;
-        }
-        public string getURLProfile
-        {
-            get => !string.IsNullOrEmpty(PROFILE_PATH) ? SERVER_URL + PROFILE_PATH : "";
-        }
-        public string getURLAjax
-        {
-            get => SERVER_URL + AJAX_PATH;
-        }
-        public string getURLPlayer
-        {
-            get => SERVER_URL + PLAYER_PATH;
+            _i = new APIServer();
         }
 
         public bool LogedIn(string _login = null, string _password = null)
         {
-            string __login = login;
-            string __password = password;
-            if (String.IsNullOrEmpty(_login))
-            {
-                _login = __login;
-            }
-            if (String.IsNullOrEmpty(_password))
-            {
-                _password = __password;
-            }
-            bool result = false;
+            var __login = login;
+            var __password = password;
+            if (string.IsNullOrEmpty(_login)) _login = __login;
+            if (string.IsNullOrEmpty(_password)) _password = __password;
+            var result = false;
             try
             {
-                string content = Download(getURLLogin, new NameValueCollection { { "login", _login }, { "password", _password } });
+                var content = Download(getURLLogin,
+                    new NameValueCollection {{"login", _login}, {"password", _password}});
                 result = isLogedIn(content);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-#if DEBUG
-                Console.WriteLine(e);
-#endif
+                Logger.Instance.Error(ex);
             }
+
             return result;
         }
 
         public bool isLogedIn(string content = null)
         {
-            if (string.IsNullOrWhiteSpace(content))
-            {
-                content = Download(getURLLogin);
-            }
+            if (string.IsNullOrWhiteSpace(content)) content = Download(getURLLogin);
 
-            bool result = !Regex.IsMatch(content, @"loginbox-login", REGEX_IC);
+            var result = !Regex.IsMatch(content, @"loginbox-login", REGEX_IC);
 
-            if (result)
-            {
-                setURLProfile(content);
-            }
+            if (result) setURLProfile(content);
 
             return result;
         }
 
         private void setURLProfile(string content)
         {
-            string url = Match(content, "<a[^<>]*href=\"(/profile/[0-9]+)\"[^<>]*>", REGEX_IC, 1);
+            var url = Match(content, "<a[^<>]*href=\"(/profile/[0-9]+)\"[^<>]*>", REGEX_IC, 1);
             if (!string.IsNullOrEmpty(url))
             {
                 PROFILE_PATH = url;
@@ -143,54 +109,66 @@ namespace HomeTheater.Serial
             }
         }
 
-        public string downloadPause(bool forsed = false)
+        public DBCache downloadPage(string url, bool forsed = false, int timeout = 30 * 60)
         {
-            string url = getURLPause;
-            string content = DB.Instance.CacheGetContent(url, 30 * 60);
-            if (string.IsNullOrWhiteSpace(content) || forsed)
-            {
-                content = Download(url);
-                if (!string.IsNullOrWhiteSpace(content))
-                    DB.Instance.CacheSet(url, content);
-            }
-
-            return content;
+            var cacheItem = DB.Instance.CacheGet(url, timeout);
+            if (!cacheItem.isActual || forsed)
+                cacheItem.updateContent(Download(url));
+            return cacheItem;
         }
 
-        public List<SerialSeason> getPause(bool forsed = false)
+        public string downloadPause(bool forsed = false, int timeout = 30 * 60)
         {
-            string content = downloadPause(forsed);
+            return downloadPage(getURLPause, forsed, timeout).content;
+        }
+
+        public List<SerialSeason> getPause(bool forsed = false, int timeout = 30 * 60)
+        {
+#if DEBUG
+            var start = DateTime.UtcNow;
+#endif
             var results = new List<SerialSeason>();
-            if (!string.IsNullOrWhiteSpace(content))
+            try
             {
-                string tabs_result = Match(content, "<ul[^<>]*class=\"tabs-result\"[^<>]*>(.*?)</ul>", REGEX_ICS);
-                if (!string.IsNullOrEmpty(tabs_result))
+                var content = downloadPause(forsed, timeout);
+                if (!string.IsNullOrWhiteSpace(content))
                 {
-                    foreach (Match tab in Regex.Matches(tabs_result, "<li[^<>]*data-tabr=\"([^\"]*)\"[^<>]*>(.*?)</li>", REGEX_ICS))
-                    {
-                        string type = Regex.Replace(tab.Groups[1].ToString(), "^marks-", "", REGEX_IC);
-                        foreach (Match serial in Regex.Matches(tab.Value, "<a[^<>]*href=\"([^\"]*)\"[^<>]*>(.*?)</a>", REGEX_ICS))
+                    var tabs_result = Match(content, "<ul[^<>]*class=\"tabs-result\"[^<>]*>(.*?)</ul>", REGEX_ICS);
+                    if (!string.IsNullOrEmpty(tabs_result))
+                        foreach (Match tab in Regex.Matches(tabs_result,
+                            "<li[^<>]*data-tabr=\"([^\"]*)\"[^<>]*>(.*?)</li>", REGEX_ICS))
                         {
-                            var cserial = new SerialSeason(serial.Groups[1].ToString());
-                            cserial.parsePause(serial.Groups[2].ToString());
-                            if (type != cserial.Type)
-                                cserial.Type = type;
-                            results.Add(cserial);
+                            var type = Regex.Replace(tab.Groups[1].ToString(), "^marks-", "", REGEX_IC);
+                            foreach (Match serial in Regex.Matches(tab.Value,
+                                "<a[^<>]*href=\"([^\"]*)\"[^<>]*>(.*?)</a>", REGEX_ICS))
+                            {
+                                var cserial = new SerialSeason(serial.Groups[1].ToString());
+                                cserial.parsePause(serial.Groups[2].ToString());
+                                if (type != cserial.Type)
+                                    cserial.Type = type;
+                                results.Add(cserial);
+                            }
                         }
-                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Logger.Instance.Error(ex);
+            }
+#if DEBUG
+            Console.WriteLine("\tgetPause: {0}", DateTime.UtcNow.Subtract(start).TotalSeconds);
+#endif
             return results;
         }
 
         public markresponse doMarks(NameValueCollection postData = null)
         {
-            string result = DownloadXHR(getURLMark, postData);
-            markresponse resultjson = SimpleJson.SimpleJson.DeserializeObject<markresponse>(result);
+            var result = DownloadXHR(getURLMark, postData);
+            var resultjson = SimpleJson.SimpleJson.DeserializeObject<markresponse>(result);
             return resultjson;
         }
 
-        public string downloadSidebar(string mode = "new", bool forsed = false)
+        public string downloadSidebar(string mode = "new", bool forsed = false, int timeout = 60 * 60)
         {
             switch (mode)
             {
@@ -202,75 +180,151 @@ namespace HomeTheater.Serial
                     mode = "new";
                     break;
             }
-            string url = String.Concat(getURLAjax, "?mode=", mode);
-            string content = DB.Instance.CacheGetContent(url, 60 * 60);
 
-            if (string.IsNullOrWhiteSpace(content) || forsed)
-            {
-                content = DownloadXHR(url, new NameValueCollection { { "ganre", "" }, { "country", "" }, { "block", "0" }, { "main", "1" } });
-                if (!string.IsNullOrWhiteSpace(content))
-                    DB.Instance.CacheSet(url, content);
-            }
+            var url = string.Concat(getURLAjax, "?mode=", mode);
+            var cacheItem = DB.Instance.CacheGet(url, timeout);
+            if (!cacheItem.isActual || forsed)
+                cacheItem.updateContent(DownloadXHR(url,
+                    new NameValueCollection {{"ganre", ""}, {"country", ""}, {"block", "0"}, {"main", "1"}}));
 
-            return content;
+            return cacheItem.ToString();
         }
 
-        public List<SerialSeason> getSidebar(string mode = "new", bool forsed = false)
+        public List<SerialSeason> getSidebar(string mode = "new", bool forsed = false, int timeout = 60 * 60)
         {
-            string content = this.downloadSidebar(mode, forsed);
             var results = new List<SerialSeason>();
-            if (!string.IsNullOrWhiteSpace(content))
+            try
             {
-                foreach (Match serial in Regex.Matches(content, "<a[^<>]*href=\"([^\"]*)\"[^<>]*>(.*?)</a>", REGEX_ICS))
-                {
-                    var cserial = new SerialSeason(String.Concat(SERVER_URL, serial.Groups[1].ToString()));
-                    cserial.parseSidebar(serial.Groups[2].ToString());
+                var content = downloadSidebar(mode, forsed, timeout);
+                if (!string.IsNullOrWhiteSpace(content))
+                    foreach (Match serial in Regex.Matches(content, "<a[^<>]*href=\"([^\"]*)\"[^<>]*>(.*?)</a>",
+                        REGEX_ICS))
+                    {
+                        var cserial = new SerialSeason(string.Concat(SERVER_URL, serial.Groups[1].ToString()));
+                        cserial.parseSidebar(serial.Groups[2].ToString());
+                        // TODO Добавить проверку на уникальност сериала
 
-                    results.Add(cserial);
-                }
+                        results.Add(cserial);
+                    }
             }
+            catch (Exception ex)
+            {
+                Logger.Instance.Error(ex);
+            }
+
             return results;
         }
-        public string downloadCompilation(int compilationList = 0, int page = 1, bool forsed = false)
-        {
-            string url = string.Concat(getURLAjax, "?compilationList=", compilationList.ToString(), "&page=", page.ToString(), "&user=", ProfileID.ToString());
-            string content = DB.Instance.CacheGetContent(url, 30 * 60);
-            if (string.IsNullOrWhiteSpace(content) || forsed)
-            {
-                content = DownloadXHR(getURLAjax, new NameValueCollection { { "compilationList", compilationList.ToString() }, { "page", page.ToString() }, { "user", ProfileID.ToString() } });
-                if (!string.IsNullOrWhiteSpace(content))
-                    DB.Instance.CacheSet(url, content);
-            }
 
-            return content;
+        public string downloadCompilation(int compilationList = 0, int page = 1, bool forsed = false,
+            int timeout = 60 * 60)
+        {
+            var url = string.Concat(getURLAjax, "?compilationList=", compilationList.ToString(), "&page=",
+                page.ToString(), "&user=", ProfileID.ToString());
+            var cacheItem = DB.Instance.CacheGet(url, timeout);
+            if (!cacheItem.isActual || forsed)
+                cacheItem.updateContent(DownloadXHR(getURLAjax,
+                    new NameValueCollection
+                    {
+                        {"compilationList", compilationList.ToString()}, {"page", page.ToString()},
+                        {"user", ProfileID.ToString()}
+                    }));
+
+            return cacheItem.ToString();
         }
+
         public bool doCompilation(NameValueCollection postData = null)
         {
-            string result = DownloadXHR(APIServer.Instance.getURLAjax, postData);
-            dynamic resultjson = SimpleJson.SimpleJson.DeserializeObject<dynamic>(result);
+            var result = DownloadXHR(Instance.getURLAjax, postData);
+            var resultjson = SimpleJson.SimpleJson.DeserializeObject<dynamic>(result);
             string id = "", status = "";
             foreach (var _id in resultjson)
                 switch (_id.Key)
                 {
-                    case "status": status = _id.Value.ToString(); break;
-                    case "id": id = _id.Value.ToString(); break;
+                    case "status":
+                        status = _id.Value.ToString();
+                        break;
+                    case "id":
+                        id = _id.Value.ToString();
+                        break;
                 }
 
-            return status == "ok" || (status == "error" && id == "Сериал уже назначен в данную подборку");
+            return status == "ok" || status == "error" && id == "Сериал уже назначен в данную подборку";
         }
 
         public string downloadProfile(bool forsed = false, int timeout = 30 * 60)
         {
-            string url = getURLProfile;
-            string content = DB.Instance.CacheGetContent(url, timeout);
-            if (string.IsNullOrWhiteSpace(content) || forsed)
+            return downloadPage(getURLProfile, forsed, timeout).ToString();
+        }
+
+        public string downloadPlayerCacheURL(int id, int serial)
+        {
+            return string.Concat(getURLPlayer, "?id=", id.ToString(), "&serial=", serial.ToString());
+        }
+
+        public DBCache downloadPlayer(int id, int serial, string secure = "", bool forsed = false,
+            int timeout = 60 * 60)
+        {
+            if (!string.IsNullOrEmpty(secureMark))
+                secure = secureMark;
+            var url = downloadPlayerCacheURL(id, serial);
+            if (!string.IsNullOrEmpty(secure))
             {
-                content = Download(url);
-                if (!string.IsNullOrWhiteSpace(content))
-                    DB.Instance.CacheSet(url, content);
+                var cacheItem = DB.Instance.CacheGet(url, timeout);
+                if (!cacheItem.isActual || forsed)
+                    cacheItem.updateContent(DownloadXHR(getURLPlayer,
+                        new NameValueCollection
+                        {
+                            {"id", id.ToString()}, {"serial", serial.ToString()}, {"type", "html5"}, {"secure", secure}
+                        }));
+                cacheItem.data.Add("secure", secure);
+
+                return cacheItem;
             }
 
-            return content;
+            return new DBCache(url, timeout);
+        }
+
+        public DBCache downloadPlaylist(int seasonID, string translateSlug = "", string secure = "",
+            bool forsed = false, int timeout = 60 * 60)
+        {
+            if (!string.IsNullOrEmpty(secureMark))
+                secure = secureMark;
+            var url = SERVER_URL + string.Format(PLAYLIST_PATH, secure, translateSlug, seasonID);
+            if (!string.IsNullOrEmpty(secure))
+            {
+                var cacheItem = downloadPage(url, forsed, timeout);
+                cacheItem.data.Add("secure", secure);
+
+                return cacheItem;
+            }
+
+            return new DBCache(url, timeout);
+        }
+        public int GetFileSize(string url)
+        {
+#if DEBUG
+            var start = DateTime.UtcNow;
+#endif
+            int result = 0;
+            try
+            {
+                var webRequest = WebRequest.Create(url);
+                webRequest.Method = "HEAD";
+                using (var webResponse = webRequest.GetResponse())
+                {
+                    var fileSize = webResponse.Headers.Get("Content-Length");
+                    result = IntVal(fileSize);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Instance.Error(ex);
+            }
+#if DEBUG
+            Console.WriteLine("Live Request: {0} - {1}", url,
+                DateTime.UtcNow.Subtract(start).TotalSeconds);
+#endif
+            return result;
         }
     }
 }

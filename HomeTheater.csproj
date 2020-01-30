@@ -40,7 +40,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>true</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -62,6 +62,7 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>packages\EntityFramework.6.4.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.JScript" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -79,6 +80,7 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -112,17 +114,24 @@
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
     <Compile Include="Helper\DBCache.cs" />
+    <Compile Include="Helper\Decoder.cs" />
     <Compile Include="Helper\ListViewItemComparer.cs" />
+    <Compile Include="Helper\Logger.cs" />
     <Compile Include="Helper\SimpleJson.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serial\APIParent.cs" />
     <Compile Include="Serial\APIServer.cs" />
     <Compile Include="Serial\APIServerParent.cs" />
     <Compile Include="Serial\APIServerCompilation.cs" />
     <Compile Include="Serial\data\data4play.cs" />
     <Compile Include="Serial\data\markresponse.cs" />
-    <Compile Include="Serial\Serial.cs" />
+    <Compile Include="Serial\data\video.cs" />
+    <Compile Include="Serial\SerialSeasonPlayer.cs" />
+    <Compile Include="Serial\SerialSeasonPlayerPlaylist.cs" />
     <Compile Include="Serial\SerialSeason.cs" />
+    <Compile Include="Serial\SerialSeasonPlayerPlaylistTranslate.cs" />
+    <Compile Include="Serial\SerialSeasonPlayerPlaylistVideo.cs" />
     <Compile Include="Serial\WebClientEx.cs">
       <SubType>Component</SubType>
     </Compile>

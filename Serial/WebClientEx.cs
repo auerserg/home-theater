@@ -5,38 +5,29 @@ public class WebClientEx : WebClient
 {
     public WebClientEx(CookieContainer container)
     {
-        this.container = container;
+        CookieContainer = container;
     }
 
-    public CookieContainer CookieContainer
-    {
-        get { return container; }
-        set { container = value; }
-    }
-
-    private CookieContainer container = new CookieContainer();
+    public CookieContainer CookieContainer { get; set; } = new CookieContainer();
 
     protected override WebRequest GetWebRequest(Uri address)
     {
-        WebRequest r = base.GetWebRequest(address);
+        var r = base.GetWebRequest(address);
         var request = r as HttpWebRequest;
-        if (request != null)
-        {
-            request.CookieContainer = container;
-        }
+        if (request != null) request.CookieContainer = CookieContainer;
         return r;
     }
 
     protected override WebResponse GetWebResponse(WebRequest request, IAsyncResult result)
     {
-        WebResponse response = base.GetWebResponse(request, result);
+        var response = base.GetWebResponse(request, result);
         ReadCookies(response);
         return response;
     }
 
     protected override WebResponse GetWebResponse(WebRequest request)
     {
-        WebResponse response = base.GetWebResponse(request);
+        var response = base.GetWebResponse(request);
         ReadCookies(response);
         return response;
     }
@@ -46,8 +37,8 @@ public class WebClientEx : WebClient
         var response = r as HttpWebResponse;
         if (response != null)
         {
-            CookieCollection cookies = response.Cookies;
-            container.Add(cookies);
+            var cookies = response.Cookies;
+            CookieContainer.Add(cookies);
         }
     }
 }
