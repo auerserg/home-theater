@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 
 namespace HomeTheater.Helper
 {
@@ -248,16 +249,22 @@ CREATE TABLE IF NOT EXISTS [video] (
             var dataOld = VideoGet(ID);
             if (0 < dataOld.Count)
             {
+                var dataDiff = data.Where(entry => dataOld[entry.Key] != entry.Value)
+                    .ToDictionary(entry => entry.Key, entry => entry.Value);
                 var fields = new List<string>();
-                foreach (var item in data)
-                    if (!dataOld.ContainsKey(item.Key) || dataOld[item.Key] != item.Value)
-                        fields.Add(item.Key + " = @" + item.Key);
-                data.Add("id", ID.ToString());
-                data.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
+                foreach (var item in dataDiff)
+                    fields.Add(item.Key + " = @" + item.Key);
                 if (0 < fields.Count)
+                {
+#if DEBUG
+                    Console.WriteLine("\tUpdate Video\t{0}:\t{1}", ID, SimpleJson.SimpleJson.SerializeObject(dataDiff));
+#endif
+                    dataDiff.Add("id", ID.ToString());
+                    dataDiff.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
                     return 0 < _ExecuteNonQuery(
                                @"UPDATE video SET " + string.Join(", ", fields.ToArray()) +
-                               ", updated_date = @updated_date WHERE id = @id", data);
+                               ", updated_date = @updated_date WHERE id = @id", dataDiff);
+                }
             }
             else
             {
@@ -266,6 +273,9 @@ CREATE TABLE IF NOT EXISTS [video] (
                 data.Add("created_date", date);
                 data.Add("updated_date", date);
                 var fields = new List<string>(data.Keys);
+#if DEBUG
+                Console.WriteLine("\tInsert Video\t{0}:\t{1}", ID, SimpleJson.SimpleJson.SerializeObject(data));
+#endif
                 return 0 < _ExecuteNonQuery(
                            @"INSERT INTO video (" + string.Join(", ", fields.ToArray()) + ") VALUES (@" +
                            string.Join(", @", fields.ToArray()) + ")", data);
@@ -361,22 +371,32 @@ CREATE TABLE IF NOT EXISTS [video] (
             var dataOld = SeasonGet(id);
             if (0 < dataOld.Count)
             {
+                var dataDiff = data.Where(entry => dataOld[entry.Key] != entry.Value)
+                    .ToDictionary(entry => entry.Key, entry => entry.Value);
                 var fields = new List<string>();
-                foreach (var item in data)
-                    if (!dataOld.ContainsKey(item.Key) || dataOld[item.Key] != item.Value)
-                        fields.Add(item.Key + " = @" + item.Key);
-                data.Add("id", id.ToString());
-                data.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
+                foreach (var item in dataDiff)
+                    fields.Add(item.Key + " = @" + item.Key);
                 if (0 < fields.Count)
+                {
+#if DEBUG
+                    Console.WriteLine("\tUpdate Season\t{0}:\t{1}", id,
+                        SimpleJson.SimpleJson.SerializeObject(dataDiff));
+#endif
+                    dataDiff.Add("id", id.ToString());
+                    dataDiff.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
                     return 0 < _ExecuteNonQuery(
                                @"UPDATE season SET " + string.Join(", ", fields.ToArray()) +
-                               ", updated_date = @updated_date WHERE id = @id", data);
+                               ", updated_date = @updated_date WHERE id = @id", dataDiff);
+                }
             }
             else
             {
                 data.Add("id", id.ToString());
                 data.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
                 var fields = new List<string>(data.Keys);
+#if DEBUG
+                Console.WriteLine("\tInsert Season\t{0}:\t{1}", id, SimpleJson.SimpleJson.SerializeObject(data));
+#endif
                 return 0 < _ExecuteNonQuery(
                            @"INSERT INTO season (" + string.Join(", ", fields.ToArray()) + ") VALUES (@" +
                            string.Join(", @", fields.ToArray()) + ")", data);
@@ -582,27 +602,41 @@ CREATE TABLE IF NOT EXISTS [video] (
         public bool TranslateSet(Dictionary<string, string> data, Dictionary<string, string> where)
         {
             var dataOld = TranslateGet(where);
-
             if (0 < dataOld.Count)
             {
+                var dataDiff = data.Where(entry => dataOld[entry.Key] != entry.Value)
+                    .ToDictionary(entry => entry.Key, entry => entry.Value);
                 var fieldsUpdate = new List<string>();
-                foreach (var item in data)
-                    if (!dataOld.ContainsKey(item.Key) || dataOld[item.Key] != item.Value)
-                        fieldsUpdate.Add(item.Key + " = @" + item.Key);
+                foreach (var item in dataDiff)
+                    fieldsUpdate.Add(item.Key + " = @" + item.Key);
 
                 var fieldsWhere = new List<string>();
-                var keys = new List<string>(where.Keys);
-                for (var i = 0; i < keys.Count; i++) fieldsWhere.Add(string.Format("{0} = @{0}", keys[i]));
+                foreach (var item in where)
+                {
+                    fieldsWhere.Add(string.Format("{0} = @ww{0}", item.Key));
+                    dataDiff.Add("ww" + item.Key, item.Value);
+                }
 
                 if (0 < fieldsUpdate.Count && 0 < fieldsWhere.Count)
+                {
+#if DEBUG
+                    Console.WriteLine("\tUpdate Translate\t{0}:\t{1}", SimpleJson.SimpleJson.SerializeObject(where),
+                        SimpleJson.SimpleJson.SerializeObject(dataDiff));
+#endif
                     return 0 < _ExecuteNonQuery(
                                @"UPDATE translate SET " + string.Join(", ", fieldsUpdate.ToArray()) + " WHERE " +
-                               string.Join(" AND ", fieldsWhere.ToArray()), data);
+                               string.Join(" AND ", fieldsWhere.ToArray()), dataDiff);
+                }
+
 
                 return false;
             }
 
             var fieldsNew = new List<string>(data.Keys);
+#if DEBUG
+            Console.WriteLine("\tInsert Translate\t{0}:\t{1}", SimpleJson.SimpleJson.SerializeObject(where),
+                SimpleJson.SimpleJson.SerializeObject(data));
+#endif
             return 0 < _ExecuteNonQuery(
                        @"INSERT INTO translate (" + string.Join(", ", fieldsNew.ToArray()) + ") VALUES (@" +
                        string.Join(", @", fieldsNew.ToArray()) + ")", data);
@@ -659,19 +693,24 @@ CREATE TABLE IF NOT EXISTS [video] (
             var dataOld = PlaylistGet(seasonID, translateID);
             if (0 < dataOld.Count)
             {
+                var dataDiff = data.Where(entry => dataOld[entry.Key] != entry.Value)
+                    .ToDictionary(entry => entry.Key, entry => entry.Value);
                 var fieldsUpdate = new List<string>();
-                foreach (var item in data)
-                    if (!dataOld.ContainsKey(item.Key) || dataOld[item.Key] != item.Value)
-                        fieldsUpdate.Add(item.Key + " = @" + item.Key);
+                foreach (var item in dataDiff)
+                    fieldsUpdate.Add(item.Key + " = @" + item.Key);
                 if (0 < fieldsUpdate.Count)
                 {
-                    data.Add("season_id", seasonID.ToString());
-                    data.Add("translate_id", translateID.ToString());
-                    data.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
+#if DEBUG
+                    Console.WriteLine("\tUpdate Playlist\t{0}\t{1}:\t{2}", seasonID, translateID,
+                        SimpleJson.SimpleJson.SerializeObject(dataDiff));
+#endif
+                    dataDiff.Add("season_id", seasonID.ToString());
+                    dataDiff.Add("translate_id", translateID.ToString());
+                    dataDiff.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
                     return 0 < _ExecuteNonQuery(
                                @"UPDATE playlist SET " + string.Join(", ", fieldsUpdate.ToArray()) +
                                ", updated_date = @updated_date WHERE season_id=@season_id AND translate_id=@translate_id",
-                               data);
+                               dataDiff);
                 }
 
                 return false;
@@ -683,6 +722,10 @@ CREATE TABLE IF NOT EXISTS [video] (
             data.Add("created_date", date);
             data.Add("updated_date", date);
             var fieldsNew = new List<string>(data.Keys);
+#if DEBUG
+            Console.WriteLine("\tInsert Playlist\t{0}\t{1}:\t{2}", seasonID, translateID,
+                SimpleJson.SimpleJson.SerializeObject(data));
+#endif
             return 0 < _ExecuteNonQuery(
                        @"INSERT INTO playlist (" + string.Join(", ", fieldsNew.ToArray()) +
                        ", created_date, updated_date) VALUES (@" + string.Join(", @", fieldsNew.ToArray()) +
