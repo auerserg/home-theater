@@ -24,7 +24,7 @@ namespace HomeTheater.Serial
             SerialID = serialId;
             if (null != translate && null == Translate)
                 Translate = translate;
-            _parseVideo(data);
+            parseVideo(data);
         }
 
         public SerialSeasonPlayerPlaylistVideo(int id, int seasonId, int serialId, video data, int translateKey = -1)
@@ -35,7 +35,7 @@ namespace HomeTheater.Serial
             SerialID = serialId;
             if (0 <= translateKey && null != Translate)
                 Translate = new SerialSeasonPlayerPlaylistTranslate(translateKey);
-            _parseVideo(data);
+            parseVideo(data);
         }
 
         public SerialSeasonPlayerPlaylistVideo(int id, int seasonId, int serialId, video data,
@@ -47,7 +47,7 @@ namespace HomeTheater.Serial
             SerialID = serialId;
             if (!string.IsNullOrWhiteSpace(translateName) && null != Translate)
                 Translate = new SerialSeasonPlayerPlaylistTranslate(translateName);
-            _parseVideo(data);
+            parseVideo(data);
         }
 
         public SerialSeasonPlayerPlaylistVideo(int id, Dictionary<string, string> data)
@@ -145,7 +145,7 @@ namespace HomeTheater.Serial
             get => __serial_id;
             set
             {
-                if (__serial_id != value && value > 0)
+                if (__serial_id < value && value > 0)
                 {
                     __needSave.Add("serial_id");
                     __serial_id = value;
@@ -158,7 +158,7 @@ namespace HomeTheater.Serial
             get => __season_id;
             set
             {
-                if (__season_id != value && value > 0)
+                if (__season_id < value && value > 0)
                 {
                     __needSave.Add("season_id");
                     __season_id = value;
@@ -312,7 +312,7 @@ namespace HomeTheater.Serial
 #endif
         }
 
-        private void _parseVideo(video data)
+        public void parseVideo(video data)
         {
             URL = data.fileReal;
             VideoID = data.id;
