@@ -93,64 +93,66 @@ namespace HomeTheater
             {
                 try
                 {
-                    /*
                     // Синхронизация Страниц
                     for (var i = 0; i < Serials.Count; i++)
                     {
-                        string title = Serials[i].TitleFull;
+                        var title = Serials[i].TitleFull;
 
                         Invoke(new Action(() => setStatusMessage("Обработка страницы: " + title)));
-                        Serials[i].syncPage(i == 0 || serials && "watched" != Serials[i].Type);
+                        Serials[i].syncPage(serials && "watched" != Serials[i].Type);
                         if (i == 0)
                         {
-                            string SecureMark = Serials[i].SecureMark;
+                            var SecureMark = Serials[i].GetOnlySecure();
                             Invoke(new Action(() => APIServer.Instance.secureMark = SecureMark));
                         }
+
                         Invoke(new Action(() =>
                         {
                             Serials[i].ToListViewItem();
                             toolStripProgressBar1.Value++;
                         }));
                     }
+
                     // Синхронизация Плейлистов
                     Invoke(new Action(() => toolStripProgressBar1.Value = 0));
                     for (var i = 0; i < Serials.Count; i++)
                     {
-                        string title = Serials[i].TitleFull;
+                        var title = Serials[i].TitleFull;
 
                         Invoke(new Action(() => setStatusMessage("Обработка плейлистов: " + title)));
-                        Serials[i].syncPlayer(i == 0 || playlists && "watched" != Serials[i].Type);
+                        Serials[i].syncPlayer(playlists && "watched" != Serials[i].Type);
                         Invoke(new Action(() =>
                         {
                             Serials[i].ToListViewItem();
                             toolStripProgressBar1.Value++;
                         }));
                     }
+
                     // Синхронизация Видео
                     Invoke(new Action(() => toolStripProgressBar1.Value = 0));
                     for (var i = 0; i < Serials.Count; i++)
                     {
-                        string title = Serials[i].TitleFull;
+                        var title = Serials[i].TitleFull;
 
                         Invoke(new Action(() => setStatusMessage("Обработка видео: " + title)));
-                        Serials[i].syncPlaylists(i == 0 || videos && "watched" != Serials[i].Type);
+                        Serials[i].syncPlaylists(videos && "watched" != Serials[i].Type);
                         Invoke(new Action(() =>
                         {
                             Serials[i].ToListViewItem();
                             toolStripProgressBar1.Value++;
                         }));
                     }
+
                     // Обновление таблицы
                     Invoke(new Action(() => toolStripProgressBar1.Value = 0));
                     for (var i = 0; i < Serials.Count; i++)
-                    {
                         Invoke(new Action(() =>
                         {
                             Serials[i].ToListViewItem();
                             toolStripProgressBar1.Value++;
                         }));
-                    }
-                    */
+
+                    /*
                     for (var i = 0; i < Serials.Count; i++)
                     {
                         var title = Serials[i].TitleFull;
@@ -173,6 +175,7 @@ namespace HomeTheater
                             toolStripProgressBar1.Value++;
                         }));
                     }
+                    */
 
                     Invoke(new Action(() =>
                     {
