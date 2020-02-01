@@ -146,6 +146,7 @@ namespace HomeTheater.Serial
                                 cserial.parsePause(serial.Groups[2].ToString());
                                 if (type != cserial.Type)
                                     cserial.Type = type;
+                                cserial.SaveAsync();
                                 results.Add(cserial);
                             }
                         }
