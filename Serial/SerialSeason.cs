@@ -598,49 +598,14 @@ namespace HomeTheater.Serial
 
         public DateTime CachedDate { get; set; }
 
-        public Dictionary<int, SerialSeason> Seasons
-        {
-            get
-            {
-                var items = new Dictionary<int, SerialSeason>();
-                if (0 < __seasons.Count)
-                {
-#if DEBUG
-                    var start = DateTime.UtcNow;
-#endif
-                    foreach (var item in __seasons)
-                        if (SeasonID != item.Key)
-                            if (items.ContainsKey(item.Key))
-                                items[item.Key] = new SerialSeason(item.Value);
-                            else
-                                items.Add(item.Key, new SerialSeason(item.Value));
-#if DEBUG
-                    Console.WriteLine("\tLoadSeasons {0}: {1} ", SeasonID,
-                        DateTime.UtcNow.Subtract(start).TotalSeconds);
-#endif
-                }
-
-                return items;
-            }
-            set { }
-        }
-
         public List<SerialSeason> Related
         {
             get
             {
                 var items = new List<SerialSeason>();
                 if (0 < __related.Count)
-                {
-#if DEBUG
-                    var start = DateTime.UtcNow;
-#endif
-                    foreach (var id in __related) items.Add(new SerialSeason(id));
-#if DEBUG
-                    Console.WriteLine("\tLoadRelated {0}: {1} ", SeasonID,
-                        DateTime.UtcNow.Subtract(start).TotalSeconds);
-#endif
-                }
+                    foreach (var id in __related)
+                        items.Add(new SerialSeason(id));
 
                 return items;
             }
