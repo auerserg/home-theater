@@ -103,7 +103,8 @@ namespace HomeTheater.Serial
             _parseTranslate(Match(html, "<ul class=\"pgs-trans\">(.*?)</ul>", REGEX_ICS, 1));
             _parseSeries(Match(js, "var arEpisodes = ({.*?});", REGEX_ICS, 1));
 #if DEBUG
-            Console.WriteLine("\tparsePlayer  {0}: {1} ", SeasonID, DateTime.UtcNow.Subtract(start).TotalSeconds);
+            Console.WriteLine("\tParse Player\t{0}\t{1}:\t{2}", SerialID, SeasonID,
+                DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
         }
 

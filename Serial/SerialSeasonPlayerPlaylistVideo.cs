@@ -305,11 +305,11 @@ namespace HomeTheater.Serial
 
                 __needSave.Clear();
                 DB.Instance.VideoSet(ID, data);
-            }
 #if DEBUG
-            Console.WriteLine("\tSave Video {0}({1}): {2}", ID, SeasonID,
-                DateTime.UtcNow.Subtract(start).TotalSeconds);
+                Console.WriteLine("\tSave Video\t\t{0}\t{1}\t{2}({3})\t{4}:\t{5}", SerialID, SeasonID, TranslateID,
+                    TranslateName, ID, DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
+            }
         }
 
         public void parseVideo(video data)

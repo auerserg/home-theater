@@ -216,6 +216,8 @@ namespace HomeTheater.Serial
                             break;
                         case "type":
                             __type_old = value;
+                            if (null == __type)
+                                __type = value;
                             break;
                         case "updated_date":
                             __updated_date = DateVal(value, DB.TIME_FORMAT);
@@ -548,7 +550,7 @@ namespace HomeTheater.Serial
             {
                 if (__marks_last != value && !string.IsNullOrWhiteSpace(value))
                 {
-                    __needSave.Add("player_updated_forsed");
+                    __forsed_update_playlist = __forsed_update_player = true;
                     __needSave.Add("marks_last");
                     __marks_last = value;
                 }
@@ -589,7 +591,7 @@ namespace HomeTheater.Serial
                 if (__site_updated != value && new DateTime() != value)
                 {
                     if (new DateTime() != __site_updated)
-                        __needSave.Add("site_updated_forsed");
+                        __forsed_update_playlist = __forsed_update_player = __forsed_update_page = true;
                     __needSave.Add("site_updated");
                     __site_updated = value;
                 }
@@ -699,9 +701,9 @@ namespace HomeTheater.Serial
 
         public SerialSeason Load()
         {
-            var data = DB.Instance.SeasonGet(SeasonID);
-            if (0 < data.Count)
-                foreach (var item in data)
+            var __data_old = DB.Instance.SeasonGet(SeasonID);
+            if (0 < __data_old.Count)
+                foreach (var item in __data_old)
                     this[item.Key] = item.Value;
             __seasons = DB.Instance.SeasonsGet(SerialID, SeasonID);
             __related = DB.Instance.RelatedGet(SeasonID);
@@ -720,7 +722,8 @@ namespace HomeTheater.Serial
                 DB.Instance.RelatedSet(SerialID, __related);
                 __needSaveRelated = false;
 #if DEBUG
-                Console.WriteLine("\tSaveRelated {0}: {1} ", SeasonID, DateTime.UtcNow.Subtract(start).TotalSeconds);
+                Console.WriteLine("\tSave Related\t{0}\t{1}:\t{2}", SerialID, SeasonID,
+                    DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
             }
         }
@@ -741,17 +744,18 @@ namespace HomeTheater.Serial
                     data.Add(field, value);
             }
 
-            __forsed_update_playlist = __forsed_update_player =
-                __forsed_update_page = __needSave.Contains("site_updated_forsed");
-            if (__needSave.Contains("player_updated_forsed"))
-                __forsed_update_playlist = __forsed_update_player = true;
+            // __forsed_update_playlist = __forsed_update_player = __forsed_update_page = __needSave.Contains("site_updated_forsed");
+            // if (__needSave.Contains("player_updated_forsed")) __forsed_update_playlist = __forsed_update_player = true;
             __needSave.Clear();
-            DB.Instance.SeasonSet(SeasonID, data);
-            ToListViewItem();
-
+            if (0 < data.Count)
+            {
+                DB.Instance.SeasonSet(SeasonID, data);
+                ToListViewItem();
 #if DEBUG
-            Console.WriteLine("\tSave {0}: {1} ", SeasonID, DateTime.UtcNow.Subtract(start).TotalSeconds);
+                Console.WriteLine("\tSave Season\t\t{0}\t{1}:\t{2}", SerialID, SeasonID,
+                    DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
+            }
         }
 
         public async void SaveAsync()
@@ -818,10 +822,30 @@ namespace HomeTheater.Serial
             _parseRelatedAsync(html);
 
             CompilationLoad();
-            SaveAsync();
 #if DEBUG
-            Console.WriteLine("\tparsePage {0}: {1} ", SeasonID, DateTime.UtcNow.Subtract(start).TotalSeconds);
+            Console.WriteLine("\tParse Season\t{0}\t{1}:\t{2}", SerialID, SeasonID,
+                DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
+        }
+
+        public string GetOnlySecure()
+        {
+#if DEBUG
+            var start = DateTime.UtcNow;
+#endif
+            var html = downloadPage(true);
+            var result = "";
+            if (!string.IsNullOrWhiteSpace(html))
+            {
+                SecureMark = _parseData4Play(Match(html, "data4play = ({.*?})", REGEX_ICS, 1));
+                result = SecureMark;
+            }
+#if DEBUG
+            Console.WriteLine("\tGet Secure\t{0}\t{1}:\t{2}", SerialID, SeasonID,
+                DateTime.UtcNow.Subtract(start).TotalSeconds);
+#endif
+
+            return result = SecureMark;
         }
 
         public void syncPage(bool forsed = false)
@@ -1005,11 +1029,16 @@ namespace HomeTheater.Serial
                 var url = SERVER_URL + matchSeason.Groups[1];
                 if (URL == url) continue;
                 var season = new SerialSeason(url);
-                _parseTitle(matchSeason.Groups[2].ToString().Trim(), season);
-                season.Title = Title;
-                season.TitleRU = TitleRU;
-                season.TitleEN = TitleEN;
-                season.SerialID = SerialID;
+                if (string.IsNullOrEmpty(season.Title) ||
+                    string.IsNullOrEmpty(season.TitleRU) ||
+                    string.IsNullOrEmpty(season.TitleEN) ||
+                    string.IsNullOrEmpty(season.TitleFull)
+                )
+                    _parseTitle(matchSeason.Groups[2].ToString().Trim(), season);
+                if (string.IsNullOrEmpty(season.Title)) season.Title = Title;
+                if (string.IsNullOrEmpty(season.TitleRU)) season.TitleRU = TitleRU;
+                if (string.IsNullOrEmpty(season.TitleEN)) season.TitleEN = TitleEN;
+                if (0 == season.SerialID) season.SerialID = SerialID;
                 season.SaveAsync();
                 if (0 < season.Season)
                 {

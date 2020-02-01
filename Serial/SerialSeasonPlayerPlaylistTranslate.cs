@@ -143,12 +143,14 @@ namespace HomeTheater.Serial
 
             __needSave.Clear();
             if (0 < data.Count)
+            {
                 if (DB.Instance.TranslateSet(data, where) && 0 == ID)
                     Load();
 #if DEBUG
-            Console.WriteLine("\tSave Translate {0}({1}): {2}", Name, Slug,
-                DateTime.UtcNow.Subtract(start).TotalSeconds);
+                Console.WriteLine("\tSave Translate\t{0}({1}):\t{2}", ID, Name,
+                    DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
+            }
         }
 
         public async void SaveAsync()

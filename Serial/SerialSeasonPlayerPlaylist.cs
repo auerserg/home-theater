@@ -214,12 +214,11 @@ namespace HomeTheater.Serial
                 data.Add("translate_key", TranslateKey.ToString());
                 __needSave.Clear();
                 DB.Instance.PlaylistSet(SeasonID, TranslateID, data);
-            }
-
 #if DEBUG
-            Console.WriteLine("\tSave Playlist {0}({1}): {2}", SeasonID, TranslateKey,
-                DateTime.UtcNow.Subtract(start).TotalSeconds);
+                Console.WriteLine("\tSave Playlist\t{0}\t{1}\t{2}({3}):\t{4}", SerialID, SeasonID, TranslateID,
+                    TranslateName, DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
+            }
         }
 
         public void tempOrderVideo(Dictionary<string, Dictionary<string, string>> value)
