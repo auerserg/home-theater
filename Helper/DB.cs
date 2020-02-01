@@ -133,7 +133,18 @@ CREATE TABLE IF NOT EXISTS [video] (
 	[updated_date] TEXT
 );
 ");
-            _ExecuteNonQuery(@"CREATE INDEX idx_http_cache_url ON http_cache(url);");
+            if (!ExistIndex("http_cache", "idx_http_cache_url"))
+                _ExecuteNonQuery(@"CREATE INDEX idx_http_cache_url ON http_cache(url);");
+        }
+
+        private bool ExistIndex(string table, string name)
+        {
+            var result = _ExecuteReader(@"PRAGMA index_list('" + table + "');");
+            if (0 < result.Count)
+                for (var i = 0; i < result.Count; i++)
+                    if (result[i].ContainsKey("name") && result[i]["name"] == name)
+                        return true;
+            return false;
         }
 
         private void _defaultValues()
