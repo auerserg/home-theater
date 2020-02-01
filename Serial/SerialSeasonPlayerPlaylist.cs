@@ -263,15 +263,11 @@ namespace HomeTheater.Serial
                 {
                     var id = IntVal(item.vars);
                     if (!Videos.ContainsKey(id))
-                    {
                         Videos.Add(id, new SerialSeasonPlayerPlaylistVideo(id, SeasonID, SerialID, item, Translate));
-                        Videos[id].SaveAsync();
-                    }
                     else
-                    {
-                        // UNDONE Обновление данных
-                    }
-                        
+                        Videos[id].parseVideo(item);
+
+                    Videos[id].SaveAsync();
                 }
             }
         }
