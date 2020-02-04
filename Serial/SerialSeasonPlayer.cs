@@ -9,7 +9,7 @@ namespace HomeTheater.Serial
     {
         private DateTime __cache_date;
         private bool __forsed_update;
-        private string __secure;
+        private string __secure = "";
 
         public Dictionary<int, SerialSeasonPlayerPlaylist>
             Playlists = new Dictionary<int, SerialSeasonPlayerPlaylist>();
@@ -22,7 +22,7 @@ namespace HomeTheater.Serial
             this.SerialID = SerialID;
             this.Secure = Secure;
             this.timeout = timeout;
-            Init();
+            Load();
         }
 
         public SerialSeasonPlayer(int SeasonID, int SerialID, int timeout = 60 * 60 * 24 * 10)
@@ -30,12 +30,12 @@ namespace HomeTheater.Serial
             this.SeasonID = SeasonID;
             this.SerialID = SerialID;
             this.timeout = timeout;
-            Init();
+            Load();
         }
 
         public string Secure
         {
-            get => string.IsNullOrWhiteSpace(__secure) ? "" : __secure;
+            get => __secure;
             set
             {
                 if (__secure != value && !string.IsNullOrWhiteSpace(value))
@@ -48,19 +48,14 @@ namespace HomeTheater.Serial
             var cache = DB.Instance.CacheGet(APIServer.Instance.downloadPlayerCacheURL(SeasonID, SerialID), timeout);
             __cache_date = cache.date;
             var data = DB.Instance.PlaylistGets(SeasonID);
-            for (var i = 0; i < data.Count; i++)
+            foreach (var item in data)
             {
-                var id = int.Parse(data[i]["translate_key"]);
+                var id = IntVal(item["translate_key"]);
                 if (!Playlists.ContainsKey(id))
-                    Playlists.Add(id, new SerialSeasonPlayerPlaylist(id, SeasonID, SerialID, data[i], timeout));
+                    Playlists.Add(id, new SerialSeasonPlayerPlaylist(id, SerialID, SeasonID, item, timeout));
             }
 
             __forsed_update = 0 == Playlists.Count;
-        }
-
-        private void Init()
-        {
-            Load();
         }
 
         public bool sync(bool forsed = false)
@@ -107,6 +102,7 @@ namespace HomeTheater.Serial
                 DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
         }
+
 
         private void _parseSeries(string js)
         {
@@ -186,7 +182,7 @@ namespace HomeTheater.Serial
                 var id = IntVal(_id);
                 var percent = floatVal(Match(args, "data-translate-percent=\"([0-9.]+)\"", REGEX_IC, 1));
                 if (!Playlists.ContainsKey(id))
-                    Playlists.Add(id, new SerialSeasonPlayerPlaylist(id, SeasonID, SerialID, Secure, timeout));
+                    Playlists.Add(id, new SerialSeasonPlayerPlaylist(id, SerialID, SeasonID, Secure, timeout));
                 Playlists[id].TranslateName = name;
                 Playlists[id].TranslatePercent = percent;
             }

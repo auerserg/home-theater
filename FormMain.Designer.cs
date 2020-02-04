@@ -75,6 +75,17 @@
             this.поискToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.новинкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripSerials = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.открытьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.обновитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.страницуToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.плеерToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.видеоToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.отметитьНаПоследнейСерииToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.хочуПосмотретьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ужеПосмотрелToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.вЧерныйСписокToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
             this.statusStripMain = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
@@ -113,6 +124,22 @@
             this.textBoxFilter = new System.Windows.Forms.TextBox();
             this.pictureBoxSeasonImage = new System.Windows.Forms.PictureBox();
             this.panelTexts = new System.Windows.Forms.Panel();
+            this.labelSiteUpdated = new System.Windows.Forms.Label();
+            this.labelCompilation = new System.Windows.Forms.Label();
+            this.labelMark = new System.Windows.Forms.Label();
+            this.labelIMDB = new System.Windows.Forms.Label();
+            this.labelKinoPoisk = new System.Windows.Forms.Label();
+            this.labelLSiteUpdated = new System.Windows.Forms.Label();
+            this.labelLCompilation = new System.Windows.Forms.Label();
+            this.labelLMark = new System.Windows.Forms.Label();
+            this.labelLKinoPoisk = new System.Windows.Forms.Label();
+            this.labelLIMDB = new System.Windows.Forms.Label();
+            this.labelRelease = new System.Windows.Forms.Label();
+            this.labelLRelease = new System.Windows.Forms.Label();
+            this.labelCountry = new System.Windows.Forms.Label();
+            this.labelLCountry = new System.Windows.Forms.Label();
+            this.labelGenre = new System.Windows.Forms.Label();
+            this.labelLGenre = new System.Windows.Forms.Label();
             this.linkLabelTitleFULL = new System.Windows.Forms.LinkLabel();
             this.listViewDownload = new System.Windows.Forms.ListView();
             this.columnHeaderDownloadTitle = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -122,7 +149,9 @@
             this.panelDownloadHeader = new System.Windows.Forms.Panel();
             this.tabPageSearch = new System.Windows.Forms.TabPage();
             this.tabPageUpdates = new System.Windows.Forms.TabPage();
+            this.labelDescription = new System.Windows.Forms.Label();
             this.menuStripMain.SuspendLayout();
+            this.contextMenuStripSerials.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.contextMenuStripTray.SuspendLayout();
             this.tabControlMain.SuspendLayout();
@@ -151,7 +180,6 @@
             this.menuStripMain.Name = "menuStripMain";
             this.menuStripMain.Size = new System.Drawing.Size(1008, 24);
             this.menuStripMain.TabIndex = 0;
-            this.menuStripMain.Text = "menuStrip1";
             // 
             // файлToolStripMenuItem
             // 
@@ -455,8 +483,89 @@
             // 
             // contextMenuStripSerials
             // 
+            this.contextMenuStripSerials.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.открытьToolStripMenuItem,
+            this.обновитьToolStripMenuItem,
+            this.toolStripMenuItem2,
+            this.отметитьНаПоследнейСерииToolStripMenuItem,
+            this.хочуПосмотретьToolStripMenuItem,
+            this.ужеПосмотрелToolStripMenuItem,
+            this.вЧерныйСписокToolStripMenuItem,
+            this.toolStripMenuItem3});
             this.contextMenuStripSerials.Name = "contextMenuStrip1";
-            this.contextMenuStripSerials.Size = new System.Drawing.Size(61, 4);
+            this.contextMenuStripSerials.Size = new System.Drawing.Size(241, 148);
+            // 
+            // открытьToolStripMenuItem
+            // 
+            this.открытьToolStripMenuItem.Name = "открытьToolStripMenuItem";
+            this.открытьToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.открытьToolStripMenuItem.Text = "Открыть";
+            // 
+            // обновитьToolStripMenuItem
+            // 
+            this.обновитьToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.страницуToolStripMenuItem,
+            this.плеерToolStripMenuItem,
+            this.видеоToolStripMenuItem});
+            this.обновитьToolStripMenuItem.Name = "обновитьToolStripMenuItem";
+            this.обновитьToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.обновитьToolStripMenuItem.Text = "Обновить";
+            // 
+            // страницуToolStripMenuItem
+            // 
+            this.страницуToolStripMenuItem.Name = "страницуToolStripMenuItem";
+            this.страницуToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
+            this.страницуToolStripMenuItem.Text = "Страницу";
+            // 
+            // плеерToolStripMenuItem
+            // 
+            this.плеерToolStripMenuItem.Name = "плеерToolStripMenuItem";
+            this.плеерToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
+            this.плеерToolStripMenuItem.Text = "Плеер";
+            // 
+            // видеоToolStripMenuItem
+            // 
+            this.видеоToolStripMenuItem.Name = "видеоToolStripMenuItem";
+            this.видеоToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
+            this.видеоToolStripMenuItem.Text = "Видео";
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(237, 6);
+            // 
+            // отметитьНаПоследнейСерииToolStripMenuItem
+            // 
+            this.отметитьНаПоследнейСерииToolStripMenuItem.Name = "отметитьНаПоследнейСерииToolStripMenuItem";
+            this.отметитьНаПоследнейСерииToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.отметитьНаПоследнейСерииToolStripMenuItem.Text = "Отметить на последней серии";
+            this.отметитьНаПоследнейСерииToolStripMenuItem.Click += new System.EventHandler(this.отметитьНаПоследнейСерииToolStripMenuItem_Click);
+            // 
+            // хочуПосмотретьToolStripMenuItem
+            // 
+            this.хочуПосмотретьToolStripMenuItem.Name = "хочуПосмотретьToolStripMenuItem";
+            this.хочуПосмотретьToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.хочуПосмотретьToolStripMenuItem.Text = "Хочу посмотреть";
+            this.хочуПосмотретьToolStripMenuItem.Click += new System.EventHandler(this.хочуПосмотретьToolStripMenuItem_Click);
+            // 
+            // ужеПосмотрелToolStripMenuItem
+            // 
+            this.ужеПосмотрелToolStripMenuItem.Name = "ужеПосмотрелToolStripMenuItem";
+            this.ужеПосмотрелToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.ужеПосмотрелToolStripMenuItem.Text = "Уже посмотрел";
+            this.ужеПосмотрелToolStripMenuItem.Click += new System.EventHandler(this.ужеПосмотрелToolStripMenuItem_Click);
+            // 
+            // вЧерныйСписокToolStripMenuItem
+            // 
+            this.вЧерныйСписокToolStripMenuItem.Name = "вЧерныйСписокToolStripMenuItem";
+            this.вЧерныйСписокToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.вЧерныйСписокToolStripMenuItem.Text = "В черный список";
+            this.вЧерныйСписокToolStripMenuItem.Click += new System.EventHandler(this.вЧерныйСписокToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(237, 6);
             // 
             // statusStripMain
             // 
@@ -574,6 +683,7 @@
             // 
             // splitContainerSubMain.Panel2
             // 
+            this.splitContainerSubMain.Panel2.Controls.Add(this.labelDescription);
             this.splitContainerSubMain.Panel2.Controls.Add(this.pictureBoxSeasonImage);
             this.splitContainerSubMain.Panel2.Controls.Add(this.panelTexts);
             this.splitContainerSubMain.Panel2.Margin = new System.Windows.Forms.Padding(3);
@@ -609,6 +719,7 @@
             this.columnHeaderSerialMark,
             this.columnHeaderSerialCompilation,
             this.columnHeaderSerialSiteUpdated});
+            this.listViewSerials.ContextMenuStrip = this.contextMenuStripSerials;
             this.listViewSerials.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listViewSerials.FullRowSelect = true;
             this.listViewSerials.GridLines = true;
@@ -818,12 +929,172 @@
             // 
             this.panelTexts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelTexts.Controls.Add(this.labelSiteUpdated);
+            this.panelTexts.Controls.Add(this.labelCompilation);
+            this.panelTexts.Controls.Add(this.labelMark);
+            this.panelTexts.Controls.Add(this.labelIMDB);
+            this.panelTexts.Controls.Add(this.labelKinoPoisk);
+            this.panelTexts.Controls.Add(this.labelLSiteUpdated);
+            this.panelTexts.Controls.Add(this.labelLCompilation);
+            this.panelTexts.Controls.Add(this.labelLMark);
+            this.panelTexts.Controls.Add(this.labelLKinoPoisk);
+            this.panelTexts.Controls.Add(this.labelLIMDB);
+            this.panelTexts.Controls.Add(this.labelRelease);
+            this.panelTexts.Controls.Add(this.labelLRelease);
+            this.panelTexts.Controls.Add(this.labelCountry);
+            this.panelTexts.Controls.Add(this.labelLCountry);
+            this.panelTexts.Controls.Add(this.labelGenre);
+            this.panelTexts.Controls.Add(this.labelLGenre);
             this.panelTexts.Controls.Add(this.linkLabelTitleFULL);
-            this.panelTexts.Location = new System.Drawing.Point(0, 190);
+            this.panelTexts.Location = new System.Drawing.Point(6, 196);
             this.panelTexts.Name = "panelTexts";
             this.panelTexts.Padding = new System.Windows.Forms.Padding(6);
-            this.panelTexts.Size = new System.Drawing.Size(270, 190);
+            this.panelTexts.Size = new System.Drawing.Size(258, 190);
             this.panelTexts.TabIndex = 2;
+            // 
+            // labelSiteUpdated
+            // 
+            this.labelSiteUpdated.AutoSize = true;
+            this.labelSiteUpdated.Location = new System.Drawing.Point(165, 175);
+            this.labelSiteUpdated.Name = "labelSiteUpdated";
+            this.labelSiteUpdated.Size = new System.Drawing.Size(0, 13);
+            this.labelSiteUpdated.TabIndex = 16;
+            // 
+            // labelCompilation
+            // 
+            this.labelCompilation.AutoSize = true;
+            this.labelCompilation.Location = new System.Drawing.Point(90, 160);
+            this.labelCompilation.Name = "labelCompilation";
+            this.labelCompilation.Size = new System.Drawing.Size(0, 13);
+            this.labelCompilation.TabIndex = 15;
+            // 
+            // labelMark
+            // 
+            this.labelMark.AutoSize = true;
+            this.labelMark.Location = new System.Drawing.Point(90, 145);
+            this.labelMark.Name = "labelMark";
+            this.labelMark.Size = new System.Drawing.Size(0, 13);
+            this.labelMark.TabIndex = 14;
+            // 
+            // labelIMDB
+            // 
+            this.labelIMDB.AutoSize = true;
+            this.labelIMDB.Location = new System.Drawing.Point(140, 115);
+            this.labelIMDB.Name = "labelIMDB";
+            this.labelIMDB.Size = new System.Drawing.Size(0, 13);
+            this.labelIMDB.TabIndex = 13;
+            // 
+            // labelKinoPoisk
+            // 
+            this.labelKinoPoisk.AutoSize = true;
+            this.labelKinoPoisk.Location = new System.Drawing.Point(140, 130);
+            this.labelKinoPoisk.Name = "labelKinoPoisk";
+            this.labelKinoPoisk.Size = new System.Drawing.Size(0, 13);
+            this.labelKinoPoisk.TabIndex = 12;
+            // 
+            // labelLSiteUpdated
+            // 
+            this.labelLSiteUpdated.AutoSize = true;
+            this.labelLSiteUpdated.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelLSiteUpdated.Location = new System.Drawing.Point(9, 175);
+            this.labelLSiteUpdated.Name = "labelLSiteUpdated";
+            this.labelLSiteUpdated.Size = new System.Drawing.Size(150, 13);
+            this.labelLSiteUpdated.TabIndex = 11;
+            this.labelLSiteUpdated.Text = "Последнее обновление:";
+            // 
+            // labelLCompilation
+            // 
+            this.labelLCompilation.AutoSize = true;
+            this.labelLCompilation.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelLCompilation.Location = new System.Drawing.Point(9, 160);
+            this.labelLCompilation.Name = "labelLCompilation";
+            this.labelLCompilation.Size = new System.Drawing.Size(68, 13);
+            this.labelLCompilation.TabIndex = 10;
+            this.labelLCompilation.Text = "Колекция:";
+            // 
+            // labelLMark
+            // 
+            this.labelLMark.AutoSize = true;
+            this.labelLMark.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelLMark.Location = new System.Drawing.Point(9, 145);
+            this.labelLMark.Name = "labelLMark";
+            this.labelLMark.Size = new System.Drawing.Size(62, 13);
+            this.labelLMark.TabIndex = 9;
+            this.labelLMark.Text = "Отметка:";
+            // 
+            // labelLKinoPoisk
+            // 
+            this.labelLKinoPoisk.AutoSize = true;
+            this.labelLKinoPoisk.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelLKinoPoisk.Location = new System.Drawing.Point(9, 130);
+            this.labelLKinoPoisk.Name = "labelLKinoPoisk";
+            this.labelLKinoPoisk.Size = new System.Drawing.Size(129, 13);
+            this.labelLKinoPoisk.TabIndex = 8;
+            this.labelLKinoPoisk.Text = "Рейтинг КиноПоиск:";
+            // 
+            // labelLIMDB
+            // 
+            this.labelLIMDB.AutoSize = true;
+            this.labelLIMDB.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelLIMDB.Location = new System.Drawing.Point(9, 115);
+            this.labelLIMDB.Name = "labelLIMDB";
+            this.labelLIMDB.Size = new System.Drawing.Size(94, 13);
+            this.labelLIMDB.TabIndex = 7;
+            this.labelLIMDB.Text = "Рейтинг IMDB:";
+            // 
+            // labelRelease
+            // 
+            this.labelRelease.AutoSize = true;
+            this.labelRelease.Location = new System.Drawing.Point(68, 100);
+            this.labelRelease.Name = "labelRelease";
+            this.labelRelease.Size = new System.Drawing.Size(0, 13);
+            this.labelRelease.TabIndex = 6;
+            // 
+            // labelLRelease
+            // 
+            this.labelLRelease.AutoSize = true;
+            this.labelLRelease.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelLRelease.Location = new System.Drawing.Point(9, 100);
+            this.labelLRelease.Name = "labelLRelease";
+            this.labelLRelease.Size = new System.Drawing.Size(51, 13);
+            this.labelLRelease.TabIndex = 5;
+            this.labelLRelease.Text = "Вышел:";
+            // 
+            // labelCountry
+            // 
+            this.labelCountry.AutoSize = true;
+            this.labelCountry.Location = new System.Drawing.Point(68, 85);
+            this.labelCountry.Name = "labelCountry";
+            this.labelCountry.Size = new System.Drawing.Size(0, 13);
+            this.labelCountry.TabIndex = 4;
+            // 
+            // labelLCountry
+            // 
+            this.labelLCountry.AutoSize = true;
+            this.labelLCountry.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelLCountry.Location = new System.Drawing.Point(9, 85);
+            this.labelLCountry.Name = "labelLCountry";
+            this.labelLCountry.Size = new System.Drawing.Size(53, 13);
+            this.labelLCountry.TabIndex = 3;
+            this.labelLCountry.Text = "Страна:";
+            // 
+            // labelGenre
+            // 
+            this.labelGenre.AutoSize = true;
+            this.labelGenre.Location = new System.Drawing.Point(68, 70);
+            this.labelGenre.Name = "labelGenre";
+            this.labelGenre.Size = new System.Drawing.Size(0, 13);
+            this.labelGenre.TabIndex = 2;
+            // 
+            // labelLGenre
+            // 
+            this.labelLGenre.AutoSize = true;
+            this.labelLGenre.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelLGenre.Location = new System.Drawing.Point(9, 70);
+            this.labelLGenre.Name = "labelLGenre";
+            this.labelLGenre.Size = new System.Drawing.Size(44, 13);
+            this.labelLGenre.TabIndex = 1;
+            this.labelLGenre.Text = "Жанр:";
             // 
             // linkLabelTitleFULL
             // 
@@ -902,6 +1173,14 @@
             this.tabPageUpdates.TabIndex = 2;
             this.tabPageUpdates.Text = "Новости";
             // 
+            // labelDescription
+            // 
+            this.labelDescription.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.labelDescription.Location = new System.Drawing.Point(6, 389);
+            this.labelDescription.Name = "labelDescription";
+            this.labelDescription.Size = new System.Drawing.Size(258, 70);
+            this.labelDescription.TabIndex = 3;
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -916,10 +1195,10 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Домашний Театр";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
-            this.Load += new System.EventHandler(this.FormMain_Load);
             this.Shown += new System.EventHandler(this.FormMain_Shown);
             this.menuStripMain.ResumeLayout(false);
             this.menuStripMain.PerformLayout();
+            this.contextMenuStripSerials.ResumeLayout(false);
             this.statusStripMain.ResumeLayout(false);
             this.statusStripMain.PerformLayout();
             this.contextMenuStripTray.ResumeLayout(false);
@@ -1033,6 +1312,34 @@
         private System.Windows.Forms.ToolStripMenuItem всеToolStripMenuItem;
         private System.Windows.Forms.Panel panelTexts;
         private System.Windows.Forms.LinkLabel linkLabelTitleFULL;
+        private System.Windows.Forms.ToolStripMenuItem открытьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem обновитьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem страницуToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem плеерToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem видеоToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem отметитьНаПоследнейСерииToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem хочуПосмотретьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ужеПосмотрелToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem вЧерныйСписокToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
+        private System.Windows.Forms.Label labelLGenre;
+        private System.Windows.Forms.Label labelGenre;
+        private System.Windows.Forms.Label labelLCountry;
+        private System.Windows.Forms.Label labelCountry;
+        private System.Windows.Forms.Label labelLRelease;
+        private System.Windows.Forms.Label labelRelease;
+        private System.Windows.Forms.Label labelLKinoPoisk;
+        private System.Windows.Forms.Label labelLIMDB;
+        private System.Windows.Forms.Label labelLMark;
+        private System.Windows.Forms.Label labelMark;
+        private System.Windows.Forms.Label labelIMDB;
+        private System.Windows.Forms.Label labelKinoPoisk;
+        private System.Windows.Forms.Label labelLSiteUpdated;
+        private System.Windows.Forms.Label labelLCompilation;
+        private System.Windows.Forms.Label labelSiteUpdated;
+        private System.Windows.Forms.Label labelCompilation;
+        private System.Windows.Forms.Label labelDescription;
     }
 }
 

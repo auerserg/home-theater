@@ -41,7 +41,7 @@ namespace HomeTheater.Serial
         public static int IntVal(string input)
         {
             var result = 0;
-            input = Regex.Replace(input, "[^0-9]*", "");
+            input = Regex.Replace(input, "[^0-9-]*", "");
             if (!string.IsNullOrEmpty(input))
                 int.TryParse(input, out result);
 
@@ -51,7 +51,7 @@ namespace HomeTheater.Serial
         public static float floatVal(string input)
         {
             float result = 0;
-            input = Regex.Replace(input, "[^0-9.]*", "");
+            input = Regex.Replace(input, "[^0-9.,-]*", "");
             input = input.Replace(".", ",");
             if (!string.IsNullOrEmpty(input))
                 float.TryParse(input, out result);

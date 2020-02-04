@@ -3,46 +3,26 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using HomeTheater.Helper;
 using HomeTheater.Serial.data;
 
 namespace HomeTheater.Serial
 {
-    internal class SerialSeason : APIParent
+    internal class SerialSeason : SerialParent
     {
-        private readonly List<string> __needSave = new List<string>();
-
-        private string __compilation,
-            __country,
-            __description,
-            __genre,
-            __imdb,
-            __kinopoisk,
-            __limitation,
-            __marks_current,
-            __marks_last,
-            __release,
-            __secure_mark,
-            __title,
-            __title_en,
-            __title_full,
-            __title_original,
-            __title_ru,
-            __type,
-            __type_old,
-            __url;
-
+        private DateTime __cached_date;
+        private string __compilation;
         private bool __forsed_update_page;
         private bool __forsed_update_player;
         private bool __forsed_update_playlist;
         private bool __needSaveRelated;
         private SerialSeasonPlayer __player;
         private List<int> __related = new List<int>();
-        private int __season, __serial_id, __timeout, __user_comments, __user_views_last_day;
         private Dictionary<int, int> __seasons = new Dictionary<int, int>();
-
-        private DateTime __site_updated, __updated_date;
+        private string __secure_mark = "";
+        private int __timeout;
 
         public ListViewItem ListViewItem = new ListViewItem(new[]
             {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""});
@@ -51,7 +31,7 @@ namespace HomeTheater.Serial
 
         public SerialSeason(string url)
         {
-            SeasonID = IntVal(Match(url, "/serial-([0-9]+)-", REGEX_IC, 1));
+            ID = IntVal(Match(url, "/serial-([0-9]+)-", REGEX_IC, 1));
             Init();
 
             var matchurl = Regex.Match(url, "^(.*?)#rewind=(.*?)_seriya$", REGEX_IC);
@@ -68,175 +48,11 @@ namespace HomeTheater.Serial
 
         public SerialSeason(int id)
         {
-            SeasonID = id;
+            ID = id;
             Init();
         }
 
-        private string this[string index]
-        {
-            get
-            {
-                var result = "";
-
-                switch (index)
-                {
-                    case "country":
-                        result = __country;
-                        break;
-                    case "description":
-                        result = __description;
-                        break;
-                    case "genre":
-                        result = __genre;
-                        break;
-                    case "imdb":
-                        result = __imdb;
-                        break;
-                    case "kinopoisk":
-                        result = __kinopoisk;
-                        break;
-                    case "limitation":
-                        result = __limitation;
-                        break;
-                    case "marks_current":
-                        result = __marks_current;
-                        break;
-                    case "marks_last":
-                        result = __marks_last;
-                        break;
-                    case "release":
-                        result = __release;
-                        break;
-                    case "season":
-                        result = __season.ToString();
-                        break;
-                    case "secure_mark":
-                        result = __secure_mark;
-                        break;
-                    case "serial_id":
-                        result = __serial_id.ToString();
-                        break;
-                    case "site_updated":
-                        result = __site_updated.ToString(DB.DATE_FORMAT);
-                        break;
-                    case "title":
-                        result = __title;
-                        break;
-                    case "title_en":
-                        result = __title_en;
-                        break;
-                    case "title_full":
-                        result = __title_full;
-                        break;
-                    case "title_original":
-                        result = __title_original;
-                        break;
-                    case "title_ru":
-                        result = __title_ru;
-                        break;
-                    case "type":
-                        result = __type;
-                        break;
-                    case "url":
-                        result = __url;
-                        break;
-                    case "user_comments":
-                        result = __user_comments.ToString();
-                        break;
-                    case "user_views_last_day":
-                        result = __user_views_last_day.ToString();
-                        break;
-                }
-
-                return result;
-            }
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    value = value.Trim();
-                    switch (index)
-                    {
-                        case "country":
-                            __country = value;
-                            break;
-                        case "create_date":
-                            CachedDate = DateVal(value, DB.TIME_FORMAT);
-                            break;
-                        case "description":
-                            __description = value;
-                            break;
-                        case "genre":
-                            __genre = value;
-                            break;
-                        case "imdb":
-                            __imdb = value;
-                            break;
-                        case "kinopoisk":
-                            __kinopoisk = value;
-                            break;
-                        case "limitation":
-                            __limitation = value;
-                            break;
-                        case "marks_current":
-                            __marks_current = value;
-                            break;
-                        case "marks_last":
-                            __marks_last = value;
-                            break;
-                        case "release":
-                            __release = value;
-                            break;
-                        case "season":
-                            __season = IntVal(value);
-                            break;
-                        case "secure_mark":
-                            __secure_mark = value;
-                            break;
-                        case "serial_id":
-                            __serial_id = IntVal(value);
-                            break;
-                        case "site_updated":
-                            __site_updated = DateVal(value, DB.DATE_FORMAT);
-                            break;
-                        case "title":
-                            __title = value;
-                            break;
-                        case "title_en":
-                            __title_en = value;
-                            break;
-                        case "title_full":
-                            __title_full = value;
-                            break;
-                        case "title_original":
-                            __title_original = value;
-                            break;
-                        case "title_ru":
-                            __title_ru = value;
-                            break;
-                        case "type":
-                            __type_old = value;
-                            if (null == __type)
-                                __type = value;
-                            break;
-                        case "updated_date":
-                            __updated_date = DateVal(value, DB.TIME_FORMAT);
-                            break;
-                        case "url":
-                            __url = value;
-                            break;
-                        case "user_comments":
-                            __user_comments = IntVal(value);
-                            break;
-                        case "user_views_last_day":
-                            __user_views_last_day = IntVal(value);
-                            break;
-                    }
-                }
-            }
-        }
-
-        public int SeasonID { get; set; }
+        public int ID { get; set; }
 
         public SerialSeasonPlayer Player
         {
@@ -248,75 +64,26 @@ namespace HomeTheater.Serial
 
         public int SerialID
         {
-            get => __serial_id;
-            set
-            {
-                if (__serial_id != value && value > 0)
-                {
-                    __needSave.Add("serial_id");
-                    __serial_id = value;
-                }
-            }
+            get => getValueInt("serial_id");
+            set => setValue("serial_id", value);
         }
 
         public int Season
         {
-            get => __season;
-            set
-            {
-                if (value > 0)
-                {
-                    if (__season != value)
-                    {
-                        __needSave.Add("season");
-                        __season = value;
-                    }
-                }
-                else
-                {
-                    __season = 0;
-                }
-            }
+            get => getValueInt("season");
+            set => setValue("season", value);
         }
 
         public int UserComments
         {
-            get => __user_comments;
-            set
-            {
-                if (value > 0)
-                {
-                    if (__user_comments != value)
-                    {
-                        __needSave.Add("user_comments");
-                        __user_comments = value;
-                    }
-                }
-                else
-                {
-                    __user_comments = 0;
-                }
-            }
+            get => getValueInt("user_comments");
+            set => setValue("user_comments", value);
         }
 
         public int UserViewsLastDay
         {
-            get => __user_views_last_day;
-            set
-            {
-                if (value > 0)
-                {
-                    if (__user_views_last_day != value)
-                    {
-                        __needSave.Add("user_views_last_day");
-                        __user_views_last_day = value;
-                    }
-                }
-                else
-                {
-                    __user_views_last_day = 0;
-                }
-            }
+            get => getValueInt("user_views_last_day");
+            set => setValue("user_views_last_day", value);
         }
 
         private int timeout
@@ -347,234 +114,126 @@ namespace HomeTheater.Serial
 
         public string Genre
         {
-            get => string.IsNullOrWhiteSpace(__genre) ? "" : __genre;
-            set
-            {
-                if (__genre != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("genre");
-                    __genre = value;
-                }
-            }
+            get => getValue("genre");
+            set => setValue("genre", value);
         }
 
         public string Country
         {
-            get => string.IsNullOrWhiteSpace(__country) ? "" : __country;
-            set
-            {
-                if (__country != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("country");
-                    __country = value;
-                }
-            }
+            get => getValue("country");
+            set => setValue("country", value);
         }
 
         public string Release
         {
-            get => string.IsNullOrWhiteSpace(__release) ? "" : __release;
-            set
-            {
-                if (__release != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("release");
-                    __release = value;
-                }
-            }
+            get => getValue("release");
+            set => setValue("release", value);
         }
 
-        public string IMDB
+        public float IMDB
         {
-            get => string.IsNullOrWhiteSpace(__imdb) ? "" : __imdb;
-            set
-            {
-                if (__imdb != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("imdb");
-                    __imdb = value;
-                }
-            }
+            get => getValueFloat("imdb");
+            set => setValue("imdb", value);
         }
 
-        public string KinoPoisk
+        public float KinoPoisk
         {
-            get => string.IsNullOrWhiteSpace(__kinopoisk) ? "" : __kinopoisk;
-            set
-            {
-                if (__kinopoisk != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("kinopoisk");
-                    __kinopoisk = value;
-                }
-            }
+            get => getValueFloat("kinopoisk");
+            set => setValue("kinopoisk", value);
         }
 
         public string Limitation
         {
-            get => string.IsNullOrWhiteSpace(__limitation) ? "" : __limitation;
-            set
-            {
-                if (__limitation != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("limitation");
-                    __limitation = value;
-                }
-            }
+            get => getValue("limitation");
+            set => setValue("limitation", value);
         }
 
         public string URL
         {
-            get => string.IsNullOrWhiteSpace(__url) ? "" : __url;
-            set
-            {
-                if (__url != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("url");
-                    __url = value;
-                }
-            }
+            get => getValue("url");
+            set => setValue("url", value);
         }
 
         public string Title
         {
-            get => string.IsNullOrWhiteSpace(__title) ? TitleRU : __title;
-            set
-            {
-                if (__title != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("title");
-                    __title = value;
-                }
-            }
+            get => getValue("title");
+            set => setValue("title", value);
         }
 
         public string TitleRU
         {
-            get => string.IsNullOrWhiteSpace(__title_ru) ? URL : __title_ru;
-            set
-            {
-                if (__title_ru != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("title_ru");
-                    __title_ru = value;
-                }
-            }
-        }
-
-        public string TitleFull
-        {
-            get => string.IsNullOrWhiteSpace(__title_full) ? Title : __title_full;
-            set
-            {
-                if (__title_full != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("title_full");
-                    __title_full = value;
-                }
-            }
+            get => getValue("title_ru");
+            set => setValue("title_ru", value);
         }
 
         public string TitleEN
         {
-            get => string.IsNullOrWhiteSpace(__title_en) ? "" : __title_en;
-            set
-            {
-                if (__title_en != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("title_en");
-                    __title_en = value;
-                }
-            }
+            get => getValue("title_en");
+            set => setValue("title_en", value);
+        }
+
+        public string TitleFull
+        {
+            get => getValue("title_full");
+            set => setValue("title_full", value);
         }
 
         public string TitleOriginal
         {
-            get => string.IsNullOrWhiteSpace(__title_original) ? "" : __title_original;
-            set
-            {
-                if (__title_original != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("title_original");
-                    __title_original = value;
-                }
-            }
+            get => getValue("title_original");
+            set => setValue("title_original", value);
         }
 
         public string Description
         {
-            get => string.IsNullOrWhiteSpace(__description) ? "" : __description;
-            set
-            {
-                if (__description != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("description");
-                    __description = value;
-                }
-            }
+            get => getValue("description");
+            set => setValue("description", value);
         }
 
         public string MarkCurrent
         {
-            get => string.IsNullOrWhiteSpace(__marks_current) ? "" : __marks_current;
-            set
-            {
-                if (__marks_current != value && !string.IsNullOrWhiteSpace(value) && "-1" != value && "-2" != value &&
-                    "-3" != value)
-                {
-                    __needSave.Add("marks_current");
-                    __marks_current = value;
-                }
-            }
+            get => getValue("marks_current");
+            set => setValue("marks_current", value);
         }
 
-        public string TypeOLD => string.IsNullOrWhiteSpace(__type_old) ? "" : __type_old;
+        public string TypeOLD => getValue("type_old");
 
         public string Type
         {
-            get => string.IsNullOrWhiteSpace(__type) ? "none" : __type;
+            get
+            {
+                var value = getValue("type");
+                if (!string.IsNullOrEmpty(value))
+                    return value;
+                return "none";
+            }
             set
             {
-                if (__type != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("type");
-                    __type = value;
-                }
+                if (TypeOLD != value && "none" != value)
+                    setValue("type", value);
             }
         }
 
         public string MarkLast
         {
-            get => string.IsNullOrWhiteSpace(__marks_last) ? "" : __marks_last;
-            set
-            {
-                if (__marks_last != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __forsed_update_playlist = __forsed_update_player = true;
-                    __needSave.Add("marks_last");
-                    __marks_last = value;
-                }
-            }
+            get => getValue("marks_last");
+            set => setValue("marks_last", value);
         }
 
         public string Mark
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(MarkCurrent)) return MarkLast;
+                if ("-1" == MarkCurrent || "-2" == MarkCurrent || "-3" == MarkCurrent) return MarkLast;
                 return string.Format("{0} из {1}", MarkCurrent, MarkLast);
             }
             set { }
         }
 
-        public string SecureMark
+        public string Secure
         {
-            get => string.IsNullOrWhiteSpace(__secure_mark) ? "" : __secure_mark;
-            set
-            {
-                if (__secure_mark != value && !string.IsNullOrWhiteSpace(value))
-                    __secure_mark = value;
-            }
+            get => getValue("secure");
+            set => setValue("secure", value);
         }
 
         public string ImageSmall => ImageURLGet("small");
@@ -585,20 +244,19 @@ namespace HomeTheater.Serial
 
         public DateTime SiteUpdated
         {
-            get => __site_updated;
-            set
-            {
-                if (__site_updated != value && new DateTime() != value)
-                {
-                    if (new DateTime() != __site_updated)
-                        __forsed_update_playlist = __forsed_update_player = __forsed_update_page = true;
-                    __needSave.Add("site_updated");
-                    __site_updated = value;
-                }
-            }
+            get => getValueDate("site_updated", DB.DATE_FORMAT);
+            set => setValue("site_updated", value, DB.DATE_FORMAT);
         }
 
-        public DateTime CachedDate { get; set; }
+        public DateTime CreatedDate => getValueDate("created_date");
+
+        public DateTime UpdatedDate => getValueDate("updated_date");
+
+        public DateTime CachedDate
+        {
+            get => __cached_date != new DateTime() ? __cached_date : getValueDate("cached_date");
+            set => __cached_date = value;
+        }
 
         public List<SerialSeason> Related
         {
@@ -614,6 +272,19 @@ namespace HomeTheater.Serial
             set { }
         }
 
+        protected override void callbackValue(string name, string value)
+        {
+            switch (name)
+            {
+                case "marks_last":
+                    __forsed_update_playlist = __forsed_update_player = true;
+                    break;
+                case "site_updated":
+                    __forsed_update_playlist = __forsed_update_player = __forsed_update_page = true;
+                    break;
+            }
+        }
+
         private void Init()
         {
             Load();
@@ -622,14 +293,14 @@ namespace HomeTheater.Serial
 
         private SerialSeasonPlayer LoadPlayer()
         {
-            if (null == __player && 0 < SeasonID && 0 < SerialID)
-                __player = new SerialSeasonPlayer(SeasonID, SerialID, SecureMark, timeout);
+            if (null == __player && 0 < ID && 0 < SerialID)
+                __player = new SerialSeasonPlayer(ID, SerialID, Secure, timeout);
             return __player;
         }
 
         public string CompilationGet()
         {
-            var _type = !string.IsNullOrEmpty(this.__type) ? this.__type : __type_old;
+            var _type = Type;
             var __type = "new" == _type || "nonew" == _type || "want" == _type;
             if (string.IsNullOrEmpty(Compilation) && __type) Compilation = APIServerCompilation.Instance.Get(SerialID);
             return Compilation;
@@ -671,7 +342,7 @@ namespace HomeTheater.Serial
                 Compilation = APIServerCompilation.Instance.Get(SerialID);
                 if (string.IsNullOrEmpty(Compilation))
                 {
-                    var _type = !string.IsNullOrEmpty(this.__type) ? this.__type : __type_old;
+                    var _type = Type;
                     var __type = "new" == _type || "nonew" == _type || "want" == _type;
                     if (__type && !string.IsNullOrEmpty(Match(Genre, "анимационные", REGEX_IC)))
                     {
@@ -701,12 +372,15 @@ namespace HomeTheater.Serial
 
         public SerialSeason Load()
         {
-            var __data_old = DB.Instance.SeasonGet(SeasonID);
-            if (0 < __data_old.Count)
-                foreach (var item in __data_old)
-                    this[item.Key] = item.Value;
-            __seasons = DB.Instance.SeasonsGet(SerialID, SeasonID);
-            __related = DB.Instance.RelatedGet(SeasonID);
+            LoadValues(() =>
+            {
+                var data = DB.Instance.SeasonGet(ID);
+                if (data.ContainsKey("type")) data.Add("type_old", data["type"]);
+
+                return data;
+            });
+            __seasons = DB.Instance.SeasonsGet(SerialID, ID);
+            __related = DB.Instance.RelatedGet(ID);
             ToListViewItem();
 
             return this;
@@ -722,7 +396,7 @@ namespace HomeTheater.Serial
                 DB.Instance.RelatedSet(SerialID, __related);
                 __needSaveRelated = false;
 #if DEBUG
-                Console.WriteLine("\tSave Related\t{0}\t{1}:\t{2}", SerialID, SeasonID,
+                Console.WriteLine("\tSave Related\t{0}\t{1}:\t{2}", SerialID, ID,
                     DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
             }
@@ -730,37 +404,28 @@ namespace HomeTheater.Serial
 
         public void Save()
         {
-            if (0 >= SeasonID || 0 >= __needSave.Count)
+            if (0 == ID || 0 == __data_new.Count)
                 return;
 #if DEBUG
             var start = DateTime.UtcNow;
 #endif
-            var data = new Dictionary<string, string>();
-            for (var i = 0; i < __needSave.Count; i++)
+            SaveValues(data =>
             {
-                var field = __needSave[i];
-                var value = this[field];
-                if (!string.IsNullOrWhiteSpace(value) && !data.ContainsKey(field))
-                    data.Add(field, value);
-            }
-
-            // __forsed_update_playlist = __forsed_update_player = __forsed_update_page = __needSave.Contains("site_updated_forsed");
-            // if (__needSave.Contains("player_updated_forsed")) __forsed_update_playlist = __forsed_update_player = true;
-            __needSave.Clear();
-            if (0 < data.Count)
-            {
-                DB.Instance.SeasonSet(SeasonID, data);
+                if (0 == ID)
+                    return false;
+                DB.Instance.SeasonSet(ID, data);
                 ToListViewItem();
+                return true;
+            });
 #if DEBUG
-                Console.WriteLine("\tSave Season\t\t{0}\t{1}:\t{2}", SerialID, SeasonID,
-                    DateTime.UtcNow.Subtract(start).TotalSeconds);
+            Console.WriteLine("\tSave Season\t\t{0}\t{1}:\t{2}", SerialID, ID,
+                DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
-            }
         }
 
         public async void SaveAsync()
         {
-            Save();
+            await Task.Run(() => { Save(); });
         }
 
         public void parseSidebar(string html)
@@ -802,9 +467,11 @@ namespace HomeTheater.Serial
             var start = DateTime.UtcNow;
 #endif
             SerialID = IntVal(Match(html, "data-id-serial=\"([0-9]+)\"", REGEX_ICS, 1));
-            SeasonID = IntVal(Match(html, "data-id-season=\"([0-9]+)\"", REGEX_ICS, 1));
-            Description = WebUtility.HtmlDecode(Match(html, "<p itemprop=\"description\">(.*?)</p>", REGEX_ICS, 1));
-            SecureMark = _parseData4Play(Match(html, "data4play = ({.*?})", REGEX_ICS, 1));
+            ID = IntVal(Match(html, "data-id-season=\"([0-9]+)\"", REGEX_ICS, 1));
+            Description = Regex
+                .Replace(WebUtility.HtmlDecode(Match(html, "<p itemprop=\"description\">(.*?)</p>", REGEX_ICS, 1)),
+                    "<br[^<>]*>", "\r\n", REGEX_ICS).Replace("\r\n\r\n", "\r\n").Trim();
+            Secure = _parseData4Play(Match(html, "data4play = ({.*?})", REGEX_ICS, 1));
             SiteUpdated =
                 DateVal(Match(html, "<meta itemprop=\"dateModified\" content=\"([^\"+]+)([^\"]+)\">", REGEX_ICS, 1),
                     "yyyy-MM-ddTHH:mm:ss");
@@ -822,8 +489,9 @@ namespace HomeTheater.Serial
             _parseRelatedAsync(html);
 
             CompilationLoad();
+            SaveAsync();
 #if DEBUG
-            Console.WriteLine("\tParse Season\t{0}\t{1}:\t{2}", SerialID, SeasonID,
+            Console.WriteLine("\tParse Season\t{0}\t{1}:\t{2}", SerialID, ID,
                 DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
         }
@@ -837,22 +505,21 @@ namespace HomeTheater.Serial
             var result = "";
             if (!string.IsNullOrWhiteSpace(html))
             {
-                SecureMark = _parseData4Play(Match(html, "data4play = ({.*?})", REGEX_ICS, 1));
-                result = SecureMark;
+                Secure = _parseData4Play(Match(html, "data4play = ({.*?})", REGEX_ICS, 1));
+                result = Secure;
             }
 #if DEBUG
-            Console.WriteLine("\tGet Secure\t{0}\t{1}:\t{2}", SerialID, SeasonID,
+            Console.WriteLine("\tGet Secure\t{0}\t{1}:\t{2}", SerialID, ID,
                 DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
 
-            return result = SecureMark;
+            return result = Secure;
         }
 
         public void syncPage(bool forsed = false)
         {
             forsed = forsed || __forsed_update_page;
-            if (timeout < DateTime.UtcNow.Subtract(CachedDate).TotalSeconds ||
-                timeout < DateTime.UtcNow.Subtract(__updated_date).TotalSeconds || forsed)
+            if (timeout < DateTime.UtcNow.Subtract(CachedDate).TotalSeconds || forsed)
             {
                 var content = downloadPage(forsed);
                 parsePage(content);
@@ -945,10 +612,10 @@ namespace HomeTheater.Serial
                                 Limitation = value;
                                 break;
                             case "IMDB":
-                                IMDB = value;
+                                IMDB = floatVal(value);
                                 break;
                             case "КиноПоиск":
-                                KinoPoisk = value;
+                                KinoPoisk = floatVal(value);
                                 break;
                         }
                 }
@@ -981,7 +648,7 @@ namespace HomeTheater.Serial
                 var season = new SerialSeason(url);
                 season.TitleRU = Match(matchInfo.Groups[3].ToString(), "<div>(.+?)</div>", REGEX_ICS, 1);
                 season.SaveAsync();
-                if (!_related.Contains(season.SeasonID)) _related.Add(season.SeasonID);
+                if (!_related.Contains(season.ID)) _related.Add(season.ID);
             }
 
             var _relatedOld = __related;
@@ -1043,13 +710,13 @@ namespace HomeTheater.Serial
                 if (0 < season.Season)
                 {
                     if (!__seasons.ContainsKey(season.Season))
-                        __seasons.Add(season.Season, season.SeasonID);
+                        __seasons.Add(season.Season, season.ID);
                 }
                 else
                 {
                     i--;
                     if (!__seasons.ContainsKey(i))
-                        __seasons.Add(i, season.SeasonID);
+                        __seasons.Add(i, season.ID);
                 }
             }
         }
@@ -1109,15 +776,15 @@ namespace HomeTheater.Serial
                     TitleEN,
                     TitleOriginal,
                     URL,
-                    SeasonID.ToString(),
+                    ID.ToString(),
                     SerialID.ToString(),
                     0 < Season ? Season.ToString() : "",
                     Genre,
                     Country,
                     Release,
                     Limitation,
-                    IMDB,
-                    KinoPoisk,
+                    IMDB.ToString(),
+                    KinoPoisk.ToString(),
                     0 < UserComments ? UserComments.ToString() : "",
                     0 < UserViewsLastDay ? UserViewsLastDay.ToString() : "",
                     MarkCurrent,
@@ -1162,7 +829,7 @@ namespace HomeTheater.Serial
                     break;
             }
 
-            return string.Format("http://cdn.seasonvar.ru/oblojka/{0}{1}.jpg", size, SeasonID);
+            return string.Format("http://cdn.seasonvar.ru/oblojka/{0}{1}.jpg", size, ID);
         }
 
         public bool MarkSetPause(string seria = "")
@@ -1192,7 +859,7 @@ namespace HomeTheater.Serial
 
         private bool MarkDo(string type = "", string seria = "")
         {
-            if (0 >= SeasonID)
+            if (0 == ID)
                 return false;
             NameValueCollection postData = null;
             switch (type)
@@ -1200,35 +867,35 @@ namespace HomeTheater.Serial
                 case "pauseadd":
                     postData = new NameValueCollection
                     {
-                        {"id", SeasonID.ToString()}, {"seria", seria}, {"pauseadd", "true"}, {"minute", "0"},
+                        {"id", ID.ToString()}, {"seria", seria}, {"pauseadd", "true"}, {"minute", "0"},
                         {"second", "0"}, {"tran", "0"}
                     };
                     break;
                 case "wanttosee":
                     postData = new NameValueCollection
                     {
-                        {"id", SeasonID.ToString()}, {"seria", "-1"}, {"wanttosee", "true"}, {"minute", "0"},
+                        {"id", ID.ToString()}, {"seria", "-1"}, {"wanttosee", "true"}, {"minute", "0"},
                         {"second", "0"}
                     };
                     break;
                 case "watched":
                     postData = new NameValueCollection
                     {
-                        {"id", SeasonID.ToString()}, {"seria", "-2"}, {"watched", "true"}, {"minute", "0"},
+                        {"id", ID.ToString()}, {"seria", "-2"}, {"watched", "true"}, {"minute", "0"},
                         {"second", "0"}
                     };
                     break;
                 case "notWatched":
                     postData = new NameValueCollection
                     {
-                        {"id", SeasonID.ToString()}, {"seria", "-3"}, {"notWatched", "true"}, {"minute", "0"},
+                        {"id", ID.ToString()}, {"seria", "-3"}, {"notWatched", "true"}, {"minute", "0"},
                         {"second", "0"}
                     };
                     break;
 
                 case "delete":
                 default:
-                    postData = new NameValueCollection {{"delId", SeasonID.ToString()}};
+                    postData = new NameValueCollection {{"delId", ID.ToString()}};
                     break;
             }
 

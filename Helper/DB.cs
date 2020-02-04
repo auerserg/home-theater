@@ -81,9 +81,10 @@ CREATE TABLE IF NOT EXISTS [season] (
     [description] text,
     [marks_current] text,
     [marks_last] text,
-    [secure_mark] text,
     [type] text,
     [site_updated] text,
+    [secure] text,
+    [created_date] text,
     [updated_date] text
 );
 CREATE TABLE IF NOT EXISTS [season_related] (
@@ -114,8 +115,8 @@ CREATE TABLE IF NOT EXISTS [playlist] (
 	[translate_key] INTEGER NOT NULL DEFAULT -1,
 	[translate_slug] text,
 	[url] TEXT,
+	[percent] TEXT,
 	[secure] TEXT,
-	[percent] NUMERIC,
 	[created_date] TEXT,
 	[updated_date] TEXT
 );
@@ -127,9 +128,11 @@ CREATE TABLE IF NOT EXISTS [video] (
 	[translate_name] TEXT,
 	[video_id] TEXT,
 	[video_next_id] TEXT,
-	[url] TEXT,
+    [url] TEXT,
+    [file_name] TEXT,
 	[file_size] INTEGER,
 	[subtitle] TEXT,
+	[secure] TEXT,
 	[created_date] TEXT,
 	[updated_date] TEXT
 );
@@ -249,7 +252,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             var dataOld = VideoGet(ID);
             if (0 < dataOld.Count)
             {
-                var dataDiff = data.Where(entry => dataOld[entry.Key] != entry.Value)
+                var dataDiff = data.Where(entry => !dataOld.ContainsKey(entry.Key) || dataOld[entry.Key] != entry.Value)
                     .ToDictionary(entry => entry.Key, entry => entry.Value);
                 var fields = new List<string>();
                 foreach (var item in dataDiff)
@@ -371,7 +374,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             var dataOld = SeasonGet(id);
             if (0 < dataOld.Count)
             {
-                var dataDiff = data.Where(entry => dataOld[entry.Key] != entry.Value)
+                var dataDiff = data.Where(entry => !dataOld.ContainsKey(entry.Key) || dataOld[entry.Key] != entry.Value)
                     .ToDictionary(entry => entry.Key, entry => entry.Value);
                 var fields = new List<string>();
                 foreach (var item in dataDiff)
@@ -392,7 +395,9 @@ CREATE TABLE IF NOT EXISTS [video] (
             else
             {
                 data.Add("id", id.ToString());
-                data.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
+                var date = DateTime.UtcNow.ToString(TIME_FORMAT);
+                data.Add("created_date", date);
+                data.Add("updated_date", date);
                 var fields = new List<string>(data.Keys);
 #if DEBUG
                 Console.WriteLine("\tInsert Season\t{0}:\t{1}", id, SimpleJson.SimpleJson.SerializeObject(data));
@@ -416,7 +421,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             var data = new Dictionary<string, string>();
             var result =
                 _ExecuteReader(
-                    @"SELECT season.*, http_cache.create_date  FROM season LEFT JOIN http_cache ON season.url = http_cache.url WHERE season.id = @id LIMIT 1",
+                    @"SELECT season.*, http_cache.create_date AS cached_date  FROM season LEFT JOIN http_cache ON season.url = http_cache.url WHERE season.id = @id LIMIT 1",
                     new Dictionary<string, string> {{"id", id.ToString()}});
             if (0 < result.Count)
                 data = result[0];
@@ -604,7 +609,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             var dataOld = TranslateGet(where);
             if (0 < dataOld.Count)
             {
-                var dataDiff = data.Where(entry => dataOld[entry.Key] != entry.Value)
+                var dataDiff = data.Where(entry => !dataOld.ContainsKey(entry.Key) || dataOld[entry.Key] != entry.Value)
                     .ToDictionary(entry => entry.Key, entry => entry.Value);
                 var fieldsUpdate = new List<string>();
                 foreach (var item in dataDiff)
@@ -693,7 +698,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             var dataOld = PlaylistGet(seasonID, translateID);
             if (0 < dataOld.Count)
             {
-                var dataDiff = data.Where(entry => dataOld[entry.Key] != entry.Value)
+                var dataDiff = data.Where(entry => !dataOld.ContainsKey(entry.Key) || dataOld[entry.Key] != entry.Value)
                     .ToDictionary(entry => entry.Key, entry => entry.Value);
                 var fieldsUpdate = new List<string>();
                 foreach (var item in dataDiff)
@@ -716,8 +721,10 @@ CREATE TABLE IF NOT EXISTS [video] (
                 return false;
             }
 
-            data.Add("season_id", seasonID.ToString());
-            data.Add("translate_id", translateID.ToString());
+            if (!data.ContainsKey("season_id"))
+                data.Add("season_id", seasonID.ToString());
+            if (!data.ContainsKey("translate_id"))
+                data.Add("translate_id", translateID.ToString());
             var date = DateTime.UtcNow.ToString(TIME_FORMAT);
             data.Add("created_date", date);
             data.Add("updated_date", date);
@@ -728,8 +735,8 @@ CREATE TABLE IF NOT EXISTS [video] (
 #endif
             return 0 < _ExecuteNonQuery(
                        @"INSERT INTO playlist (" + string.Join(", ", fieldsNew.ToArray()) +
-                       ", created_date, updated_date) VALUES (@" + string.Join(", @", fieldsNew.ToArray()) +
-                       ", @created_date, @updated_date)", data);
+                       ") VALUES (@" + string.Join(", @", fieldsNew.ToArray()) +
+                       ")", data);
         }
 
         public Dictionary<string, string> PlaylistGet(int seasonID, int translateID)

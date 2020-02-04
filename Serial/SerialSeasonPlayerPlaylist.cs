@@ -5,30 +5,24 @@ using HomeTheater.Serial.data;
 
 namespace HomeTheater.Serial
 {
-    internal class SerialSeasonPlayerPlaylist : APIParent
+    internal class SerialSeasonPlayerPlaylist : SerialParent
     {
-        private readonly List<string> __needSave = new List<string>();
-        private readonly SerialSeasonPlayerPlaylistTranslate Translate;
-        private DateTime __created_date, __updated_date, __cached_date;
-        private float __percent;
-        private string __url, __secure;
-        public int SeasonID, SerialID, timeout;
-
-        private Dictionary<string, Dictionary<string, string>> videoOrder =
-            new Dictionary<string, Dictionary<string, string>>();
+        private DateTime __cached_date;
+        public int SeasonID, timeout;
+        public SerialSeasonPlayerPlaylistTranslate Translate;
 
         public Dictionary<int, SerialSeasonPlayerPlaylistVideo> Videos =
             new Dictionary<int, SerialSeasonPlayerPlaylistVideo>();
 
-        public SerialSeasonPlayerPlaylist(int TranslateKey, int SeasonID, int SerialID, string Secure = "",
+        public SerialSeasonPlayerPlaylist(int TranslateKey, int SerialID, int SeasonID, string Secure = "",
             int timeout = 60 * 60 * 24 * 10)
         {
             Translate = new SerialSeasonPlayerPlaylistTranslate(TranslateKey);
             this.SeasonID = SeasonID;
             this.SerialID = SerialID;
             this.timeout = timeout;
-            __secure = Secure;
-            Init();
+            this.Secure = Secure;
+            Load();
         }
 
         public SerialSeasonPlayerPlaylist(int TranslateKey, int SerialID, string url, int timeout = 60 * 60 * 24 * 10)
@@ -41,97 +35,41 @@ namespace HomeTheater.Serial
             SeasonID = IntVal(data[4]);
 
             TranslateSlug = data[3];
-            __secure = data[2];
-            Init();
+            Secure = data[2];
+            Load();
         }
 
-        public SerialSeasonPlayerPlaylist(int TranslateKey, int SeasonID, int SerialID, Dictionary<string, string> data,
+        public SerialSeasonPlayerPlaylist(int TranslateKey, int SerialID, int SeasonID, Dictionary<string, string> data,
             int timeout = 60 * 60 * 24 * 10)
         {
             Translate = new SerialSeasonPlayerPlaylistTranslate(TranslateKey);
+            if (0 < data.Count)
+                LoadValues(() => { return data; });
+            else
+                Load();
             this.SeasonID = SeasonID;
             this.SerialID = SerialID;
             this.timeout = timeout;
-            foreach (var item in data)
-                this[item.Key] = item.Value;
-        }
-
-        private string this[string index]
-        {
-            get
-            {
-                var result = "";
-
-                switch (index)
-                {
-                    case "url":
-                        result = __url;
-                        break;
-                    case "secure":
-                        result = __secure;
-                        break;
-                    case "percent":
-                        var ___percent = __percent * 100;
-                        result = ___percent.ToString();
-                        break;
-                }
-
-                return result;
-            }
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    value = value.Trim();
-                    switch (index)
-                    {
-                        case "url":
-                            __url = value;
-                            break;
-                        case "secure":
-                            __secure = value;
-                            break;
-                        case "percent":
-                            __percent = floatVal(value) / 100;
-                            break;
-                        case "created_date":
-                            __created_date = DateVal(value, DB.TIME_FORMAT);
-                            break;
-                        case "updated_date":
-                            __updated_date = DateVal(value, DB.TIME_FORMAT);
-                            break;
-                        case "cached_date":
-                            __cached_date = DateVal(value, DB.TIME_FORMAT);
-                            break;
-                    }
-                }
-            }
         }
 
         public string URL
         {
-            get => string.IsNullOrWhiteSpace(__url) ? "" : __url;
-            set
-            {
-                if (__url != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("url");
-                    __url = value;
-                }
-            }
+            get => getValue("url");
+            set => setValue("url", value);
+        }
+
+        public string newURL => APIServer.Instance.downloadPlaylistURL(SeasonID, TranslateSlug);
+
+        public int SerialID
+        {
+            get => getValueInt("serial_id");
+            set => setValue("serial_id", value);
         }
 
         public string Secure
         {
-            get => string.IsNullOrWhiteSpace(__secure) ? "" : __secure;
-            set
-            {
-                if (__secure != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("secure");
-                    __secure = value;
-                }
-            }
+            get => getValue("secure");
+            set => setValue("secure", value);
         }
 
         public int TranslateID
@@ -154,36 +92,36 @@ namespace HomeTheater.Serial
 
         public float TranslatePercent
         {
-            get => 0 < __percent ? __percent : 0;
-            set
-            {
-                if (__percent != value && 0 < value)
-                {
-                    __needSave.Add("percent");
-                    __percent = value;
-                }
-            }
+            get => getValueFloat("percent");
+            set => setValue("percent", value);
         }
 
         public string TranslateSlug
         {
-            get => Translate.Slug;
+            get => null != Translate ? Translate.Slug : "";
             set => Translate.Slug = value;
         }
 
-        private void Init()
+        public DateTime CreatedDate => getValueDate("created_date");
+
+        public DateTime UpdatedDate => getValueDate("updated_date");
+
+        public DateTime CachedDate
         {
-            Load();
+            get => __cached_date != new DateTime() ? __cached_date : getValueDate("cached_date");
+            set => __cached_date = value;
+        }
+
+
+        protected override void callbackValue(string name, string value)
+        {
         }
 
         private void Load()
         {
             if (0 == SeasonID || 0 == TranslateID)
                 return;
-            var data = DB.Instance.PlaylistGet(SeasonID, TranslateID);
-            if (0 < data.Count)
-                foreach (var item in data)
-                    this[item.Key] = item.Value;
+            LoadValues(() => { return DB.Instance.PlaylistGet(SeasonID, TranslateID); });
         }
 
         public async void SaveAsync()
@@ -192,46 +130,47 @@ namespace HomeTheater.Serial
             Save();
         }
 
+        internal void tempOrderVideo(Dictionary<string, Dictionary<string, string>> value)
+        {
+            // throw new NotImplementedException();
+        }
+
         private void Save()
         {
-            if (0 == __needSave.Count || 0 == SeasonID || 0 == TranslateID)
+            if (0 == __data_new.Count || 0 == SeasonID || 0 == TranslateID)
                 return;
 #if DEBUG
             var start = DateTime.UtcNow;
 #endif
-            var data = new Dictionary<string, string>();
-            for (var i = 0; i < __needSave.Count; i++)
+            if (!__data_new.ContainsKey("translate_id"))
+                __data_new.Add("translate_id", TranslateID.ToString());
+            if (!__data_new.ContainsKey("translate_key"))
+                __data_new.Add("translate_key", TranslateKey.ToString());
+            if (!__data_new.ContainsKey("translate_slug"))
+                __data_new.Add("translate_slug", TranslateSlug);
+            SaveValues(data =>
             {
-                var field = __needSave[i];
-                var value = this[field];
-                if (!string.IsNullOrWhiteSpace(value) && !data.ContainsKey(field))
-                    data.Add(field, value);
-            }
-
-            if (0 < data.Count)
-            {
-                data.Add("serial_id", SerialID.ToString());
-                data.Add("translate_key", TranslateKey.ToString());
-                __needSave.Clear();
-                DB.Instance.PlaylistSet(SeasonID, TranslateID, data);
+                if (0 == SeasonID || 0 == TranslateID)
+                    return false;
+                return DB.Instance.PlaylistSet(SeasonID, TranslateID, data);
+            });
 #if DEBUG
-                Console.WriteLine("\tSave Playlist\t{0}\t{1}\t{2}({3}):\t{4}", SerialID, SeasonID, TranslateID,
-                    TranslateName, DateTime.UtcNow.Subtract(start).TotalSeconds);
+            Console.WriteLine("\tSave Playlist\t{0}\t{1}\t{2}({3}):\t{4}", SerialID, SeasonID, TranslateID,
+                TranslateName, DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
-            }
-        }
-
-        public void tempOrderVideo(Dictionary<string, Dictionary<string, string>> value)
-        {
-            videoOrder = value;
         }
 
         public bool sync(bool forsed = false)
         {
-            var content = download(forsed);
-            parse(content);
-            SaveAsync();
-            return string.IsNullOrEmpty(content);
+            if (timeout < DateTime.UtcNow.Subtract(CachedDate).TotalSeconds || forsed)
+            {
+                var content = download(forsed);
+                parse(content);
+                SaveAsync();
+                return string.IsNullOrEmpty(content);
+            }
+
+            return true;
         }
 
         private void parse(string html)
@@ -251,34 +190,33 @@ namespace HomeTheater.Serial
 
         private void parseVideo(List<video> data)
         {
-            for (var i = 0; i < data.Count; i++)
-            {
-                var item = data[i];
-                if (null != item.folder)
-                {
-                    parseVideo(item.folder);
-                }
-                else
+            foreach (var item in data)
+                if (null == item.folder)
                 {
                     var id = IntVal(item.vars);
-                    if (!Videos.ContainsKey(id))
-                        Videos.Add(id, new SerialSeasonPlayerPlaylistVideo(id, SeasonID, SerialID, item, Translate));
-                    else
+                    if (Videos.ContainsKey(id))
                         Videos[id].parseVideo(item);
+                    else
+                        Videos.Add(id, new SerialSeasonPlayerPlaylistVideo(id, SeasonID, SerialID, item, Translate));
 
                     Videos[id].SaveAsync();
                 }
-            }
+                else
+                {
+                    parseVideo(item.folder);
+                }
         }
 
         private string download(bool forsed)
         {
-            var cacheItem = APIServer.Instance.downloadPlaylist(SeasonID, TranslateSlug, Secure, forsed, timeout);
+            var cacheItem = APIServer.Instance.downloadPlaylist(SeasonID, TranslateSlug, forsed, timeout);
             if ((cacheItem.isNew || string.IsNullOrEmpty(URL)) && cacheItem.data.ContainsKey("secure"))
             {
                 Secure = cacheItem.data["secure"];
                 URL = cacheItem.url;
             }
+
+            CachedDate = cacheItem.date;
 
             return cacheItem.ToString();
         }

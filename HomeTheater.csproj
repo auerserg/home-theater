@@ -127,6 +127,7 @@
     <Compile Include="Serial\data\data4play.cs" />
     <Compile Include="Serial\data\markresponse.cs" />
     <Compile Include="Serial\data\video.cs" />
+    <Compile Include="Serial\SerialParent.cs" />
     <Compile Include="Serial\SerialSeasonPlayer.cs" />
     <Compile Include="Serial\SerialSeasonPlayerPlaylist.cs" />
     <Compile Include="Serial\SerialSeason.cs" />

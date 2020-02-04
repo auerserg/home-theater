@@ -24,7 +24,7 @@ namespace HomeTheater.Serial
 
         protected string PROFILE_PATH;
         public int ProfileID;
-        public string secureMark;
+        public string Secure;
 
         public APIServer(string _login = null, string _password = null)
         {
@@ -191,9 +191,9 @@ namespace HomeTheater.Serial
             return cacheItem.ToString();
         }
 
-        public List<SerialSeason> getSidebar(string mode = "new", bool forsed = false, int timeout = 60 * 60)
+        public Dictionary<int, SerialSeason> getSidebar(string mode = "new", bool forsed = false, int timeout = 60 * 60)
         {
-            var results = new List<SerialSeason>();
+            var results = new Dictionary<int, SerialSeason>();
             try
             {
                 var content = downloadSidebar(mode, forsed, timeout);
@@ -203,9 +203,8 @@ namespace HomeTheater.Serial
                     {
                         var cserial = new SerialSeason(string.Concat(SERVER_URL, serial.Groups[1].ToString()));
                         cserial.parseSidebar(serial.Groups[2].ToString());
-                        // TODO Добавить проверку на уникальност сериала
-
-                        results.Add(cserial);
+                        if (!results.ContainsKey(cserial.ID))
+                            results.Add(cserial.ID, cserial);
                     }
             }
             catch (Exception ex)
@@ -265,8 +264,8 @@ namespace HomeTheater.Serial
         public DBCache downloadPlayer(int id, int serial, string secure = "", bool forsed = false,
             int timeout = 60 * 60)
         {
-            if (!string.IsNullOrEmpty(secureMark))
-                secure = secureMark;
+            if (!string.IsNullOrEmpty(Secure))
+                secure = Secure;
             var url = downloadPlayerCacheURL(id, serial);
             if (!string.IsNullOrEmpty(secure))
             {
@@ -285,16 +284,22 @@ namespace HomeTheater.Serial
             return new DBCache(url, timeout);
         }
 
-        public DBCache downloadPlaylist(int seasonID, string translateSlug = "", string secure = "",
-            bool forsed = false, int timeout = 60 * 60)
+        public string downloadPlaylistURL(int seasonID, string translateSlug = "")
         {
-            if (!string.IsNullOrEmpty(secureMark))
-                secure = secureMark;
-            var url = SERVER_URL + string.Format(PLAYLIST_PATH, secure, translateSlug, seasonID);
-            if (!string.IsNullOrEmpty(secure))
+            if (string.IsNullOrEmpty(Secure))
+                return "";
+            return SERVER_URL + string.Format(PLAYLIST_PATH, Secure, translateSlug, seasonID);
+        }
+
+        public DBCache downloadPlaylist(int seasonID, string translateSlug = "", bool forsed = false,
+            int timeout = 60 * 60)
+        {
+            var url = downloadPlaylistURL(seasonID, translateSlug);
+            if (!string.IsNullOrEmpty(url))
             {
                 var cacheItem = downloadPage(url, forsed, timeout);
-                cacheItem.data.Add("secure", secure);
+                if (cacheItem.url == url)
+                    cacheItem.data.Add("secure", Secure);
 
                 return cacheItem;
             }
@@ -302,30 +307,39 @@ namespace HomeTheater.Serial
             return new DBCache(url, timeout);
         }
 
+        public string prepareSecureUrl(string url)
+        {
+            return url.Replace("{SECURE}", Secure);
+        }
+
         public int GetFileSize(string url)
         {
-#if DEBUG
-            var start = DateTime.UtcNow;
-#endif
             var result = 0;
-            try
+            if (!string.IsNullOrWhiteSpace(url))
             {
-                var webRequest = WebRequest.Create(url);
-                webRequest.Method = "HEAD";
-                using (var webResponse = webRequest.GetResponse())
-                {
-                    var fileSize = webResponse.Headers.Get("Content-Length");
-                    result = IntVal(fileSize);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Instance.Error(ex);
-            }
 #if DEBUG
-            Console.WriteLine("Live Request: {0} - {1}", url,
-                DateTime.UtcNow.Subtract(start).TotalSeconds);
+                var start = DateTime.UtcNow;
 #endif
+                try
+                {
+                    var webRequest = WebRequest.Create(url);
+                    webRequest.Method = "HEAD";
+                    using (var webResponse = webRequest.GetResponse())
+                    {
+                        var fileSize = webResponse.Headers.Get("Content-Length");
+                        result = IntVal(fileSize);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+#if DEBUG
+                Console.WriteLine("Live Request: {0} - {1}", url,
+                    DateTime.UtcNow.Subtract(start).TotalSeconds);
+#endif
+            }
+
             return result;
         }
     }

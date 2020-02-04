@@ -5,21 +5,16 @@ using HomeTheater.Serial.data;
 
 namespace HomeTheater.Serial
 {
-    internal class SerialSeasonPlayerPlaylistVideo : APIParent
+    internal class SerialSeasonPlayerPlaylistVideo : SerialParent
     {
-        private readonly List<string> __needSave = new List<string>();
-        private DateTime __created_date, __updated_date;
-        private int __serial_id, __season_id;
-        private string __subtitle, __url, __video_id, __video_next_id, __translate_name;
-
+        private readonly SerialSeasonPlayerPlaylistTranslate Translate;
         public int ID;
-        private SerialSeasonPlayerPlaylistTranslate Translate;
 
         public SerialSeasonPlayerPlaylistVideo(int id, int seasonId, int serialId, video data,
             SerialSeasonPlayerPlaylistTranslate translate = null)
         {
             ID = id;
-            Init();
+            Load();
             SeasonID = seasonId;
             SerialID = serialId;
             if (null != translate && null == Translate)
@@ -30,7 +25,7 @@ namespace HomeTheater.Serial
         public SerialSeasonPlayerPlaylistVideo(int id, int seasonId, int serialId, video data, int translateKey = -1)
         {
             ID = id;
-            Init();
+            Load();
             SeasonID = seasonId;
             SerialID = serialId;
             if (0 <= translateKey && null != Translate)
@@ -42,7 +37,7 @@ namespace HomeTheater.Serial
             string translateName = "")
         {
             ID = id;
-            Init();
+            Load();
             SeasonID = seasonId;
             SerialID = serialId;
             if (!string.IsNullOrWhiteSpace(translateName) && null != Translate)
@@ -53,171 +48,61 @@ namespace HomeTheater.Serial
         public SerialSeasonPlayerPlaylistVideo(int id, Dictionary<string, string> data)
         {
             ID = id;
-            if (0 < data.Count)
-                foreach (var item in data)
-                    this[item.Key] = item.Value;
-        }
-
-        private string this[string index]
-        {
-            get
-            {
-                var result = "";
-
-                switch (index)
-                {
-                    case "season_id":
-                        result = __season_id.ToString();
-                        break;
-                    case "serial_id":
-                        result = __serial_id.ToString();
-                        break;
-                    case "url":
-                        result = __url;
-                        break;
-                    case "video_id":
-                        result = __video_id;
-                        break;
-                    case "video_next_id":
-                        result = __video_next_id;
-                        break;
-                    case "subtitle":
-                        result = __subtitle;
-                        break;
-                    case "translate_id":
-                        result = TranslateID.ToString();
-                        break;
-                    case "translate_name":
-                        result = TranslateName;
-                        break;
-                }
-
-                return result;
-            }
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    value = value.Trim();
-                    switch (index)
-                    {
-                        case "translate_name":
-                            TranslateName = value;
-                            if (__needSave.Contains("translate_name"))
-                                __needSave.Remove("translate_name");
-                            if (__needSave.Contains("translate_id"))
-                                __needSave.Remove("translate_id");
-                            break;
-                        case "season_id":
-                            __season_id = IntVal(value);
-                            break;
-                        case "serial_id":
-                            __serial_id = IntVal(value);
-                            break;
-                        case "video_id":
-                            __video_id = value;
-                            break;
-                        case "video_next_id":
-                            __video_next_id = value;
-                            break;
-                        case "url":
-                            __url = value;
-                            break;
-                        case "file_size":
-                            FileSize = IntVal(value);
-                            break;
-                        case "subtitle":
-                            __subtitle = value;
-                            break;
-                        case "created_date":
-                            __created_date = DateVal(value, DB.TIME_FORMAT);
-                            break;
-                        case "updated_date":
-                            __updated_date = DateVal(value, DB.TIME_FORMAT);
-                            break;
-                    }
-                }
-            }
+            LoadValues(() => { return data; });
         }
 
         public int SerialID
         {
-            get => __serial_id;
-            set
-            {
-                if (__serial_id < value && value > 0)
-                {
-                    __needSave.Add("serial_id");
-                    __serial_id = value;
-                }
-            }
+            get => getValueInt("serial_id");
+            set => setValue("serial_id", value);
         }
 
         public int SeasonID
         {
-            get => __season_id;
-            set
-            {
-                if (__season_id < value && value > 0)
-                {
-                    __needSave.Add("season_id");
-                    __season_id = value;
-                }
-            }
+            get => getValueInt("season_id");
+            set => setValue("season_id", value);
         }
 
         public string URL
         {
-            get => string.IsNullOrWhiteSpace(__url) ? "" : __url;
-            set
-            {
-                if (__url != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("url");
-                    __url = value;
-                }
-            }
+            get => APIServer.Instance.prepareSecureUrl(getValue("url"));
+            set => setValue("url", value);
         }
 
-        public int FileSize { get; set; }
+        public string Secure
+        {
+            get => getValue("secure");
+            set => setValue("secure", value);
+        }
+
+        public string FileName
+        {
+            get => getValue("file_name");
+            set => setValue("file_name", value);
+        }
+
+        public int FileSize
+        {
+            get => getValueInt("file_size");
+            set => setValue("file_size", value);
+        }
 
         public string SubTitle
         {
-            get => string.IsNullOrWhiteSpace(__subtitle) ? "" : __subtitle;
-            set
-            {
-                if (__subtitle != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("subtitle");
-                    __subtitle = value;
-                }
-            }
+            get => getValue("subtitle");
+            set => setValue("subtitle", value);
         }
 
         public string VideoID
         {
-            get => string.IsNullOrWhiteSpace(__video_id) ? "" : __video_id;
-            set
-            {
-                if (__video_id != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("video_id");
-                    __video_id = value;
-                }
-            }
+            get => getValue("video_id");
+            set => setValue("video_id", value);
         }
 
         public string VideoNextID
         {
-            get => string.IsNullOrWhiteSpace(__video_next_id) ? "" : __video_next_id;
-            set
-            {
-                if (__video_next_id != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __needSave.Add("video_next_id");
-                    __video_next_id = value;
-                }
-            }
+            get => getValue("video_next_id");
+            set => setValue("video_next_id", value);
         }
 
         public int TranslateID => null != Translate ? Translate.ID : 0;
@@ -226,42 +111,26 @@ namespace HomeTheater.Serial
 
         public string TranslateName
         {
-            get => !string.IsNullOrWhiteSpace(__translate_name) ? __translate_name :
-                null != Translate ? Translate.Name : "";
-            set
-            {
-                if (TranslateName != value && !string.IsNullOrWhiteSpace(value))
-                {
-                    __translate_name = value;
-                    __needSave.Add("translate_name");
-                    __needSave.Add("translate_id");
-                    var _translate = new SerialSeasonPlayerPlaylistTranslate(value);
-                    if (0 == _translate.ID)
-                        _translate.Save();
-                }
-            }
+            get => getValue("translate_name", null != Translate ? Translate.Name : "");
+            set => setValue("translate_name", value);
         }
 
-        public string TranslateSlug
-        {
-            get => Translate.Slug;
-            set => Translate.Slug = value;
-        }
+        public string TranslateSlug => null != Translate ? Translate.Slug : "";
 
-        private void Init()
+        public DateTime CreatedDate => getValueDate("created_date");
+
+        public DateTime UpdatedDate => getValueDate("updated_date");
+
+
+        protected override void callbackValue(string name, string value)
         {
-            Load();
         }
 
         public void Load()
         {
-            if (0 < ID)
-            {
-                var data = DB.Instance.VideoGet(ID);
-                if (0 < data.Count)
-                    foreach (var item in data)
-                        this[item.Key] = item.Value;
-            }
+            if (0 == ID)
+                return;
+            LoadValues(() => { return DB.Instance.VideoGet(ID); });
         }
 
         public async void SaveAsync()
@@ -271,55 +140,42 @@ namespace HomeTheater.Serial
 
         public void Save()
         {
-            if (0 == __needSave.Count || 0 == ID)
+            if (0 == __data_new.Count || 0 == ID)
                 return;
 #if DEBUG
             var start = DateTime.UtcNow;
 #endif
-            var data = new Dictionary<string, string>();
-            for (var i = 0; i < __needSave.Count; i++)
+            if (!__data_new.ContainsKey("translate_id"))
+                __data_new.Add("translate_id", TranslateID.ToString());
+            if (__data_new.ContainsKey("url") || 0 == FileSize)
             {
-                var field = __needSave[i];
-                var value = this[field];
-                if (!string.IsNullOrWhiteSpace(value) && !data.ContainsKey(field))
-                    data.Add(field, value);
+                FileSize = GetFileSize(URL);
+                Secure = APIServer.Instance.Secure;
             }
 
-            if (0 < data.Count)
+            SaveValues(data =>
             {
-                if (__needSave.Contains("url"))
-                {
-                    var size = GetFileSize(URL);
-                    if (FileSize != size && 0 < size)
-                    {
-                        FileSize = size;
-                        data.Add("file_size", FileSize.ToString());
-                    }
-                }
-
-                if (!data.ContainsKey("translate_id"))
-                    data.Add("translate_id", TranslateID.ToString());
-
-                if (!data.ContainsKey("translate_name"))
-                    data.Add("translate_name", TranslateName);
-
-                __needSave.Clear();
-                DB.Instance.VideoSet(ID, data);
+                if (0 == ID)
+                    return false;
+                return DB.Instance.VideoSet(ID, data);
+            });
 #if DEBUG
-                Console.WriteLine("\tSave Video\t\t{0}\t{1}\t{2}({3})\t{4}:\t{5}", SerialID, SeasonID, TranslateID,
-                    TranslateName, ID, DateTime.UtcNow.Subtract(start).TotalSeconds);
+            Console.WriteLine("\tSave Video\t\t{0}\t{1}\t{2}({3})\t{4}:\t{5}", SerialID, SeasonID, TranslateID,
+                TranslateName, ID, DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
-            }
         }
 
         public void parseVideo(video data)
         {
-            URL = data.fileReal;
+            SubTitle = data.subtitle;
+            var url = data.fileReal;
+            var secure = Match(url, "fi2lm/([^/]+)", REGEX_IC, 1);
+            FileName = Match(url, "/([^/]+)$", REGEX_IC, 1);
+            URL = url.Replace(secure, "{SECURE}");
             VideoID = data.id;
             var _translateName = Match(data.title, "<br[^<>]*>(.*?)$", REGEX_IC, 1).Trim();
-
-            if (!string.IsNullOrEmpty(_translateName)) ;
-            TranslateName = _translateName;
+            if (!string.IsNullOrEmpty(_translateName))
+                TranslateName = _translateName;
         }
 
         private int GetFileSize(string url)

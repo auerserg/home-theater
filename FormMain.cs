@@ -26,11 +26,6 @@ namespace HomeTheater
             InitializeComponent();
         }
 
-        private void FormMain_Load(object sender, EventArgs e)
-        {
-            LoadFormMain();
-        }
-
         private async void LoadFormMain()
         {
             DB._load();
@@ -55,6 +50,7 @@ namespace HomeTheater
 
         private void FormMain_Shown(object sender, EventArgs e)
         {
+            LoadFormMain();
             if (APIServer.Instance.isLogedIn())
             {
                 SyncAsync();
@@ -80,7 +76,7 @@ namespace HomeTheater
             Serials = await Task.Run(() => APIServer.Instance.getPause(list));
             setStatusMessage("Обновление таблицы");
             listViewSerials_updateAsync();
-            SyncSerialsAsync(serials, playlists, videos);
+            await SyncSerialsAsync(serials, playlists, videos);
         }
 
         private async Task SyncSerialsAsync(bool serials = false, bool playlists = false, bool videos = false)
@@ -93,19 +89,22 @@ namespace HomeTheater
             {
                 try
                 {
+                    var IDs = new List<int>();
                     // Синхронизация Страниц
                     for (var i = 0; i < Serials.Count; i++)
                     {
                         var title = Serials[i].TitleFull;
 
                         Invoke(new Action(() => setStatusMessage("Обработка страницы: " + title)));
-                        Serials[i].syncPage(serials && "watched" != Serials[i].Type);
                         if (i == 0)
                         {
                             var SecureMark = Serials[i].GetOnlySecure();
-                            Invoke(new Action(() => APIServer.Instance.secureMark = SecureMark));
+                            Invoke(new Action(() => APIServer.Instance.Secure = SecureMark));
                         }
 
+                        Serials[i].syncPage(serials && "watched" != Serials[i].Type);
+                        if (!IDs.Contains(Serials[i].ID))
+                            IDs.Add(Serials[i].ID);
                         Invoke(new Action(() =>
                         {
                             Serials[i].ToListViewItem();
@@ -161,8 +160,8 @@ namespace HomeTheater
                         Serials[i].syncPage(i == 0 || serials && "watched" != Serials[i].Type);
                         if (i == 0)
                         {
-                            var SecureMark = Serials[i].SecureMark;
-                            Invoke(new Action(() => APIServer.Instance.secureMark = SecureMark));
+                            var Secure = Serials[i].Secure;
+                            Invoke(new Action(() => APIServer.Instance.Secure = Secure));
                         }
 
                         Invoke(new Action(() => setStatusMessage("Обработка плейлистов: " + title)));
@@ -198,7 +197,7 @@ namespace HomeTheater
                 listViewSerials.Items.Clear();
                 for (var i = 0; i < Serials.Count; i++)
                 {
-                    var SeasonID = Serials[i].SeasonID.ToString();
+                    var SeasonID = Serials[i].ID.ToString();
                     Serials[i].ListViewItem.Group = listViewSerials.Groups["listViewGroup" + Serials[i].Type];
                     if (!listViewSerials.Items.ContainsKey(SeasonID))
                         listViewSerials.Items.Add(Serials[i].ToListViewItem());
@@ -640,10 +639,20 @@ namespace HomeTheater
                 var a = sender as ListView;
                 if (a.SelectedItems.Count > 0)
                 {
-                    var item = a.SelectedItems[0].Tag as SerialSeason;
-#if DEBUG
-                    Console.WriteLine("MouseClick Right {0:S}", item.URL);
-#endif
+                    var types = new List<string>();
+                    for (var i = 0; i < a.SelectedItems.Count; i++)
+                    {
+                        var item = a.SelectedItems[i].Tag as SerialSeason;
+                        if (!types.Contains(item.Type)) types.Add(item.Type);
+                    }
+
+                    отметитьНаПоследнейСерииToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("nonew"));
+                    хочуПосмотретьToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("want"));
+                    ужеПосмотрелToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("watched"));
+
+                    //#if DEBUG
+                    //                    Console.WriteLine("MouseClick Right {0:S}", item.URL);
+                    //#endif
                     // UNDONE Фильтровать пункты контекстного меню
                 }
             }
@@ -678,6 +687,15 @@ namespace HomeTheater
                         string.Format(
                             (item.TitleRU != item.TitleOriginal ? "{0:S}\n{1:S}" : "{0:S}") +
                             (0 < item.Season ? "\nСезон: {2}" : ""), item.TitleRU, item.TitleOriginal, item.Season);
+                    labelGenre.Text = item.Genre;
+                    labelCountry.Text = item.Country;
+                    labelRelease.Text = item.Release;
+                    labelIMDB.Text = item.IMDB.ToString();
+                    labelKinoPoisk.Text = item.KinoPoisk.ToString();
+                    labelMark.Text = item.Mark;
+                    labelCompilation.Text = item.Compilation;
+                    labelSiteUpdated.Text = item.SiteUpdated.ToString("dd.MM.yyyy");
+                    labelDescription.Text = "    " + item.Description.Replace("\r\n", "\r\n    ");
 #if DEBUG
                     Console.WriteLine(linkLabelTitleFULL.Height);
 #endif
@@ -732,12 +750,34 @@ namespace HomeTheater
             {
                 panelTexts.Location = new Point(130, 0);
                 panelTexts.Width = splitContainerSubMain.Panel2.Width * 2 / 3;
+                labelDescription.Height = splitContainerSubMain.Panel2.Height - 190 * 1 - 15;
             }
             else
             {
                 panelTexts.Location = new Point(0, 190);
                 panelTexts.Width = splitContainerSubMain.Panel2.Width;
+                labelDescription.Height = splitContainerSubMain.Panel2.Height - 190 * 2 - 15;
             }
+        }
+
+        private void хочуПосмотретьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // UNDONE Сменить маркер
+        }
+
+        private void отметитьНаПоследнейСерииToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // UNDONE Сменить маркер
+        }
+
+        private void ужеПосмотрелToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // UNDONE Сменить маркер
+        }
+
+        private void вЧерныйСписокToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // UNDONE Сменить маркер
         }
     }
 }
