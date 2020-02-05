@@ -112,6 +112,8 @@ namespace HomeTheater
                         }));
                     }
 
+                    DB.Instance.SeasonClearOld(IDs);
+
                     // Синхронизация Плейлистов
                     Invoke(new Action(() => toolStripProgressBar1.Value = 0));
                     for (var i = 0; i < Serials.Count; i++)

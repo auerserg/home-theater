@@ -416,6 +416,17 @@ CREATE TABLE IF NOT EXISTS [video] (
                        new Dictionary<string, string> {{"id", id.ToString()}});
         }
 
+        public bool SeasonClearOld(List<int> IDs)
+        {
+            if (0 == IDs.Count)
+                return false;
+            var strIDs = string.Join(", ", IDs.ToArray());
+            _ExecuteNonQuery(@"UPDATE season SET type=NULL WHERE type<>NULL AND id NOT IN (" + strIDs + ")");
+            _ExecuteNonQuery(@"UPDATE season SET marks_current=NULL WHERE marks_current<>NULL AND id NOT IN (" +
+                             strIDs + ")");
+            return true;
+        }
+
         public Dictionary<string, string> SeasonGet(int id)
         {
             var data = new Dictionary<string, string>();
@@ -445,6 +456,7 @@ CREATE TABLE IF NOT EXISTS [video] (
 
             return data;
         }
+
 
         public List<int> RelatedGet(int seasonId)
         {
