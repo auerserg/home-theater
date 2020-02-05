@@ -636,36 +636,31 @@ namespace HomeTheater
 
         private void listViewSerials_MouseClick(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right)
+            if (e.Button != MouseButtons.Right || 0 == listViewSerials.SelectedItems.Count)
+                return;
+
+            var types = new List<string>();
+            for (var i = 0; i < listViewSerials.SelectedItems.Count; i++)
             {
-                var a = sender as ListView;
-                if (a.SelectedItems.Count > 0)
-                {
-                    var types = new List<string>();
-                    for (var i = 0; i < a.SelectedItems.Count; i++)
-                    {
-                        var item = a.SelectedItems[i].Tag as SerialSeason;
-                        if (!types.Contains(item.Type)) types.Add(item.Type);
-                    }
-
-                    отметитьНаПоследнейСерииToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("nonew"));
-                    хочуПосмотретьToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("want"));
-                    ужеПосмотрелToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("watched"));
-
-                    //#if DEBUG
-                    //                    Console.WriteLine("MouseClick Right {0:S}", item.URL);
-                    //#endif
-                    // UNDONE Фильтровать пункты контекстного меню
-                }
+                var item = listViewSerials.SelectedItems[i].Tag as SerialSeason;
+                if (!types.Contains(item.Type)) types.Add(item.Type);
             }
+
+            отметитьНаПоследнейСерииToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("nonew"));
+            хочуПосмотретьToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("want"));
+            ужеПосмотрелToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("watched"));
+
+            //#if DEBUG
+            //                    Console.WriteLine("MouseClick Right {0:S}", item.URL);
+            //#endif
+            // UNDONE Фильтровать пункты контекстного меню
         }
 
         private void listViewSerials_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            var a = sender as ListView;
-            if (a.SelectedItems.Count > 0)
+            if (listViewSerials.SelectedItems.Count > 0)
             {
-                var item = a.SelectedItems[0].Tag as SerialSeason;
+                var item = listViewSerials.SelectedItems[0].Tag as SerialSeason;
 #if DEBUG
                 Console.WriteLine("MouseDoubleClick {0:S}", item.URL);
 #endif
@@ -675,35 +670,29 @@ namespace HomeTheater
 
         private void listViewSerials_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (0 < listViewSerials.SelectedItems.Count)
-            {
-                var item = listViewSerials.SelectedItems[0].Tag as SerialSeason;
-                if (item.URL != pictureBoxSeasonImage.Tag)
-                {
-#if DEBUG
-                    Console.WriteLine("SelectedIndexChanged {0:S}", item.URL);
-#endif
-                    pictureBoxSeasonImage.LoadAsync(item.Image);
-                    pictureBoxSeasonImage.Tag = item.URL;
-                    linkLabelTitleFULL.Text =
-                        string.Format(
-                            (item.TitleRU != item.TitleOriginal ? "{0:S}\n{1:S}" : "{0:S}") +
-                            (0 < item.Season ? "\nСезон: {2}" : ""), item.TitleRU, item.TitleOriginal, item.Season);
-                    labelGenre.Text = item.Genre;
-                    labelCountry.Text = item.Country;
-                    labelRelease.Text = item.Release;
-                    labelIMDB.Text = item.IMDB.ToString();
-                    labelKinoPoisk.Text = item.KinoPoisk.ToString();
-                    labelMark.Text = item.Mark;
-                    labelCompilation.Text = item.Compilation;
-                    labelSiteUpdated.Text = item.SiteUpdated.ToString("dd.MM.yyyy");
-                    labelDescription.Text = "    " + item.Description.Replace("\r\n", "\r\n    ");
-#if DEBUG
-                    Console.WriteLine(linkLabelTitleFULL.Height);
-#endif
-                    // UNDONE Обновлять информацию сбоку
-                }
-            }
+            if (0 == listViewSerials.SelectedItems.Count)
+                return;
+            var item = listViewSerials.SelectedItems[0].Tag as SerialSeason;
+            if (item.URL == pictureBoxSeasonImage.Tag)
+                return;
+
+            pictureBoxSeasonImage.LoadAsync(item.Image);
+            pictureBoxSeasonImage.Tag = item.URL;
+            panelTexts.Visible = true;
+            linkLabelTitleFULL.Text =
+                string.Format(
+                    (item.TitleRU != item.TitleOriginal ? "{0:S}\n{1:S}" : "{0:S}") +
+                    (0 < item.Season ? "\nСезон: {2}" : ""), item.TitleRU, item.TitleOriginal, item.Season);
+            labelGenre.Text = item.Genre;
+            labelCountry.Text = item.Country;
+            labelRelease.Text = item.Release;
+            labelIMDB.Text = item.IMDB.ToString();
+            labelKinoPoisk.Text = item.KinoPoisk.ToString();
+            labelMark.Text = item.Mark;
+            labelCompilation.Text = item.Compilation;
+            labelSiteUpdated.Text = item.SiteUpdated.ToString("dd.MM.yyyy");
+            labelDescription.Text = "    " + item.Description.Replace("\r\n", "\r\n    ");
+            // UNDONE Обновлять информацию сбоку
         }
 
         private void pictureBoxSeasonImage_Click(object sender, EventArgs e)
@@ -780,6 +769,90 @@ namespace HomeTheater
         private void вЧерныйСписокToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // UNDONE Сменить маркер
+        }
+
+        private async Task SyncSelectedSerialsAsync(bool serials = false, bool playlists = false, bool videos = false)
+        {
+            if (0 == listViewSerials.SelectedItems.Count)
+                return;
+            toolStripProgressBar1.Minimum = 0;
+            toolStripProgressBar1.Visible = true;
+            toolStripProgressBar1.Value = 0;
+            toolStripProgressBar1.Maximum = listViewSerials.SelectedItems.Count;
+            var collection = new List<SerialSeason>();
+            for (var i = 0; i < listViewSerials.SelectedItems.Count; i++)
+                collection.Add(listViewSerials.SelectedItems[i].Tag as SerialSeason);
+            await Task.Run(() =>
+            {
+                try
+                {
+                    // Синхронизация Страниц
+                    foreach (var season in collection)
+                    {
+                        var title = season.TitleFull;
+                        Invoke(new Action(() =>
+                        {
+                            setStatusMessage("Обработка страницы: " + title);
+                            toolStripProgressBar1.Value++;
+                        }));
+                        season.syncPage(serials);
+                    }
+
+                    // Синхронизация Плейлистов
+                    Invoke(new Action(() => toolStripProgressBar1.Value = 0));
+                    foreach (var season in collection)
+                    {
+                        var title = season.TitleFull;
+                        Invoke(new Action(() =>
+                        {
+                            setStatusMessage("Обработка плейлистов: " + title);
+                            toolStripProgressBar1.Value++;
+                        }));
+                        season.syncPlayer(playlists);
+                    }
+
+                    // Синхронизация Видео
+                    Invoke(new Action(() => toolStripProgressBar1.Value = 0));
+                    foreach (var season in collection)
+                    {
+                        var title = season.TitleFull;
+                        Invoke(new Action(() =>
+                        {
+                            setStatusMessage("Обработка видео: " + title);
+                            toolStripProgressBar1.Value++;
+                        }));
+                        season.syncPlaylists(videos);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+            });
+
+            await SyncSerialsAsync();
+        }
+
+
+        private async void обновитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            contextMenuStripSerials.Close();
+            await SyncSelectedSerialsAsync(true, true, true);
+        }
+
+        private async void страницуToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await SyncSelectedSerialsAsync(true);
+        }
+
+        private async void плеерToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await SyncSelectedSerialsAsync(false, true);
+        }
+
+        private async void видеоToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await SyncSelectedSerialsAsync(false, false, true);
         }
     }
 }

@@ -510,24 +510,28 @@
             this.обновитьToolStripMenuItem.Name = "обновитьToolStripMenuItem";
             this.обновитьToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
             this.обновитьToolStripMenuItem.Text = "Обновить";
+            this.обновитьToolStripMenuItem.Click += new System.EventHandler(this.обновитьToolStripMenuItem_Click);
             // 
             // страницуToolStripMenuItem
             // 
             this.страницуToolStripMenuItem.Name = "страницуToolStripMenuItem";
-            this.страницуToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
+            this.страницуToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.страницуToolStripMenuItem.Text = "Страницу";
+            this.страницуToolStripMenuItem.Click += new System.EventHandler(this.страницуToolStripMenuItem_Click);
             // 
             // плеерToolStripMenuItem
             // 
             this.плеерToolStripMenuItem.Name = "плеерToolStripMenuItem";
-            this.плеерToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
+            this.плеерToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.плеерToolStripMenuItem.Text = "Плеер";
+            this.плеерToolStripMenuItem.Click += new System.EventHandler(this.плеерToolStripMenuItem_Click);
             // 
             // видеоToolStripMenuItem
             // 
             this.видеоToolStripMenuItem.Name = "видеоToolStripMenuItem";
-            this.видеоToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
+            this.видеоToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.видеоToolStripMenuItem.Text = "Видео";
+            this.видеоToolStripMenuItem.Click += new System.EventHandler(this.видеоToolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
             // 
@@ -742,7 +746,6 @@
             this.listViewSerials.HideSelection = false;
             this.listViewSerials.Location = new System.Drawing.Point(0, 26);
             this.listViewSerials.Name = "listViewSerials";
-            this.listViewSerials.ShowItemToolTips = true;
             this.listViewSerials.Size = new System.Drawing.Size(708, 439);
             this.listViewSerials.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.listViewSerials.TabIndex = 1;
@@ -951,6 +954,7 @@
             this.panelTexts.Padding = new System.Windows.Forms.Padding(6);
             this.panelTexts.Size = new System.Drawing.Size(258, 190);
             this.panelTexts.TabIndex = 2;
+            this.panelTexts.Visible = false;
             // 
             // labelSiteUpdated
             // 
