@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Обновления", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Хочу посмотреть", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Нет новых серий", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("Посмотрел", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("В черном списке", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup7 = new System.Windows.Forms.ListViewGroup("Обновления", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup8 = new System.Windows.Forms.ListViewGroup("Хочу посмотреть", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup9 = new System.Windows.Forms.ListViewGroup("Нет новых серий", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup10 = new System.Windows.Forms.ListViewGroup("Посмотрел", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup11 = new System.Windows.Forms.ListViewGroup("В черном списке", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup12 = new System.Windows.Forms.ListViewGroup("", System.Windows.Forms.HorizontalAlignment.Left);
             this.menuMain = new System.Windows.Forms.MenuStrip();
             this.обновитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cпискиСериаловToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -139,6 +139,7 @@
             this.toolStripOpenFolder = new System.Windows.Forms.ToolStripButton();
             this.toolStripResumeAll = new System.Windows.Forms.ToolStripButton();
             this.toolStripPauseAll = new System.Windows.Forms.ToolStripButton();
+            this.остановитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
@@ -175,7 +176,8 @@
             this.cпискиПлейлиствоToolStripMenuItem,
             this.спискиВидеоToolStripMenuItem,
             this.toolStripMenuItem1,
-            this.всеToolStripMenuItem});
+            this.всеToolStripMenuItem,
+            this.остановитьToolStripMenuItem});
             this.обновитьToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Replace;
             this.обновитьToolStripMenuItem.MergeIndex = 30;
             this.обновитьToolStripMenuItem.Name = "обновитьToolStripMenuItem";
@@ -410,7 +412,7 @@
             // splitContainerMain
             // 
             this.splitContainerMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainerMain.Location = new System.Drawing.Point(6, 6);
+            this.splitContainerMain.Location = new System.Drawing.Point(6, 30);
             this.splitContainerMain.Name = "splitContainerMain";
             this.splitContainerMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -422,8 +424,8 @@
             // 
             this.splitContainerMain.Panel2.Controls.Add(this.listDownload);
             this.splitContainerMain.Panel2.Controls.Add(this.toolDownload);
-            this.splitContainerMain.Size = new System.Drawing.Size(982, 656);
-            this.splitContainerMain.SplitterDistance = 426;
+            this.splitContainerMain.Size = new System.Drawing.Size(982, 632);
+            this.splitContainerMain.SplitterDistance = 410;
             this.splitContainerMain.TabIndex = 0;
             // 
             // splitContainerMainList
@@ -443,7 +445,7 @@
             this.splitContainerMainList.Panel2.Controls.Add(this.labelDescription);
             this.splitContainerMainList.Panel2.Controls.Add(this.pictureSeasonImage);
             this.splitContainerMainList.Panel2.ClientSizeChanged += new System.EventHandler(this.splitContainerMainList_Panel2_ClientSizeChanged);
-            this.splitContainerMainList.Size = new System.Drawing.Size(982, 426);
+            this.splitContainerMainList.Size = new System.Drawing.Size(982, 410);
             this.splitContainerMainList.SplitterDistance = 727;
             this.splitContainerMainList.TabIndex = 0;
             // 
@@ -478,29 +480,29 @@
             this.listSerials.Enabled = false;
             this.listSerials.FullRowSelect = true;
             this.listSerials.GridLines = true;
-            listViewGroup1.Header = "Обновления";
-            listViewGroup1.Name = "listViewGroupnew";
-            listViewGroup2.Header = "Хочу посмотреть";
-            listViewGroup2.Name = "listViewGroupwant";
-            listViewGroup3.Header = "Нет новых серий";
-            listViewGroup3.Name = "listViewGroupnonew";
-            listViewGroup4.Header = "Посмотрел";
-            listViewGroup4.Name = "listViewGroupwatched";
-            listViewGroup5.Header = "В черном списке";
-            listViewGroup5.Name = "listViewGroupnotwatch";
-            listViewGroup6.Header = "";
-            listViewGroup6.Name = "listViewGroupnone";
+            listViewGroup7.Header = "Обновления";
+            listViewGroup7.Name = "listViewGroupnew";
+            listViewGroup8.Header = "Хочу посмотреть";
+            listViewGroup8.Name = "listViewGroupwant";
+            listViewGroup9.Header = "Нет новых серий";
+            listViewGroup9.Name = "listViewGroupnonew";
+            listViewGroup10.Header = "Посмотрел";
+            listViewGroup10.Name = "listViewGroupwatched";
+            listViewGroup11.Header = "В черном списке";
+            listViewGroup11.Name = "listViewGroupnotwatch";
+            listViewGroup12.Header = "";
+            listViewGroup12.Name = "listViewGroupnone";
             this.listSerials.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup1,
-            listViewGroup2,
-            listViewGroup3,
-            listViewGroup4,
-            listViewGroup5,
-            listViewGroup6});
+            listViewGroup7,
+            listViewGroup8,
+            listViewGroup9,
+            listViewGroup10,
+            listViewGroup11,
+            listViewGroup12});
             this.listSerials.HideSelection = false;
             this.listSerials.Location = new System.Drawing.Point(0, 26);
             this.listSerials.Name = "listSerials";
-            this.listSerials.Size = new System.Drawing.Size(727, 400);
+            this.listSerials.Size = new System.Drawing.Size(727, 384);
             this.listSerials.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.listSerials.TabIndex = 4;
             this.listSerials.UseCompatibleStateImageBehavior = false;
@@ -957,7 +959,7 @@
             // labelDescription
             // 
             this.labelDescription.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.labelDescription.Location = new System.Drawing.Point(0, 381);
+            this.labelDescription.Location = new System.Drawing.Point(0, 365);
             this.labelDescription.Name = "labelDescription";
             this.labelDescription.Size = new System.Drawing.Size(251, 45);
             this.labelDescription.TabIndex = 2;
@@ -989,7 +991,7 @@
             this.listDownload.HideSelection = false;
             this.listDownload.Location = new System.Drawing.Point(0, 25);
             this.listDownload.Name = "listDownload";
-            this.listDownload.Size = new System.Drawing.Size(982, 201);
+            this.listDownload.Size = new System.Drawing.Size(982, 193);
             this.listDownload.TabIndex = 100;
             this.listDownload.UseCompatibleStateImageBehavior = false;
             this.listDownload.View = System.Windows.Forms.View.Details;
@@ -1091,6 +1093,14 @@
             this.toolStripPauseAll.Name = "toolStripPauseAll";
             this.toolStripPauseAll.Size = new System.Drawing.Size(134, 22);
             this.toolStripPauseAll.Text = "Приостановить Все";
+            // 
+            // остановитьToolStripMenuItem
+            // 
+            this.остановитьToolStripMenuItem.Name = "остановитьToolStripMenuItem";
+            this.остановитьToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.остановитьToolStripMenuItem.Text = "Остановить";
+            this.остановитьToolStripMenuItem.Visible = false;
+            this.остановитьToolStripMenuItem.Click += new System.EventHandler(this.остановитьToolStripMenuItem_Click);
             // 
             // FormList
             // 
@@ -1236,5 +1246,6 @@
         private System.Windows.Forms.ToolStripMenuItem вЧерныйСписокToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem удалитьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem остановитьToolStripMenuItem;
     }
 }
