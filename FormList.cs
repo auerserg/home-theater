@@ -179,35 +179,66 @@ namespace HomeTheater
 
         CancellationTokenSource tokenSource = new CancellationTokenSource();
 
+        private void остановитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tokenSource.Cancel();
+            остановитьToolStripMenuItem.Visible = false;
+        }
+
+        private void CancelSync()
+        {
+            MainParent.StatusProgressEnd();
+            MainParent.StatusMessageSet(Serials.Count + " сериалов");
+            listSerials_ClientSizeChanged(null, null);
+        }
+
         public async Task SyncAsync(bool list = false, bool serials = false, bool playlists = false,
             bool videos = false, bool all = false)
         {
-            MainParent.StatusMessageSet("Проверка авторизации");
-            bool status = Server.Instance.isLogedIn();
-            if (!status)
-            {
-                MainParent.StatusMessageAuthError();
-                return;
-            }
-
-            MainParent.StatusMessageSet("Получение списка сериалов");
-            Serials = await Task.Run(() => Server.Instance.getPause(list)).ConfigureAwait(true);
-            listSerials_updateAsync();
-            await SyncSerialsAsync(serials, playlists, videos, all).ConfigureAwait(true);
-        }
-
-        private async Task SyncSerialsAsync(bool serials = false, bool playlists = false, bool videos = false,
-            bool all = false)
-        {
+            tokenSource.Cancel();
+            tokenSource = new CancellationTokenSource();
+            CancellationToken ct = tokenSource.Token;
+            остановитьToolStripMenuItem.Visible = true;
             await Task.Run(() =>
             {
                 try
                 {
+                    Invoke(new Action(() => MainParent.StatusMessageSet("Проверка авторизации")));
+                    bool status = Server.Instance.isLogedIn();
+                    if (!status)
+                    {
+                        Invoke(new Action(() => MainParent.StatusMessageAuthError()));
+                        return;
+                    }
+
+                    if (ct.IsCancellationRequested)
+                    {
+                        Invoke(new Action(() => CancelSync()));
+                        return;
+                    }
+
+                    Invoke(new Action(() => MainParent.StatusMessageSet("Получение списка сериалов")));
+                    Serials = Server.Instance.getPause(list);
+
+                    if (ct.IsCancellationRequested)
+                    {
+                        Invoke(new Action(() => CancelSync()));
+                        return;
+                    }
+
+                    Invoke(new Action(() => listSerials_updateAsync()));
+
+                    #region Синхронизация Страниц
+
+                    if (ct.IsCancellationRequested)
+                    {
+                        Invoke(new Action(() => CancelSync()));
+                        return;
+                    }
+
                     Invoke(new Action(() => MainParent.StatusProgressReset(Serials.Count)));
                     List<int> IDs = new List<int>();
                     bool first = true;
-
-                    // Синхронизация Страниц
                     foreach (KeyValuePair<int, Season> item in Serials)
                     {
                         string title = item.Value.TitleFull;
@@ -228,10 +259,25 @@ namespace HomeTheater
                             item.Value.ToListViewItem();
                             MainParent.StatusProgressStep();
                         }));
+                        if (ct.IsCancellationRequested)
+                        {
+                            Invoke(new Action(() => CancelSync()));
+                            return;
+                        }
                     }
 
                     DB.Instance.SeasonClearOld(IDs);
-                    // Синхронизация Плейлистов
+
+                    #endregion
+
+                    if (ct.IsCancellationRequested)
+                    {
+                        Invoke(new Action(() => CancelSync()));
+                        return;
+                    }
+
+                    #region Синхронизация Плейлистов
+
                     Invoke(new Action(() => MainParent.StatusProgressReset()));
                     foreach (KeyValuePair<int, Season> item in Serials)
                     {
@@ -244,9 +290,23 @@ namespace HomeTheater
                             //item.Value.ToListViewItem();
                             MainParent.StatusProgressStep();
                         }));
+                        if (ct.IsCancellationRequested)
+                        {
+                            Invoke(new Action(() => CancelSync()));
+                            return;
+                        }
                     }
 
-                    // Синхронизация Видео
+                    #endregion
+
+                    if (ct.IsCancellationRequested)
+                    {
+                        Invoke(new Action(() => CancelSync()));
+                        return;
+                    }
+
+                    #region Синхронизация Видео
+
                     Invoke(new Action(() => MainParent.StatusProgressReset()));
                     foreach (KeyValuePair<int, Season> item in Serials)
                     {
@@ -259,14 +319,25 @@ namespace HomeTheater
                             //item.value.tolistviewitem();
                             MainParent.StatusProgressStep();
                         }));
+                        if (ct.IsCancellationRequested)
+                        {
+                            Invoke(new Action(() => CancelSync()));
+                            return;
+                        }
                     }
+
+                    Invoke(new Action(() => MainParent.StatusProgressEnd()));
+
+                    #endregion
                 }
                 catch (Exception ex)
                 {
                     Logger.Instance.Error(ex);
                 }
-            }).ConfigureAwait(true);
+            }, ct).ConfigureAwait(true);
+
             await LoadTableSerialsAsync().ConfigureAwait(true);
+            остановитьToolStripMenuItem.Visible = false;
         }
 
         public async Task LoadTableSerialsAsync(bool load = false)
@@ -326,8 +397,9 @@ namespace HomeTheater
                     MainParent.StatusProgressStep();
                 }
 
-                listSerials_ClientSizeChanged(null, null);
                 MainParent.StatusProgressEnd();
+                MainParent.StatusMessageSet(Serials.Count + " сериалов");
+                listSerials_ClientSizeChanged(null, null);
                 listSerials.Enabled = true;
             }
             catch (Exception ex)
@@ -753,6 +825,10 @@ namespace HomeTheater
         {
             var collection = getSelectedIds();
 
+            tokenSource.Cancel();
+            tokenSource = new CancellationTokenSource();
+            CancellationToken ct = tokenSource.Token;
+            остановитьToolStripMenuItem.Visible = true;
             await Task.Run(() =>
             {
                 try
@@ -768,6 +844,17 @@ namespace HomeTheater
                             MainParent.StatusProgressStep();
                         }));
                         Serials[seasonID].syncPage(serials);
+                        if (ct.IsCancellationRequested)
+                        {
+                            Invoke(new Action(() => CancelSync()));
+                            return;
+                        }
+                    }
+
+                    if (ct.IsCancellationRequested)
+                    {
+                        Invoke(new Action(() => CancelSync()));
+                        return;
                     }
 
                     // Синхронизация Плейлистов
@@ -781,6 +868,17 @@ namespace HomeTheater
                             MainParent.StatusProgressStep();
                         }));
                         Serials[seasonID].syncPlayer(playlists);
+                        if (ct.IsCancellationRequested)
+                        {
+                            Invoke(new Action(() => CancelSync()));
+                            return;
+                        }
+                    }
+
+                    if (ct.IsCancellationRequested)
+                    {
+                        Invoke(new Action(() => CancelSync()));
+                        return;
                     }
 
                     // Синхронизация Видео
@@ -794,6 +892,11 @@ namespace HomeTheater
                             MainParent.StatusProgressStep();
                         }));
                         Serials[seasonID].syncPlaylists(videos);
+                        if (ct.IsCancellationRequested)
+                        {
+                            Invoke(new Action(() => CancelSync()));
+                            return;
+                        }
                     }
 
                     Invoke(new Action(() => MainParent.StatusProgressEnd()));
@@ -802,8 +905,9 @@ namespace HomeTheater
                 {
                     Logger.Instance.Error(ex);
                 }
-            }).ConfigureAwait(true);
+            }, ct).ConfigureAwait(true);
             await LoadTableSerialsAsync(true);
+            остановитьToolStripMenuItem.Visible = false;
         }
 
         private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
