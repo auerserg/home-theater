@@ -2,55 +2,37 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using HomeTheater.API;
 using HomeTheater.Helper;
-using HomeTheater.Serial;
 
 namespace HomeTheater
 {
     public partial class FormAuth : Form
     {
-        private readonly FormMain mainForm;
+        private const string TEXT_LOGIN = "E-mail";
+        private const string TEXT_PASSWORD = "Пароль";
+        private const int DELAY = 100;
 
-        public FormAuth(FormMain mainForm)
+        public FormAuth()
         {
             InitializeComponent();
-            this.mainForm = mainForm;
         }
 
-        private void TextBoxEmail_Enter(object sender, EventArgs e)
-        {
-            if (textBoxLogin.Text == "E-mail") textBoxLogin.Text = "";
-        }
+        private FormMain FormParent => Owner as FormMain;
 
-        private void TextBoxEmail_Leave(object sender, EventArgs e)
+        private void buttonEnter_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(textBoxLogin.Text)) textBoxLogin.Text = "E-mail";
-        }
-
-        private void TextBoxPassword_Enter(object sender, EventArgs e)
-        {
-            if (textBoxPassword.Text == "Пароль") textBoxPassword.Text = "";
-        }
-
-        private void TextBoxPassword_Leave(object sender, EventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(textBoxPassword.Text)) textBoxPassword.Text = "Пароль";
-        }
-
-        private void ButtonEnter_Click(object sender, EventArgs e)
-        {
-            var login = textBoxLogin.Text;
-            var password = textBoxPassword.Text;
-            buttonEnter.Enabled = false;
-
+            var login = textLogin.Text;
+            var password = textPassword.Text;
             if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password)) return;
-            AnimatedButtonEnter();
+            buttonEnter.Visible = false;
+            AnimationButtonEnter();
             Task.Run(() =>
             {
                 var status = false;
                 try
                 {
-                    status = APIServer.Instance.LogedIn(login, password);
+                    status = Server.Instance.LogedIn(login, password);
                 }
                 catch (Exception ex)
                 {
@@ -63,73 +45,103 @@ namespace HomeTheater
                     DB.Instance.OptionSet("Password", password);
                     Invoke(new Action(() =>
                     {
-                        buttonEnter.Enabled = true;
-                        buttonEnter.Text = "Войти";
-                        mainForm.setStatusMessage(FormMain.SUCS_AUTH);
+                        buttonEnter.Visible = true;
+                        FormParent.StatusMessageAuthSucs();
                         Close();
-                        mainForm.SyncAsync(true);
+                        FormParent.SyncAsync(true);
                     }));
                 }
                 else
                 {
                     Invoke(new Action(() =>
                     {
-                        buttonEnter.Enabled = true;
-                        buttonEnter.Text = "Войти";
-                        mainForm.setStatusMessage(FormMain.ERROR_AUTH);
+                        buttonEnter.Visible = true;
+                        FormParent.StatusMessageAuthError();
                     }));
                 }
             });
         }
 
-        private async void AnimatedButtonEnter()
+        private async void AnimationButtonEnter()
         {
-            string[] animation = {"|", "/", "-", "\\"};
-            while (!buttonEnter.Enabled)
-                for (var i = 0; i < animation.Length; i++)
+            progressAnimation.Visible = true;
+            while (buttonEnter.Visible == false)
+            {
+                while (progressAnimation.Value < progressAnimation.Maximum)
                 {
-                    buttonEnter.Text = animation[i];
-                    await Task.Delay(100);
+                    progressAnimation.Value++;
+                    await Task.Delay(DELAY);
                 }
 
-            buttonEnter.Text = "Войти";
-        }
+                progressAnimation.Value = 0;
+            }
 
-        private void LinkLabelReg_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            Process.Start(APIServer.Instance.getURLRegister);
-        }
-
-        private void LinkLabelForgot_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            Process.Start(APIServer.Instance.getURLForgon);
+            progressAnimation.Visible = false;
         }
 
         private void FormAuth_Load(object sender, EventArgs e)
         {
-            textBoxLogin.Text = DB.Instance.OptionGet("Login");
-            textBoxPassword.Text = DB.Instance.OptionGet("Password");
-            buttonEnter.Text = "Войти";
-            TextBoxEmail_Leave(sender, e);
-            TextBoxPassword_Leave(sender, e);
+            textLogin.Text = DB.Instance.OptionGet("Login");
+            textPassword.Text = DB.Instance.OptionGet("Password");
+            textLogin_Leave(sender, e);
+            textPassword_Leave(sender, e);
+            buttonEnter.Visible = true;
         }
 
-        private void textBoxLogin_KeyDown(object sender, KeyEventArgs e)
+        #region Базовые обработчики полей
+
+        private void textLogin_Enter(object sender, EventArgs e)
+        {
+            if (textLogin.Text == TEXT_LOGIN) textLogin.Text = "";
+        }
+
+        private void textLogin_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textLogin.Text)) textLogin.Text = TEXT_LOGIN;
+        }
+
+        private void textLogin_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                textBoxPassword.Focus();
+                textPassword.Focus();
                 e.Handled = true;
             }
         }
 
-        private void textBoxPassword_KeyDown(object sender, KeyEventArgs e)
+        private void textPassword_Enter(object sender, EventArgs e)
+        {
+            if (textPassword.Text == TEXT_PASSWORD) textPassword.Text = "";
+        }
+
+        private void textPassword_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textPassword.Text)) textPassword.Text = TEXT_PASSWORD;
+        }
+
+        private void textPassword_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                ButtonEnter_Click(null, null);
+                buttonEnter_Click(null, null);
                 e.Handled = true;
             }
         }
+
+        #endregion
+
+        #region Ссылки
+
+        private void linkLabelReg_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start(Server.Instance.getURLRegister);
+        }
+
+        private void linkLabelForgot_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start(Server.Instance.getURLForgon);
+        }
+
+        #endregion
     }
 }

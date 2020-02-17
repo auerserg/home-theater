@@ -5,12 +5,12 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using HomeTheater.API.Response;
 using HomeTheater.Helper;
-using HomeTheater.Serial.data;
 
-namespace HomeTheater.Serial
+namespace HomeTheater.API.Serial
 {
-    internal class SerialSeason : SerialParent
+    internal class Season : Abstract.Serial
     {
         private DateTime __cached_date;
         private string __compilation;
@@ -18,7 +18,7 @@ namespace HomeTheater.Serial
         private bool __forsed_update_player;
         private bool __forsed_update_playlist;
         private bool __needSaveRelated;
-        private SerialSeasonPlayer __player;
+        private Player __player;
         private List<int> __related = new List<int>();
         private Dictionary<int, int> __seasons = new Dictionary<int, int>();
         private string __secure_mark = "";
@@ -29,7 +29,7 @@ namespace HomeTheater.Serial
 
         public Dictionary<int, string> Tags = new Dictionary<int, string>();
 
-        public SerialSeason(string url)
+        public Season(string url)
         {
             ID = IntVal(Match(url, "/serial-([0-9]+)-", REGEX_IC, 1));
             Init();
@@ -46,15 +46,217 @@ namespace HomeTheater.Serial
             }
         }
 
-        public SerialSeason(int id)
+        public Season(string url, string Type)
+        {
+            ID = IntVal(Match(url, "/serial-([0-9]+)-", REGEX_IC, 1));
+            Init();
+
+            var matchurl = Regex.Match(url, "^(.*?)#rewind=(.*?)_seriya$", REGEX_IC);
+            if (matchurl.Success)
+            {
+                URL = matchurl.Groups[1].ToString();
+                MarkCurrent = matchurl.Groups[2].ToString();
+            }
+            else
+            {
+                URL = url;
+            }
+
+            this.Type = Type;
+        }
+
+        public Season(int id)
         {
             ID = id;
             Init();
         }
 
+        protected override void CallValue(string name, string value = null, string value_old = null)
+        {
+            switch (name)
+            {
+                case "marks_last":
+                    __forsed_update_player = true;
+                    break;
+                case "site_updated":
+                    __forsed_update_player = __forsed_update_page = true;
+                    break;
+            }
+        }
+
+        private void Init()
+        {
+            Load();
+            CompilationLoad();
+        }
+
+        public Season Load()
+        {
+            LoadValues(() =>
+            {
+                var data = DB.Instance.SeasonGet(ID);
+                if (data.ContainsKey("type")) data.Add("type_old", data["type"]);
+
+                return data;
+            });
+            __seasons = DB.Instance.SeasonsGet(SerialID, ID);
+            __related = DB.Instance.RelatedGet(ID);
+            ToListViewItem();
+
+            return this;
+        }
+
+        public void Save()
+        {
+            if (0 == ID || 0 == __data_new.Count)
+                return;
+#if DEBUG
+            var start = DateTime.UtcNow;
+#endif
+
+            SaveValues(data =>
+            {
+                if (0 == ID)
+                    return false;
+                DB.Instance.SeasonSet(ID, data);
+                ToListViewItem();
+                return true;
+            });
+#if DEBUG
+            Console.WriteLine("\tSave Season\t\t{0}\t{1}:\t{2}", SerialID, ID,
+                DateTime.UtcNow.Subtract(start).TotalSeconds);
+#endif
+        }
+
+        public async void SaveAsync()
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    Save();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+            }).ConfigureAwait(true);
+        }
+
+        public string GetOnlySecure()
+        {
+#if DEBUG
+            var start = DateTime.UtcNow;
+#endif
+            var html = downloadPage(true);
+            var result = "";
+            if (!string.IsNullOrWhiteSpace(html))
+            {
+                Secure = _parseData4Play(Match(html, "data4play = ({.*?})", REGEX_ICS, 1));
+                result = Secure;
+            }
+#if DEBUG
+            Console.WriteLine("\tGet Secure\t{0}\t{1}:\t{2}", SerialID, ID,
+                DateTime.UtcNow.Subtract(start).TotalSeconds);
+#endif
+
+            return result = Secure;
+        }
+
+        public string downloadPage(bool forsed = false)
+        {
+            var cacheItem = Server.Instance.downloadPage(URL, forsed, timeout);
+            CachedDate = cacheItem.date;
+
+            return cacheItem.ToString();
+        }
+
+        public ListViewItem ToListViewItem()
+        {
+            try
+            {
+                string[] newData =
+                {
+                    !string.IsNullOrEmpty(TitleFull)
+                        ? TitleFull
+                        : string.Format(0 < SeasonNum ? "{0} {1} сезон" : "{0}", TitleRU, SeasonNum),
+                    !string.IsNullOrEmpty(Title) ? Title : TitleRU,
+                    TitleRU,
+                    !string.IsNullOrEmpty(TitleEN) ? TitleEN : TitleRU,
+                    !string.IsNullOrEmpty(TitleOriginal) ? TitleOriginal : TitleRU,
+                    URL,
+                    ID.ToString(),
+                    SerialID.ToString(),
+                    0 < SeasonNum ? SeasonNum.ToString() : "",
+                    Genre,
+                    Country,
+                    Release,
+                    Limitation,
+                    IMDB.ToString(),
+                    KinoPoisk.ToString(),
+                    0 < UserComments ? UserComments.ToString() : "",
+                    0 < UserViewsLastDay ? UserViewsLastDay.ToString() : "",
+                    MarkCurrent,
+                    MarkLast,
+                    Mark,
+                    Compilation,
+                    SiteUpdated.ToString("dd.MM.yyyy")
+                };
+                for (var i = 0; i < newData.Length; i++)
+                    if (ListViewItem.SubItems[i].Text != newData[i])
+                        ListViewItem.SubItems[i].Text = newData[i];
+                if (ListViewItem.Name != newData[6])
+                {
+                    ListViewItem.Name = newData[6];
+                    ListViewItem.ImageKey = newData[6];
+                }
+
+                if (ListViewItem.Text != newData[0])
+                    ListViewItem.Text = newData[0];
+                ListViewItem.Tag = ID;
+            }
+            catch (Exception ex)
+            {
+#if DEBUG
+                Console.WriteLine("\tЭто нормально:\t{0:S}", ex.Message);
+#endif
+            }
+
+            return ListViewItem;
+        }
+
+        public string ImageURLGet(string size = "")
+        {
+            switch (size)
+            {
+                case "small":
+                case "large":
+                    size = size + "/";
+                    break;
+                default:
+                    size = "";
+                    break;
+            }
+
+            return string.Format("http://cdn.seasonvar.ru/oblojka/{0}{1}.jpg", size, ID);
+        }
+
+        #region Player
+
+        private Player LoadPlayer()
+        {
+            if (null == __player && 0 < ID && 0 < SerialID)
+                __player = new Player(ID, SerialID, Secure, timeout);
+            return __player;
+        }
+
+        #endregion
+
+        #region Атрибуты
+
         public int ID { get; set; }
 
-        public SerialSeasonPlayer Player
+        public Player Player
         {
             get => LoadPlayer();
             set => __player = value;
@@ -68,7 +270,7 @@ namespace HomeTheater.Serial
             set => setValue("serial_id", value);
         }
 
-        public int Season
+        public int SeasonNum
         {
             get => getValueInt("season");
             set => setValue("season", value);
@@ -83,7 +285,11 @@ namespace HomeTheater.Serial
         public int UserViewsLastDay
         {
             get => getValueInt("user_views_last_day");
-            set => setValue("user_views_last_day", value);
+            set
+            {
+                if (UserViewsLastDay < value)
+                    setValue("user_views_last_day", value);
+            }
         }
 
         private int timeout
@@ -209,8 +415,13 @@ namespace HomeTheater.Serial
             }
             set
             {
-                if (TypeOLD != value && "none" != value)
-                    setValue("type", value);
+                if (TypeOLD != value)
+                {
+                    if ("none" != value)
+                        setValue("type", value);
+                    else
+                        setValueEmpty("type");
+                }
             }
         }
 
@@ -232,8 +443,14 @@ namespace HomeTheater.Serial
 
         public string Secure
         {
-            get => getValue("secure");
-            set => setValue("secure", value);
+            get => getValue("secure", Server.Instance.Secure);
+            set
+            {
+                if (Server.Instance.Secure != value)
+                    setValue("secure", value);
+                else
+                    setValueEmpty("secure");
+            }
         }
 
         public string ImageSmall => ImageURLGet("small");
@@ -258,51 +475,29 @@ namespace HomeTheater.Serial
             set => __cached_date = value;
         }
 
-        public List<SerialSeason> Related
+        public List<Season> Related
         {
             get
             {
-                var items = new List<SerialSeason>();
+                var items = new List<Season>();
                 if (0 < __related.Count)
                     foreach (var id in __related)
-                        items.Add(new SerialSeason(id));
+                        items.Add(new Season(id));
 
                 return items;
             }
             set { }
         }
 
-        protected override void callbackValue(string name, string value)
-        {
-            switch (name)
-            {
-                case "marks_last":
-                    __forsed_update_playlist = __forsed_update_player = true;
-                    break;
-                case "site_updated":
-                    __forsed_update_playlist = __forsed_update_player = __forsed_update_page = true;
-                    break;
-            }
-        }
+        #endregion
 
-        private void Init()
-        {
-            Load();
-            CompilationLoad();
-        }
-
-        private SerialSeasonPlayer LoadPlayer()
-        {
-            if (null == __player && 0 < ID && 0 < SerialID)
-                __player = new SerialSeasonPlayer(ID, SerialID, Secure, timeout);
-            return __player;
-        }
+        #region Compilation
 
         public string CompilationGet()
         {
             var _type = Type;
             var __type = "new" == _type || "nonew" == _type || "want" == _type;
-            if (string.IsNullOrEmpty(Compilation) && __type) Compilation = APIServerCompilation.Instance.Get(SerialID);
+            if (string.IsNullOrEmpty(Compilation) && __type) Compilation = ServerCompilation.Instance.Get(SerialID);
             return Compilation;
         }
 
@@ -312,23 +507,23 @@ namespace HomeTheater.Serial
             if (!string.IsNullOrEmpty(Compilation))
                 _is = CompilationRemove();
             if (_is)
-                Compilation = APIServerCompilation.Instance.Set(SerialID, name);
+                Compilation = ServerCompilation.Instance.Set(SerialID, name);
         }
 
         public bool CompilationRemove()
         {
-            return APIServerCompilation.Instance.Remove(SerialID);
+            return ServerCompilation.Instance.Remove(SerialID);
         }
 
         public bool CompilationRemove(int ID)
         {
-            var result = APIServerCompilation.Instance.Remove(SerialID, ID);
+            var result = ServerCompilation.Instance.Remove(SerialID, ID);
             return result;
         }
 
         public void CompilationRemove(string name)
         {
-            if (APIServerCompilation.Instance.Remove(SerialID, name) && Compilation == name)
+            if (ServerCompilation.Instance.Remove(SerialID, name) && Compilation == name)
             {
                 Compilation = "";
                 SaveAsync();
@@ -339,20 +534,20 @@ namespace HomeTheater.Serial
         {
             if (0 < SerialID)
             {
-                Compilation = APIServerCompilation.Instance.Get(SerialID);
+                Compilation = ServerCompilation.Instance.Get(SerialID);
                 if (string.IsNullOrEmpty(Compilation))
                 {
                     var _type = Type;
                     var __type = "new" == _type || "nonew" == _type || "want" == _type;
                     if (__type && !string.IsNullOrEmpty(Match(Genre, "анимационные", REGEX_IC)))
                     {
-                        Compilation = APIServerCompilation.Instance.Set(SerialID, "Animated");
+                        Compilation = ServerCompilation.Instance.Set(SerialID, "Animated");
                         return;
                     }
 
                     if (__type && !string.IsNullOrEmpty(Match(Genre, "аниме", REGEX_IC)))
                     {
-                        Compilation = APIServerCompilation.Instance.Set(SerialID, "Anime");
+                        Compilation = ServerCompilation.Instance.Set(SerialID, "Anime");
                         return;
                     }
 
@@ -360,73 +555,19 @@ namespace HomeTheater.Serial
                     {
                         case "new":
                         case "nonew":
-                            Compilation = APIServerCompilation.Instance.Set(SerialID, "Active");
+                            Compilation = ServerCompilation.Instance.Set(SerialID, "Active");
                             return;
                         case "want":
-                            Compilation = APIServerCompilation.Instance.Set(SerialID, "Want");
+                            Compilation = ServerCompilation.Instance.Set(SerialID, "Want");
                             return;
                     }
                 }
             }
         }
 
-        public SerialSeason Load()
-        {
-            LoadValues(() =>
-            {
-                var data = DB.Instance.SeasonGet(ID);
-                if (data.ContainsKey("type")) data.Add("type_old", data["type"]);
+        #endregion
 
-                return data;
-            });
-            __seasons = DB.Instance.SeasonsGet(SerialID, ID);
-            __related = DB.Instance.RelatedGet(ID);
-            ToListViewItem();
-
-            return this;
-        }
-
-        public void _saveRelated()
-        {
-            if (__needSaveRelated)
-            {
-#if DEBUG
-                var start = DateTime.UtcNow;
-#endif
-                DB.Instance.RelatedSet(SerialID, __related);
-                __needSaveRelated = false;
-#if DEBUG
-                Console.WriteLine("\tSave Related\t{0}\t{1}:\t{2}", SerialID, ID,
-                    DateTime.UtcNow.Subtract(start).TotalSeconds);
-#endif
-            }
-        }
-
-        public void Save()
-        {
-            if (0 == ID || 0 == __data_new.Count)
-                return;
-#if DEBUG
-            var start = DateTime.UtcNow;
-#endif
-            SaveValues(data =>
-            {
-                if (0 == ID)
-                    return false;
-                DB.Instance.SeasonSet(ID, data);
-                ToListViewItem();
-                return true;
-            });
-#if DEBUG
-            Console.WriteLine("\tSave Season\t\t{0}\t{1}:\t{2}", SerialID, ID,
-                DateTime.UtcNow.Subtract(start).TotalSeconds);
-#endif
-        }
-
-        public async void SaveAsync()
-        {
-            await Task.Run(() => { Save(); });
-        }
+        #region Парсинг
 
         public void parseSidebar(string html)
         {
@@ -436,7 +577,7 @@ namespace HomeTheater.Serial
                 var matchseason = Matches(text_serial, "^(.*?)<span>([^<>]*)</span>$", REGEX_IC);
                 if (3 <= matchseason.Count)
                 {
-                    Season = IntVal(matchseason[1]);
+                    SeasonNum = IntVal(matchseason[1]);
                     MarkLast = Regex.Replace(matchseason[2], " (\\([^\\(\\)]+\\)|серия)", "")
                         .Replace("Только трейлер", "");
                 }
@@ -449,11 +590,12 @@ namespace HomeTheater.Serial
 
         public void parsePause(string html)
         {
-            Season = IntVal(Match(html, "<div class=\"pgs-marks-seas\">(.*?)</div>", REGEX_ICS, 1));
+            SeasonNum = IntVal(Match(html, "<div class=\"pgs-marks-seas\">(.*?)</div>", REGEX_ICS, 1));
             TitleRU = Match(html, "<div class=\"pgs-marks-name\">(.*?)</div>", REGEX_ICS, 1);
             MarkLast = Match(html, "<div class=\"pgs-marks-current\">[^<>]*<strong>(.*?)</strong>[^<>]*</div>",
                 REGEX_ICS, 1).Replace("Только трейлер", "");
             SiteUpdated = DateVal(Match(html, "<div class=\"pgs-marks-mess\">(.*?)</div>", REGEX_ICS, 1), "dd.MM.yyyy");
+            SaveAsync();
         }
 
         private void parsePage(string html)
@@ -466,26 +608,34 @@ namespace HomeTheater.Serial
 #if DEBUG
             var start = DateTime.UtcNow;
 #endif
-            SerialID = IntVal(Match(html, "data-id-serial=\"([0-9]+)\"", REGEX_ICS, 1));
-            ID = IntVal(Match(html, "data-id-season=\"([0-9]+)\"", REGEX_ICS, 1));
-            Description = Regex
-                .Replace(WebUtility.HtmlDecode(Match(html, "<p itemprop=\"description\">(.*?)</p>", REGEX_ICS, 1)),
-                    "<br[^<>]*>", "\r\n", REGEX_ICS).Replace("\r\n\r\n", "\r\n").Trim();
-            Secure = _parseData4Play(Match(html, "data4play = ({.*?})", REGEX_ICS, 1));
-            SiteUpdated =
-                DateVal(Match(html, "<meta itemprop=\"dateModified\" content=\"([^\"+]+)([^\"]+)\">", REGEX_ICS, 1),
-                    "yyyy-MM-ddTHH:mm:ss");
-            UserComments = IntVal(Match(html, "<meta itemprop=\"interactionCount\" content=\"UserComments:([0-9]+)\"/>",
-                REGEX_ICS, 1));
-            UserViewsLastDay = IntVal(Match(html,
-                "<meta itemprop=\"interactionCount\" content=\"UserViewsLastDay:([0-9]+)\"/>", REGEX_ICS, 1));
+            var _html = Match(html, "data-id-serial=\"([0-9]+)\"", REGEX_ICS, 1);
+            SerialID = IntVal(_html);
+            _html = Match(html, "data-id-season=\"([0-9]+)\"", REGEX_ICS, 1);
+            ID = IntVal(_html);
+            _html = Match(html, "<p itemprop=\"description\">(.*?)</p>", REGEX_ICS, 1);
+            Description = Regex.Replace(WebUtility.HtmlDecode(_html),
+                "<br[^<>]*>", "\r\n", REGEX_ICS).Replace("\r\n\r\n", "\r\n").Trim();
+            _html = Match(html, "data4play = ({.*?})", REGEX_ICS, 1);
+            Secure = _parseData4Play(_html);
+            _html = Match(html, "mark = ({.*?})", REGEX_ICS, 1);
+            _parseMark(_html);
+            _html = Match(html, "<meta itemprop=\"dateModified\" content=\"([^\"+]+)([^\"]+)\">", REGEX_ICS, 1);
+            SiteUpdated = DateVal(_html, "yyyy-MM-ddTHH:mm:ss");
+            _html = Match(html, "<meta itemprop=\"interactionCount\" content=\"UserComments:([0-9]+)\"/>",
+                REGEX_ICS, 1);
+            UserComments = IntVal(_html);
+            _html = Match(html,
+                "<meta itemprop=\"interactionCount\" content=\"UserViewsLastDay:([0-9]+)\"/>", REGEX_ICS, 1);
+            UserViewsLastDay = IntVal(_html);
 
-
-            _parseTitle(Match(html, "<h1 class=\"pgs-sinfo-title\"[^<>]*>(.*?)</h1>", REGEX_ICS, 1), this);
+            _html = Match(html, "<h1 class=\"pgs-sinfo-title\"[^<>]*>(.*?)</h1>", REGEX_ICS, 1);
+            _parseTitle(_html, this);
             //_parseTags(Match(html, "<div data-tag=\"wrap\">(.*?)</div>", REGEX_ICS, 1));
             _parseMetaInfo(html);
-            _parseSeasons(Match(html, "<div class=\"pgs-seaslist\">(.*?)</div>", REGEX_ICS, 1));
-            _parseCompilation(Match(html, "<div class=\"b-labellist\">(.*?)</div>", REGEX_ICS, 1));
+            _html = Match(html, "<div class=\"pgs-seaslist\">(.*?)</div>", REGEX_ICS, 1);
+            _parseSeasons(_html);
+            _html = Match(html, "<div class=\"b-labellist\">(.*?)</div>", REGEX_ICS, 1);
+            _parseCompilation(_html);
             _parseRelatedAsync(html);
 
             CompilationLoad();
@@ -494,38 +644,6 @@ namespace HomeTheater.Serial
             Console.WriteLine("\tParse Season\t{0}\t{1}:\t{2}", SerialID, ID,
                 DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
-        }
-
-        public string GetOnlySecure()
-        {
-#if DEBUG
-            var start = DateTime.UtcNow;
-#endif
-            var html = downloadPage(true);
-            var result = "";
-            if (!string.IsNullOrWhiteSpace(html))
-            {
-                Secure = _parseData4Play(Match(html, "data4play = ({.*?})", REGEX_ICS, 1));
-                result = Secure;
-            }
-#if DEBUG
-            Console.WriteLine("\tGet Secure\t{0}\t{1}:\t{2}", SerialID, ID,
-                DateTime.UtcNow.Subtract(start).TotalSeconds);
-#endif
-
-            return result = Secure;
-        }
-
-        public void syncPage(bool forsed = false)
-        {
-            forsed = forsed || __forsed_update_page;
-            if (timeout < DateTime.UtcNow.Subtract(CachedDate).TotalSeconds || forsed)
-            {
-                var content = downloadPage(forsed);
-                parsePage(content);
-                if (!string.IsNullOrWhiteSpace(content))
-                    __forsed_update_page = false;
-            }
         }
 
         private string _parseData4Play(string html)
@@ -542,7 +660,40 @@ namespace HomeTheater.Serial
             return Data4Play.secureMark;
         }
 
-        private void _parseTitle(string html, SerialSeason _o)
+        private void _parseMark(string html)
+        {
+            html = Regex.Replace(html, "[\r\n\t ]+", "");
+            if (!string.IsNullOrEmpty(html))
+            {
+                html = Regex.Replace(html, "'", "\"");
+                var mark = SimpleJson.SimpleJson.DeserializeObject<mark>(html);
+                var matchurl = Regex.Match(mark.href, "^(.*?)#rewind=(.*?)_seriya$", REGEX_IC);
+                if (matchurl.Success)
+                {
+                    URL = matchurl.Groups[1].ToString();
+                    MarkCurrent = matchurl.Groups[2].ToString();
+                    switch (MarkCurrent)
+                    {
+                        case "-1":
+                            Type = "want";
+                            break;
+                        case "-2":
+                            Type = "watched";
+                            break;
+                        case "-3":
+                            Type = "notwatch";
+                            break;
+                    }
+                }
+                else
+                {
+                    Type = "none";
+                    URL = mark.href;
+                }
+            }
+        }
+
+        private void _parseTitle(string html, Season _o)
         {
             html = html.Trim();
             if (string.IsNullOrEmpty(html))
@@ -553,7 +704,7 @@ namespace HomeTheater.Serial
             html = Regex.Replace(html, "(^сериал | онлайн$)", "", REGEX_IC);
             html = Regex.Replace(html, "[ ]{2,}", " ", REGEX_IC);
             _o.TitleFull = html.Trim();
-            _o.Season = IntVal(Match(_o.TitleFull, "([0-9]+) сезон$", REGEX_ICS, 1));
+            _o.SeasonNum = IntVal(Match(_o.TitleFull, "([0-9]+) сезон$", REGEX_ICS, 1));
             html = Regex.Replace(_o.TitleFull, " [0-9]+ сезон$", "", REGEX_IC).Trim();
             _o.Title = html.Trim();
             if (!string.IsNullOrEmpty(_o.TitleRU))
@@ -622,19 +773,6 @@ namespace HomeTheater.Serial
             }
         }
 
-        private async void _parseRelatedAsync(string html)
-        {
-            try
-            {
-                _parseRelated(html);
-                _saveRelated();
-            }
-            catch (Exception ex)
-            {
-                Logger.Instance.Error(ex);
-            }
-        }
-
         private void _parseRelated(string html)
         {
             if (string.IsNullOrEmpty(html))
@@ -645,7 +783,7 @@ namespace HomeTheater.Serial
             {
                 var url = SERVER_URL + "/" + matchInfo.Groups[1].ToString().Trim();
                 if (URL == url) continue;
-                var season = new SerialSeason(url);
+                var season = new Season(url);
                 season.TitleRU = Match(matchInfo.Groups[3].ToString(), "<div>(.+?)</div>", REGEX_ICS, 1);
                 season.SaveAsync();
                 if (!_related.Contains(season.ID)) _related.Add(season.ID);
@@ -695,7 +833,7 @@ namespace HomeTheater.Serial
             {
                 var url = SERVER_URL + matchSeason.Groups[1];
                 if (URL == url) continue;
-                var season = new SerialSeason(url);
+                var season = new Season(url);
                 if (string.IsNullOrEmpty(season.Title) ||
                     string.IsNullOrEmpty(season.TitleRU) ||
                     string.IsNullOrEmpty(season.TitleEN) ||
@@ -707,10 +845,10 @@ namespace HomeTheater.Serial
                 if (string.IsNullOrEmpty(season.TitleEN)) season.TitleEN = TitleEN;
                 if (0 == season.SerialID) season.SerialID = SerialID;
                 season.SaveAsync();
-                if (0 < season.Season)
+                if (0 < season.SeasonNum)
                 {
-                    if (!__seasons.ContainsKey(season.Season))
-                        __seasons.Add(season.Season, season.ID);
+                    if (!__seasons.ContainsKey(season.SeasonNum))
+                        __seasons.Add(season.SeasonNum, season.ID);
                 }
                 else
                 {
@@ -735,26 +873,55 @@ namespace HomeTheater.Serial
                 if (!data.ContainsKey(id))
                     data.Add(id, name);
                 if (_checked)
-                    APIServerCompilation.Instance.RelationUpdate(SerialID, id);
+                    ServerCompilation.Instance.RelationUpdate(SerialID, id);
             }
 
-            APIServerCompilation.Instance.CompilationUpdate(data);
+            ServerCompilation.Instance.CompilationUpdate(data);
         }
 
-        public string downloadPage(bool forsed = false)
+        private async void _parseRelatedAsync(string html)
         {
-            var cacheItem = APIServer.Instance.downloadPage(URL, forsed, timeout);
-            CachedDate = cacheItem.date;
+            _parseRelated(html);
+            _saveRelated();
+        }
 
-            return cacheItem.ToString();
+        public void _saveRelated()
+        {
+            if (__needSaveRelated)
+            {
+#if DEBUG
+                var start = DateTime.UtcNow;
+#endif
+                DB.Instance.RelatedSet(SerialID, __related);
+                __needSaveRelated = false;
+#if DEBUG
+                Console.WriteLine("\tSave Related\t{0}\t{1}:\t{2}", SerialID, ID,
+                    DateTime.UtcNow.Subtract(start).TotalSeconds);
+#endif
+            }
+        }
+
+        #endregion
+
+        #region Синхронизация
+
+        public void syncPage(bool forsed = false)
+        {
+            forsed = forsed || __forsed_update_page;
+            if (timeout < DateTime.UtcNow.Subtract(CachedDate).TotalSeconds || forsed)
+            {
+                var content = downloadPage(forsed);
+                parsePage(content);
+                if (!string.IsNullOrWhiteSpace(content))
+                    __forsed_update_page = false;
+            }
         }
 
         public void syncPlayer(bool forsed = false)
         {
             forsed = forsed || __forsed_update_player;
-            if (forsed)
-                if (ExistPlayer && Player.sync(forsed))
-                    __forsed_update_player = false;
+            if (ExistPlayer && Player.sync(forsed))
+                __forsed_update_player = false;
         }
 
         public void syncPlaylists(bool forsed = false)
@@ -764,97 +931,76 @@ namespace HomeTheater.Serial
                 __forsed_update_playlist = false;
         }
 
-        public ListViewItem ToListViewItem()
+        #endregion
+
+        #region Mark
+
+        public void MarkSetPause(string seria = "")
         {
-            try
+            if (MarkCurrent == seria)
+                return;
+            if (MarkDo("pauseadd", seria))
             {
-                string[] newData =
-                {
-                    TitleFull,
-                    Title,
-                    TitleRU,
-                    TitleEN,
-                    TitleOriginal,
-                    URL,
-                    ID.ToString(),
-                    SerialID.ToString(),
-                    0 < Season ? Season.ToString() : "",
-                    Genre,
-                    Country,
-                    Release,
-                    Limitation,
-                    IMDB.ToString(),
-                    KinoPoisk.ToString(),
-                    0 < UserComments ? UserComments.ToString() : "",
-                    0 < UserViewsLastDay ? UserViewsLastDay.ToString() : "",
-                    MarkCurrent,
-                    MarkLast,
-                    Mark,
-                    Compilation,
-                    SiteUpdated.ToString("dd.MM.yyyy")
-                };
-                for (var i = 0; i < newData.Length; i++)
-                    if (ListViewItem.SubItems[i].Text != newData[i])
-                        ListViewItem.SubItems[i].Text = newData[i];
-                if (ListViewItem.Name != newData[6])
-                {
-                    ListViewItem.Name = newData[6];
-                    ListViewItem.ImageKey = newData[6];
-                }
-
-                if (ListViewItem.Text != newData[0])
-                    ListViewItem.Text = newData[0];
-                ListViewItem.Tag = this;
+                MarkCurrent = seria;
+                Type = seria == MarkLast ? "nonew" : "new";
+                SaveAsync();
+                DB.Instance.OptionSetAsync("needListUpdate", "1");
             }
-            catch (Exception ex)
+        }
+
+        public void MarkSetLast()
+        {
+            if (Type == "nonew")
+                return;
+            MarkSetPause(MarkLast);
+        }
+
+        public void MarkSeWantToSee()
+        {
+            if (Type == "want")
+                return;
+            if (MarkDo("wanttosee"))
             {
-#if DEBUG
-                Console.WriteLine("\tЭто нормально:\t{0:S}", ex.Message);
-#endif
+                Type = "want";
+                SaveAsync();
+                DB.Instance.OptionSetAsync("needListUpdate", "1");
             }
-
-            return ListViewItem;
         }
 
-        public string ImageURLGet(string size = "")
+        public void MarkSetWatched()
         {
-            switch (size)
+            if (Type == "watched")
+                return;
+            if (MarkDo("watched"))
             {
-                case "small":
-                case "large":
-                    size = size + "/";
-                    break;
-                default:
-                    size = "";
-                    break;
+                Type = "watched";
+                SaveAsync();
+                DB.Instance.OptionSetAsync("needListUpdate", "1");
             }
-
-            return string.Format("http://cdn.seasonvar.ru/oblojka/{0}{1}.jpg", size, ID);
         }
 
-        public bool MarkSetPause(string seria = "")
+        public void MarkSetNotWatched()
         {
-            return MarkDo("pauseadd", seria);
+            if (Type == "notwatch")
+                return;
+            if (MarkDo("notWatched"))
+            {
+                Type = "notwatch";
+                SaveAsync();
+                DB.Instance.OptionSetAsync("needListUpdate", "1");
+            }
         }
 
-        public bool MarkSeWantToSee()
+        public void MarkSetDelSee()
         {
-            return MarkDo("wanttosee");
-        }
-
-        public bool MarkSetWatched()
-        {
-            return MarkDo("watched");
-        }
-
-        public bool MarkSetNotWatched()
-        {
-            return MarkDo("notWatched");
-        }
-
-        public bool MarkSetDelSee()
-        {
-            return MarkDo("delete");
+            if (Type == "none")
+                return;
+            if (MarkDo("delete"))
+            {
+                Type = "none";
+                SaveAsync();
+                DB.Instance.OptionSetAsync("needListUpdate", "1");
+            }
         }
 
         private bool MarkDo(string type = "", string seria = "")
@@ -899,7 +1045,9 @@ namespace HomeTheater.Serial
                     break;
             }
 
-            return APIServer.Instance.doMarks(postData).Status();
+            return Server.Instance.doMarks(postData).Status();
         }
+
+        #endregion
     }
 }

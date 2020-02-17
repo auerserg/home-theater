@@ -3,20 +3,19 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using HomeTheater.Helper;
 
-namespace HomeTheater.Serial
+namespace HomeTheater.API.Serial
 {
-    internal class SerialSeasonPlayer : APIParent
+    internal class Player : Abstract.Serial
     {
         private DateTime __cache_date;
-        private bool __forsed_update;
         private string __secure = "";
 
-        public Dictionary<int, SerialSeasonPlayerPlaylist>
-            Playlists = new Dictionary<int, SerialSeasonPlayerPlaylist>();
+        public Dictionary<int, Playlist>
+            Playlists = new Dictionary<int, Playlist>();
 
         public int SeasonID, SerialID, timeout;
 
-        public SerialSeasonPlayer(int SeasonID, int SerialID, string Secure = "", int timeout = 60 * 60 * 24 * 10)
+        public Player(int SeasonID, int SerialID, string Secure = "", int timeout = 60 * 60 * 24 * 10)
         {
             this.SeasonID = SeasonID;
             this.SerialID = SerialID;
@@ -25,7 +24,7 @@ namespace HomeTheater.Serial
             Load();
         }
 
-        public SerialSeasonPlayer(int SeasonID, int SerialID, int timeout = 60 * 60 * 24 * 10)
+        public Player(int SeasonID, int SerialID, int timeout = 60 * 60 * 24 * 10)
         {
             this.SeasonID = SeasonID;
             this.SerialID = SerialID;
@@ -45,22 +44,34 @@ namespace HomeTheater.Serial
 
         public void Load()
         {
-            var cache = DB.Instance.CacheGet(APIServer.Instance.downloadPlayerCacheURL(SeasonID, SerialID), timeout);
+            var cache = DB.Instance.CacheGet(Server.Instance.downloadPlayerCacheURL(SeasonID, SerialID), timeout);
             __cache_date = cache.date;
             var data = DB.Instance.PlaylistGets(SeasonID);
             foreach (var item in data)
             {
-                var id = IntVal(item["translate_key"]);
-                if (!Playlists.ContainsKey(id))
-                    Playlists.Add(id, new SerialSeasonPlayerPlaylist(id, SerialID, SeasonID, item, timeout));
+                var TranslateID = IntVal(item["translate_id"]);
+                if (!Playlists.ContainsKey(TranslateID))
+                    Playlists.Add(TranslateID, new Playlist(TranslateID, SerialID, SeasonID, item, timeout));
+            }
+        }
+
+        private string download(bool forsed)
+        {
+            var cacheItem = Server.Instance.downloadPlayer(SeasonID, SerialID, Secure, forsed, timeout);
+            if (cacheItem.isNew && cacheItem.data.ContainsKey("secure"))
+            {
+                __cache_date = cacheItem.date;
+                Secure = cacheItem.data["secure"];
             }
 
-            __forsed_update = 0 == Playlists.Count;
+            return cacheItem.ToString();
         }
+
+        #region Синхронизация
 
         public bool sync(bool forsed = false)
         {
-            if (timeout < DateTime.UtcNow.Subtract(__cache_date).TotalSeconds || forsed || __forsed_update)
+            if (timeout < DateTime.UtcNow.Subtract(__cache_date).TotalSeconds || 0 == Playlists.Count || forsed)
             {
                 var content = download(forsed);
                 parse(content);
@@ -77,16 +88,19 @@ namespace HomeTheater.Serial
         {
             if (0 == Playlists.Count)
                 sync();
-            var _playlists = new List<int>(Playlists.Keys);
             var result = true;
-            for (var i = 0; i < _playlists.Count; i++)
+            foreach (var item in Playlists)
             {
-                var _result = Playlists[_playlists[i]].sync(forsed);
+                var _result = item.Value.sync(forsed);
                 result = result && _result;
             }
 
             return result;
         }
+
+        #endregion
+
+        #region Парсинг
 
         private void parse(string html)
         {
@@ -95,14 +109,24 @@ namespace HomeTheater.Serial
 #endif
             var js = _getOnlyJS(html);
             _parseScripts(js);
-            _parseTranslate(Match(html, "<ul class=\"pgs-trans\">(.*?)</ul>", REGEX_ICS, 1));
-            _parseSeries(Match(js, "var arEpisodes = ({.*?});", REGEX_ICS, 1));
+            var _js = Match(html, "<ul class=\"pgs-trans\">(.*?)</ul>", REGEX_ICS, 1);
+            _parseTranslate(_js);
+            _js = Match(js, "var arEpisodes = ([[{].*?[]}]);", REGEX_ICS, 1);
+            if (string.IsNullOrEmpty(_js))
+            {
+                _parseSeries(_js);
+            }
+            else
+            {
+#if DEBUG
+                Console.WriteLine("Не найден список эпизодов\t{0}\t{1}", SerialID, SeasonID);
+#endif
+            }
 #if DEBUG
             Console.WriteLine("\tParse Player\t{0}\t{1}:\t{2}", SerialID, SeasonID,
                 DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
         }
-
 
         private void _parseSeries(string js)
         {
@@ -112,10 +136,20 @@ namespace HomeTheater.Serial
             {
                 var _data = SimpleJson.SimpleJson
                     .DeserializeObject<Dictionary<string, Dictionary<string, Dictionary<string, string>>>>(js);
-                foreach (var item in _data)
+                if (null != _data)
                 {
-                    var id = IntVal(item.Key);
-                    if (Playlists.ContainsKey(id)) Playlists[id].tempOrderVideo(item.Value);
+                    foreach (var item in _data)
+                    {
+                        var id = IntVal(item.Key);
+                        if (Playlists.ContainsKey(id)) Playlists[id].tempOrderVideo(item.Value);
+                    }
+                }
+                else
+                {
+                    var __data = SimpleJson.SimpleJson
+                        .DeserializeObject<List<Dictionary<string, Dictionary<string, string>>>>(js);
+                    var id = 0;
+                    if (Playlists.ContainsKey(id)) Playlists[id].tempOrderVideo(__data[id]);
                 }
             }
             catch (Exception ex)
@@ -143,22 +177,30 @@ namespace HomeTheater.Serial
             foreach (Match match in Regex.Matches(js, "pl([0-9[]+)] = \"(.+?)\";", REGEX_ICS))
             {
                 var id = IntVal(match.Groups[1].ToString());
-                var url = match.Groups[2].ToString();
-                if (!Playlists.ContainsKey(id))
-                    Playlists.Add(id, new SerialSeasonPlayerPlaylist(id, SerialID, SERVER_URL + url, timeout));
+                var url = SERVER_URL + Regex.Replace(match.Groups[2].ToString(), "[?]time=([0-9]+)$", "", REGEX_IC);
+                if (Playlists.ContainsKey(id))
+                {
+                    Playlists[id].SerialID = SerialID;
+                    Playlists[id].URL = url;
+                }
+                else
+                {
+                    Playlists.Add(id, new Playlist(id, SerialID, url, timeout));
+                }
             }
         }
 
-        private Dictionary<int, SerialSeasonPlayerPlaylist> _parseStartPlayList(string js)
+        private Dictionary<int, Playlist> _parseStartPlayList(string js)
         {
             var _data = SimpleJson.SimpleJson.DeserializeObject<Dictionary<string, string>>(
                 Match(js, "var pl = ({[^{}]+});", REGEX_IC, 1).Replace("'0'", "\"0\""));
-            var data = new Dictionary<int, SerialSeasonPlayerPlaylist>();
+            var data = new Dictionary<int, Playlist>();
             foreach (var item in _data)
             {
                 var key = IntVal(item.Key);
+                var url = Regex.Replace(item.Value, "[?]time=([0-9]+)$", "", REGEX_IC);
                 if (!data.ContainsKey(key))
-                    data.Add(key, new SerialSeasonPlayerPlaylist(key, SerialID, SERVER_URL + item.Value, timeout));
+                    data.Add(key, new Playlist(key, SerialID, SERVER_URL + url, timeout));
             }
 
             return data;
@@ -182,22 +224,12 @@ namespace HomeTheater.Serial
                 var id = IntVal(_id);
                 var percent = floatVal(Match(args, "data-translate-percent=\"([0-9.]+)\"", REGEX_IC, 1));
                 if (!Playlists.ContainsKey(id))
-                    Playlists.Add(id, new SerialSeasonPlayerPlaylist(id, SerialID, SeasonID, Secure, timeout));
+                    Playlists.Add(id, new Playlist(id, SerialID, SeasonID, Secure, timeout));
                 Playlists[id].TranslateName = name;
                 Playlists[id].TranslatePercent = percent;
             }
         }
 
-        private string download(bool forsed)
-        {
-            var cacheItem = APIServer.Instance.downloadPlayer(SeasonID, SerialID, Secure, forsed, timeout);
-            if (cacheItem.isNew && cacheItem.data.ContainsKey("secure"))
-            {
-                __cache_date = cacheItem.date;
-                Secure = cacheItem.data["secure"];
-            }
-
-            return cacheItem.ToString();
-        }
+        #endregion
     }
 }

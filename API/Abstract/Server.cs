@@ -4,14 +4,24 @@ using System.IO;
 using System.Net;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using HomeTheater.API.Response;
 using HomeTheater.Helper;
 
-namespace HomeTheater.Serial
+namespace HomeTheater.API.Abstract
 {
-    internal class APIServerParent : APIParent
+    internal abstract class Server : Base
     {
+        #region Cookies
+
         protected CookieContainer CookieContainer;
         protected string COOKIES_PATH = AppDomain.CurrentDomain.FriendlyName.Replace(".exe", ".cookies");
+
+        #endregion
+
+        #region Download
+
+        protected const string USER_AGENT =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36";
 
         public string Download(string url, NameValueCollection postData = null, WebHeaderCollection header = null)
         {
@@ -23,8 +33,7 @@ namespace HomeTheater.Serial
                 var uri = new Uri(url);
                 var _header = new WebHeaderCollection();
                 _header.Add(HttpRequestHeader.Referer, SERVER_URL);
-                _header.Add(HttpRequestHeader.UserAgent,
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36");
+                _header.Add(HttpRequestHeader.UserAgent, USER_AGENT);
                 if (null != header && 0 < header.Count)
                     for (var i = 0; i < header.Count; i++)
                         _header.Set(header.GetKey(i), header.Get(i));
@@ -47,7 +56,7 @@ namespace HomeTheater.Serial
                 Console.WriteLine("Live Request: {0} - {1}", url,
                     DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
-                if (0 < wc.CookieContainer.Count) saveCookies(wc.CookieContainer);
+                if (0 < wc.CookieContainer.Count) SetCookies(wc.CookieContainer);
 
                 return content;
             }
@@ -59,14 +68,12 @@ namespace HomeTheater.Serial
             var start = DateTime.UtcNow;
 #endif
             var wc = (HttpWebRequest) WebRequest.Create(url);
-            var uri = new Uri(url);
             var _header = new WebHeaderCollection();
             if (null != header && 0 < header.Count)
                 for (var i = 0; i < header.Count; i++)
                     _header.Set(header.GetKey(i), header.Get(i));
             wc.Referer = SERVER_URL;
-            wc.UserAgent =
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36";
+            wc.UserAgent = USER_AGENT;
             wc.Headers = _header;
             if ("1" == DB.Instance.OptionGet("proxy.Use"))
                 wc.Proxy = new WebProxy(DB.Instance.OptionGet("proxy.Host"),
@@ -80,6 +87,39 @@ namespace HomeTheater.Serial
             return respStream;
         }
 
+        public header DownloadHeader(string url, WebHeaderCollection header = null)
+        {
+#if DEBUG
+            var start = DateTime.UtcNow;
+#endif
+            var headerResponse = new header();
+            var wc = (HttpWebRequest) WebRequest.Create(url);
+            var _header = new WebHeaderCollection();
+            if (null != header && 0 < header.Count)
+                for (var i = 0; i < header.Count; i++)
+                    _header.Set(header.GetKey(i), header.Get(i));
+            wc.Referer = SERVER_URL;
+            wc.UserAgent = USER_AGENT;
+            wc.Headers = _header;
+            if ("1" == DB.Instance.OptionGet("proxy.Use"))
+                wc.Proxy = new WebProxy(DB.Instance.OptionGet("proxy.Host"),
+                    int.Parse(DB.Instance.OptionGet("proxy.Port")));
+            wc.Method = "HEAD";
+            using (var webResponse = wc.GetResponse())
+            {
+                headerResponse.ContentLength = webResponse.Headers.Get("Content-Length");
+                headerResponse.ContentType = webResponse.Headers.Get("Content-Type");
+                headerResponse.ETag = webResponse.Headers.Get("ETag");
+                headerResponse.LastModified = webResponse.Headers.Get("Last-Modified");
+            }
+
+#if DEBUG
+            Console.WriteLine("Live Request: {0} - {1}", url,
+                DateTime.UtcNow.Subtract(start).TotalSeconds);
+#endif
+            return headerResponse;
+        }
+
         public string DownloadXHR(string url, NameValueCollection postData = null, WebHeaderCollection header = null)
         {
             var _header = new WebHeaderCollection();
@@ -90,7 +130,11 @@ namespace HomeTheater.Serial
             return Download(url, postData, _header);
         }
 
-        public void saveCookies(CookieContainer cookies)
+        #endregion
+
+        #region Cookies
+
+        public void SetCookies(CookieContainer cookies)
         {
             var stream = File.Create(COOKIES_PATH);
             var formatter = new BinaryFormatter();
@@ -115,5 +159,7 @@ namespace HomeTheater.Serial
 
             return CookieContainer;
         }
+
+        #endregion
     }
 }

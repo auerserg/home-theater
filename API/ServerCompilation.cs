@@ -3,15 +3,15 @@ using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 using HomeTheater.Helper;
 
-namespace HomeTheater.Serial
+namespace HomeTheater.API
 {
-    internal class APIServerCompilation
+    public class ServerCompilation
     {
-        private static APIServerCompilation _i;
+        private static ServerCompilation _i;
         private Dictionary<int, string> compilation = new Dictionary<int, string>();
         private Dictionary<int, int> relation = new Dictionary<int, int>();
 
-        public APIServerCompilation()
+        public ServerCompilation()
         {
             _CompilationLoad();
             _RelationLoad();
@@ -19,7 +19,7 @@ namespace HomeTheater.Serial
                 UpdateAsync();
         }
 
-        public static APIServerCompilation Instance
+        public static ServerCompilation Instance
         {
             get
             {
@@ -30,7 +30,7 @@ namespace HomeTheater.Serial
 
         public static void Load()
         {
-            _i = new APIServerCompilation();
+            _i = new ServerCompilation();
         }
 
         public void CompilationUpdate(Dictionary<int, string> data)
@@ -175,7 +175,7 @@ namespace HomeTheater.Serial
 
         private bool _do(NameValueCollection postData = null)
         {
-            return APIServer.Instance.doCompilation(postData);
+            return Server.Instance.doCompilation(postData);
         }
 
         public async void UpdateAsync(bool forsed = true, bool compilation = true, bool relation = true)
@@ -200,12 +200,12 @@ namespace HomeTheater.Serial
 
         private string _downloadProfile(bool forsed = false)
         {
-            return APIServer.Instance.downloadProfile(forsed);
+            return Server.Instance.downloadProfile(forsed);
         }
 
         private string _downloadCompilation(int compilationList = 0, int page = 1, bool forsed = false)
         {
-            return APIServer.Instance.downloadCompilation(compilationList, page, forsed);
+            return Server.Instance.downloadCompilation(compilationList, page, forsed);
         }
 
         private void _parseProfileCompilation(bool forsed = false)

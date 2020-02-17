@@ -3,30 +3,22 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 using System.Text.RegularExpressions;
+using HomeTheater.API.Response;
+using HomeTheater.API.Serial;
 using HomeTheater.Helper;
-using HomeTheater.Serial.data;
 
-namespace HomeTheater.Serial
+namespace HomeTheater.API
 {
-    internal class APIServer : APIServerParent
+    internal class Server : Abstract.Server
     {
-        private const string LOGIN_PATH = "/?mod=login";
-        private const string REGISTER_PATH = "/?mod=reg";
-        private const string FORGOT_PATH = "/?mod=recover";
-        private const string PAUSE_PATH = "/?mod=pause";
-        private const string MARK_PATH = "/jsonMark.php";
-        private const string AJAX_PATH = "/ajax.php";
-        private const string PLAYER_PATH = "/player.php";
-        private const string PLAYLIST_PATH = "/playls2/{0:S}/trans{1:S}/{2}/plist.txt";
-        private static APIServer _i;
+        private static Server _i;
         private readonly string password;
+
+        private string __secure;
         public string login;
-
-        protected string PROFILE_PATH;
         public int ProfileID;
-        public string Secure;
 
-        public APIServer(string _login = null, string _password = null)
+        public Server(string _login = null, string _password = null)
         {
             login = _login;
             password = _password;
@@ -36,36 +28,109 @@ namespace HomeTheater.Serial
                 password = DB.Instance.OptionGet("Password");
         }
 
-
-        public static APIServer Instance
+        public string Secure
         {
             get
             {
-                if (_i == null) Load();
+                if (string.IsNullOrEmpty(__secure))
+                    __secure = DB.Instance.OptionGet("secure");
+                return __secure;
+            }
+            set
+            {
+                if (__secure != value)
+                {
+                    DB.Instance.OptionSetAsync("secure_old", Secure);
+                    DB.Instance.OptionSetAsync("secure", value);
+                    __secure = null;
+                }
+            }
+        }
+
+        public static Server Instance
+        {
+            get
+            {
+                if (_i == null) _i = new Server();
                 return _i;
             }
         }
 
-        public string getURLForgon => SERVER_URL + FORGOT_PATH;
+        public string prepareSecureUrl(string url)
+        {
+            return url.Replace("{SECURE}", Secure);
+        }
 
-        public string getURLRegister => SERVER_URL + REGISTER_PATH;
+        #region Download Page
 
-        public string getURLLogin => SERVER_URL + LOGIN_PATH;
+        public DBCache downloadPage(string url, bool forsed = false, int timeout = 30 * 60)
+        {
+            var cacheItem = DB.Instance.CacheGet(url, timeout);
+            if (!cacheItem.isActual || forsed)
+                cacheItem.updateContent(Download(prepareSecureUrl(url)));
+            return cacheItem;
+        }
 
-        public string getURLPause => SERVER_URL + PAUSE_PATH;
+        #endregion
 
-        public string getURLMark => SERVER_URL + MARK_PATH;
+        #region Mark
 
-        public string getURLProfile => !string.IsNullOrEmpty(PROFILE_PATH) ? SERVER_URL + PROFILE_PATH : "";
+        public markresponse doMarks(NameValueCollection postData = null)
+        {
+            var result = DownloadXHR(getURLMark, postData);
+            var resultjson = SimpleJson.SimpleJson.DeserializeObject<markresponse>(result);
+            return resultjson;
+        }
+
+        #endregion
+
+        #region Playlist
+
+        public DBCache downloadPlaylist(string url, bool forsed = false,
+            int timeout = 60 * 60)
+        {
+            var cacheItem = downloadPage(url, forsed, timeout);
+            if (cacheItem.url == url)
+                cacheItem.data.Add("secure", Secure);
+
+            return cacheItem;
+        }
+
+        #endregion
+
+        #region Video
+
+        public header downloadHeader(string url, WebHeaderCollection header = null)
+        {
+            return DownloadHeader(prepareSecureUrl(url), header);
+        }
+
+        #endregion
+
+        #region URL
+
+        private const string AJAX_PATH = "/ajax.php";
+        private const string FORGOT_PATH = "/?mod=recover";
+        private const string LOGIN_PATH = "/?mod=login";
+        private const string MARK_PATH = "/jsonMark.php";
+        private const string PAUSE_PATH = "/?mod=pause";
+        private const string PLAYER_PATH = "/player.php";
+        private const string PLAYLIST_PATH = "/playls2/{0:S}/trans{1:S}/{2}/plist.txt";
+        private const string REGISTER_PATH = "/?mod=reg";
+        protected string PROFILE_PATH;
 
         public string getURLAjax => SERVER_URL + AJAX_PATH;
-
+        public string getURLForgon => SERVER_URL + FORGOT_PATH;
+        public string getURLLogin => SERVER_URL + LOGIN_PATH;
+        public string getURLMark => SERVER_URL + MARK_PATH;
+        public string getURLPause => SERVER_URL + PAUSE_PATH;
         public string getURLPlayer => SERVER_URL + PLAYER_PATH;
+        public string getURLProfile => !string.IsNullOrEmpty(PROFILE_PATH) ? SERVER_URL + PROFILE_PATH : "";
+        public string getURLRegister => SERVER_URL + REGISTER_PATH;
 
-        public static void Load()
-        {
-            _i = new APIServer();
-        }
+        #endregion
+
+        #region Авторизация
 
         public bool LogedIn(string _login = null, string _password = null)
         {
@@ -74,10 +139,12 @@ namespace HomeTheater.Serial
             if (string.IsNullOrEmpty(_login)) _login = __login;
             if (string.IsNullOrEmpty(_password)) _password = __password;
             var result = false;
+
             try
             {
                 var content = Download(getURLLogin,
                     new NameValueCollection {{"login", _login}, {"password", _password}});
+                _ = DB.Instance.CacheSetAsync(getURLLogin, content);
                 result = isLogedIn(content);
             }
             catch (Exception ex)
@@ -90,7 +157,7 @@ namespace HomeTheater.Serial
 
         public bool isLogedIn(string content = null)
         {
-            if (string.IsNullOrWhiteSpace(content)) content = Download(getURLLogin);
+            if (string.IsNullOrWhiteSpace(content)) content = downloadPage(getURLLogin, false, 5 * 60).content;
 
             var result = !Regex.IsMatch(content, @"loginbox-login", REGEX_IC);
 
@@ -98,6 +165,10 @@ namespace HomeTheater.Serial
 
             return result;
         }
+
+        #endregion
+
+        #region Profile
 
         private void setURLProfile(string content)
         {
@@ -109,25 +180,27 @@ namespace HomeTheater.Serial
             }
         }
 
-        public DBCache downloadPage(string url, bool forsed = false, int timeout = 30 * 60)
+        public string downloadProfile(bool forsed = false, int timeout = 30 * 60)
         {
-            var cacheItem = DB.Instance.CacheGet(url, timeout);
-            if (!cacheItem.isActual || forsed)
-                cacheItem.updateContent(Download(url));
-            return cacheItem;
+            return downloadPage(getURLProfile, forsed, timeout).ToString();
         }
+
+        #endregion
+
+        #region Pause
 
         public string downloadPause(bool forsed = false, int timeout = 30 * 60)
         {
             return downloadPage(getURLPause, forsed, timeout).content;
         }
 
-        public List<SerialSeason> getPause(bool forsed = false, int timeout = 30 * 60)
+        public Dictionary<int, Season> getPause(bool forsed = false, int timeout = 30 * 60)
         {
 #if DEBUG
             var start = DateTime.UtcNow;
 #endif
-            var results = new List<SerialSeason>();
+            forsed = forsed || "1" == DB.Instance.OptionGet("needListUpdate");
+            var results = new Dictionary<int, Season>();
             try
             {
                 var content = downloadPause(forsed, timeout);
@@ -139,15 +212,12 @@ namespace HomeTheater.Serial
                             "<li[^<>]*data-tabr=\"([^\"]*)\"[^<>]*>(.*?)</li>", REGEX_ICS))
                         {
                             var type = Regex.Replace(tab.Groups[1].ToString(), "^marks-", "", REGEX_IC);
-                            foreach (Match serial in Regex.Matches(tab.Value,
+                            foreach (Match marksElA in Regex.Matches(tab.Value,
                                 "<a[^<>]*href=\"([^\"]*)\"[^<>]*>(.*?)</a>", REGEX_ICS))
                             {
-                                var cserial = new SerialSeason(serial.Groups[1].ToString());
-                                cserial.parsePause(serial.Groups[2].ToString());
-                                if (type != cserial.Type)
-                                    cserial.Type = type;
-                                cserial.SaveAsync();
-                                results.Add(cserial);
+                                var item = new Season(marksElA.Groups[1].ToString(), type);
+                                item.parsePause(marksElA.Groups[2].ToString());
+                                results.Add(item.ID, item);
                             }
                         }
                 }
@@ -162,12 +232,9 @@ namespace HomeTheater.Serial
             return results;
         }
 
-        public markresponse doMarks(NameValueCollection postData = null)
-        {
-            var result = DownloadXHR(getURLMark, postData);
-            var resultjson = SimpleJson.SimpleJson.DeserializeObject<markresponse>(result);
-            return resultjson;
-        }
+        #endregion
+
+        #region Sidebar
 
         public string downloadSidebar(string mode = "new", bool forsed = false, int timeout = 60 * 60)
         {
@@ -191,9 +258,9 @@ namespace HomeTheater.Serial
             return cacheItem.ToString();
         }
 
-        public Dictionary<int, SerialSeason> getSidebar(string mode = "new", bool forsed = false, int timeout = 60 * 60)
+        public Dictionary<int, Season> getSidebar(string mode = "new", bool forsed = false, int timeout = 60 * 60)
         {
-            var results = new Dictionary<int, SerialSeason>();
+            var results = new Dictionary<int, Season>();
             try
             {
                 var content = downloadSidebar(mode, forsed, timeout);
@@ -201,7 +268,7 @@ namespace HomeTheater.Serial
                     foreach (Match serial in Regex.Matches(content, "<a[^<>]*href=\"([^\"]*)\"[^<>]*>(.*?)</a>",
                         REGEX_ICS))
                     {
-                        var cserial = new SerialSeason(string.Concat(SERVER_URL, serial.Groups[1].ToString()));
+                        var cserial = new Season(string.Concat(SERVER_URL, serial.Groups[1].ToString()));
                         cserial.parseSidebar(serial.Groups[2].ToString());
                         if (!results.ContainsKey(cserial.ID))
                             results.Add(cserial.ID, cserial);
@@ -214,6 +281,10 @@ namespace HomeTheater.Serial
 
             return results;
         }
+
+        #endregion
+
+        #region Compilation
 
         public string downloadCompilation(int compilationList = 0, int page = 1, bool forsed = false,
             int timeout = 60 * 60)
@@ -251,10 +322,9 @@ namespace HomeTheater.Serial
             return status == "ok" || status == "error" && id == "Сериал уже назначен в данную подборку";
         }
 
-        public string downloadProfile(bool forsed = false, int timeout = 30 * 60)
-        {
-            return downloadPage(getURLProfile, forsed, timeout).ToString();
-        }
+        #endregion
+
+        #region Player
 
         public string downloadPlayerCacheURL(int id, int serial)
         {
@@ -284,63 +354,6 @@ namespace HomeTheater.Serial
             return new DBCache(url, timeout);
         }
 
-        public string downloadPlaylistURL(int seasonID, string translateSlug = "")
-        {
-            if (string.IsNullOrEmpty(Secure))
-                return "";
-            return SERVER_URL + string.Format(PLAYLIST_PATH, Secure, translateSlug, seasonID);
-        }
-
-        public DBCache downloadPlaylist(int seasonID, string translateSlug = "", bool forsed = false,
-            int timeout = 60 * 60)
-        {
-            var url = downloadPlaylistURL(seasonID, translateSlug);
-            if (!string.IsNullOrEmpty(url))
-            {
-                var cacheItem = downloadPage(url, forsed, timeout);
-                if (cacheItem.url == url)
-                    cacheItem.data.Add("secure", Secure);
-
-                return cacheItem;
-            }
-
-            return new DBCache(url, timeout);
-        }
-
-        public string prepareSecureUrl(string url)
-        {
-            return url.Replace("{SECURE}", Secure);
-        }
-
-        public int GetFileSize(string url)
-        {
-            var result = 0;
-            if (!string.IsNullOrWhiteSpace(url))
-            {
-#if DEBUG
-                var start = DateTime.UtcNow;
-#endif
-                try
-                {
-                    var webRequest = WebRequest.Create(url);
-                    webRequest.Method = "HEAD";
-                    using (var webResponse = webRequest.GetResponse())
-                    {
-                        var fileSize = webResponse.Headers.Get("Content-Length");
-                        result = IntVal(fileSize);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.Instance.Error(ex);
-                }
-#if DEBUG
-                Console.WriteLine("Live Request: {0} - {1}", url,
-                    DateTime.UtcNow.Subtract(start).TotalSeconds);
-#endif
-            }
-
-            return result;
-        }
+        #endregion
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using HomeTheater.Helper;
 
-namespace HomeTheater.Serial.data
+namespace HomeTheater.API.Response
 {
     internal class video
     {

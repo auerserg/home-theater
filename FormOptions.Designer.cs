@@ -28,235 +28,351 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormOptions));
-            this.panelMain = new System.Windows.Forms.Panel();
-            this.groupBoxProxy = new System.Windows.Forms.GroupBox();
-            this.textBoxProxyPort = new System.Windows.Forms.TextBox();
-            this.checkBoxUseProxy = new System.Windows.Forms.CheckBox();
-            this.labelProxyPort = new System.Windows.Forms.Label();
-            this.textBoxProxyAddress = new System.Windows.Forms.TextBox();
-            this.labelProxyAddress = new System.Windows.Forms.Label();
-            this.groupBoxDownloads = new System.Windows.Forms.GroupBox();
-            this.labelFileNameDescription = new System.Windows.Forms.Label();
-            this.numericUpDownSimultaneousDownloads = new System.Windows.Forms.NumericUpDown();
+            this.groupDownloadSerial = new System.Windows.Forms.GroupBox();
+            this.labelTagOriginalName = new System.Windows.Forms.Label();
+            this.labelTagTranslate = new System.Windows.Forms.Label();
+            this.labelTagEpisode = new System.Windows.Forms.Label();
+            this.labelTagSeason = new System.Windows.Forms.Label();
+            this.labelTagSerialName = new System.Windows.Forms.Label();
+            this.labelTagCollection = new System.Windows.Forms.Label();
+            this.labelTagType = new System.Windows.Forms.Label();
+            this.numericSimultaneousDownloads = new System.Windows.Forms.NumericUpDown();
             this.labelSimultaneousDownloads = new System.Windows.Forms.Label();
-            this.textBoxDownloadDir = new System.Windows.Forms.TextBox();
-            this.labelFileName = new System.Windows.Forms.Label();
             this.buttonDownloadDir = new System.Windows.Forms.Button();
-            this.textBoxNameFiles = new System.Windows.Forms.TextBox();
-            this.labelDownloadFolder = new System.Windows.Forms.Label();
+            this.textNameFiles = new System.Windows.Forms.TextBox();
+            this.textDownloadDir = new System.Windows.Forms.TextBox();
+            this.labelDownloadDir = new System.Windows.Forms.Label();
+            this.labelNameFiles = new System.Windows.Forms.Label();
+            this.panelMain = new System.Windows.Forms.Panel();
+            this.groupProxy = new System.Windows.Forms.GroupBox();
+            this.numericProxyPort = new System.Windows.Forms.NumericUpDown();
+            this.labelProxyPort = new System.Windows.Forms.Label();
+            this.labelProxyAddress = new System.Windows.Forms.Label();
+            this.textProxyAddress = new System.Windows.Forms.TextBox();
+            this.checkUseProxy = new System.Windows.Forms.CheckBox();
+            this.menuMain = new System.Windows.Forms.MenuStrip();
+            this.labelTagFormat = new System.Windows.Forms.Label();
+            this.groupDownloadSerial.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericSimultaneousDownloads)).BeginInit();
             this.panelMain.SuspendLayout();
-            this.groupBoxProxy.SuspendLayout();
-            this.groupBoxDownloads.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSimultaneousDownloads)).BeginInit();
+            this.groupProxy.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericProxyPort)).BeginInit();
             this.SuspendLayout();
             // 
-            // panelMain
+            // groupDownloadSerial
             // 
-            this.panelMain.Controls.Add(this.groupBoxProxy);
-            this.panelMain.Controls.Add(this.groupBoxDownloads);
-            this.panelMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelMain.Location = new System.Drawing.Point(0, 0);
-            this.panelMain.Name = "panelMain";
-            this.panelMain.Size = new System.Drawing.Size(584, 302);
-            this.panelMain.TabIndex = 12;
-            // 
-            // groupBoxProxy
-            // 
-            this.groupBoxProxy.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.groupDownloadSerial.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBoxProxy.Controls.Add(this.textBoxProxyPort);
-            this.groupBoxProxy.Controls.Add(this.checkBoxUseProxy);
-            this.groupBoxProxy.Controls.Add(this.labelProxyPort);
-            this.groupBoxProxy.Controls.Add(this.textBoxProxyAddress);
-            this.groupBoxProxy.Controls.Add(this.labelProxyAddress);
-            this.groupBoxProxy.Location = new System.Drawing.Point(12, 215);
-            this.groupBoxProxy.Name = "groupBoxProxy";
-            this.groupBoxProxy.Size = new System.Drawing.Size(560, 75);
-            this.groupBoxProxy.TabIndex = 12;
-            this.groupBoxProxy.TabStop = false;
-            this.groupBoxProxy.Text = "Настройка прокси";
+            this.groupDownloadSerial.Controls.Add(this.labelTagFormat);
+            this.groupDownloadSerial.Controls.Add(this.labelTagOriginalName);
+            this.groupDownloadSerial.Controls.Add(this.labelTagTranslate);
+            this.groupDownloadSerial.Controls.Add(this.labelTagEpisode);
+            this.groupDownloadSerial.Controls.Add(this.labelTagSeason);
+            this.groupDownloadSerial.Controls.Add(this.labelTagSerialName);
+            this.groupDownloadSerial.Controls.Add(this.labelTagCollection);
+            this.groupDownloadSerial.Controls.Add(this.labelTagType);
+            this.groupDownloadSerial.Controls.Add(this.numericSimultaneousDownloads);
+            this.groupDownloadSerial.Controls.Add(this.labelSimultaneousDownloads);
+            this.groupDownloadSerial.Controls.Add(this.buttonDownloadDir);
+            this.groupDownloadSerial.Controls.Add(this.textNameFiles);
+            this.groupDownloadSerial.Controls.Add(this.textDownloadDir);
+            this.groupDownloadSerial.Controls.Add(this.labelDownloadDir);
+            this.groupDownloadSerial.Controls.Add(this.labelNameFiles);
+            this.groupDownloadSerial.Location = new System.Drawing.Point(3, 3);
+            this.groupDownloadSerial.MinimumSize = new System.Drawing.Size(535, 150);
+            this.groupDownloadSerial.Name = "groupDownloadSerial";
+            this.groupDownloadSerial.Size = new System.Drawing.Size(541, 199);
+            this.groupDownloadSerial.TabIndex = 0;
+            this.groupDownloadSerial.TabStop = false;
+            this.groupDownloadSerial.Text = "Загрузка Серий";
             // 
-            // textBoxProxyPort
+            // labelTagOriginalName
             // 
-            this.textBoxProxyPort.Enabled = false;
-            this.textBoxProxyPort.Location = new System.Drawing.Point(290, 45);
-            this.textBoxProxyPort.Name = "textBoxProxyPort";
-            this.textBoxProxyPort.Size = new System.Drawing.Size(91, 20);
-            this.textBoxProxyPort.TabIndex = 8;
+            this.labelTagOriginalName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelTagOriginalName.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.labelTagOriginalName.Location = new System.Drawing.Point(285, 161);
+            this.labelTagOriginalName.Name = "labelTagOriginalName";
+            this.labelTagOriginalName.Size = new System.Drawing.Size(250, 13);
+            this.labelTagOriginalName.TabIndex = 12;
+            this.labelTagOriginalName.Text = "{OriginalName} - Оригинальное название файла";
+            this.labelTagOriginalName.Click += new System.EventHandler(this.labelTagOriginalName_Click);
             // 
-            // checkBoxUseProxy
+            // labelTagTranslate
             // 
-            this.checkBoxUseProxy.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBoxUseProxy.Location = new System.Drawing.Point(6, 19);
-            this.checkBoxUseProxy.Name = "checkBoxUseProxy";
-            this.checkBoxUseProxy.Size = new System.Drawing.Size(548, 20);
-            this.checkBoxUseProxy.TabIndex = 6;
-            this.checkBoxUseProxy.Text = "Использовать прокси";
-            this.checkBoxUseProxy.UseVisualStyleBackColor = true;
-            this.checkBoxUseProxy.CheckedChanged += new System.EventHandler(this.CheckBoxUseProxy_CheckedChanged_1);
+            this.labelTagTranslate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelTagTranslate.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.labelTagTranslate.Location = new System.Drawing.Point(285, 146);
+            this.labelTagTranslate.Name = "labelTagTranslate";
+            this.labelTagTranslate.Size = new System.Drawing.Size(250, 13);
+            this.labelTagTranslate.TabIndex = 11;
+            this.labelTagTranslate.Text = "{Translate} - Наименование Озвучки";
+            this.labelTagTranslate.Click += new System.EventHandler(this.labelTagTranslate_Click);
             // 
-            // labelProxyPort
+            // labelTagEpisode
             // 
-            this.labelProxyPort.AutoSize = true;
-            this.labelProxyPort.Location = new System.Drawing.Point(249, 48);
-            this.labelProxyPort.Name = "labelProxyPort";
-            this.labelProxyPort.Size = new System.Drawing.Size(35, 13);
-            this.labelProxyPort.TabIndex = 4;
-            this.labelProxyPort.Text = "Порт:";
-            this.labelProxyPort.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelTagEpisode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelTagEpisode.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.labelTagEpisode.Location = new System.Drawing.Point(285, 131);
+            this.labelTagEpisode.Name = "labelTagEpisode";
+            this.labelTagEpisode.Size = new System.Drawing.Size(250, 13);
+            this.labelTagEpisode.TabIndex = 10;
+            this.labelTagEpisode.Text = "{Episode} - Номер Эпизода";
+            this.labelTagEpisode.Click += new System.EventHandler(this.labelTagEpisode_Click);
             // 
-            // textBoxProxyAddress
+            // labelTagSeason
             // 
-            this.textBoxProxyAddress.Enabled = false;
-            this.textBoxProxyAddress.Location = new System.Drawing.Point(53, 45);
-            this.textBoxProxyAddress.Name = "textBoxProxyAddress";
-            this.textBoxProxyAddress.Size = new System.Drawing.Size(170, 20);
-            this.textBoxProxyAddress.TabIndex = 7;
+            this.labelTagSeason.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelTagSeason.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.labelTagSeason.Location = new System.Drawing.Point(285, 116);
+            this.labelTagSeason.Name = "labelTagSeason";
+            this.labelTagSeason.Size = new System.Drawing.Size(250, 13);
+            this.labelTagSeason.TabIndex = 9;
+            this.labelTagSeason.Text = "{Season} - Номер Сезона";
+            this.labelTagSeason.Click += new System.EventHandler(this.labelTagSeason_Click);
             // 
-            // labelProxyAddress
+            // labelTagSerialName
             // 
-            this.labelProxyAddress.AutoSize = true;
-            this.labelProxyAddress.Location = new System.Drawing.Point(6, 48);
-            this.labelProxyAddress.Name = "labelProxyAddress";
-            this.labelProxyAddress.Size = new System.Drawing.Size(41, 13);
-            this.labelProxyAddress.TabIndex = 3;
-            this.labelProxyAddress.Text = "Адрес:";
-            this.labelProxyAddress.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelTagSerialName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelTagSerialName.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.labelTagSerialName.Location = new System.Drawing.Point(285, 101);
+            this.labelTagSerialName.Name = "labelTagSerialName";
+            this.labelTagSerialName.Size = new System.Drawing.Size(250, 13);
+            this.labelTagSerialName.TabIndex = 8;
+            this.labelTagSerialName.Text = "{SerialName} - Название Сериала";
+            this.labelTagSerialName.Click += new System.EventHandler(this.labelTagSerialName_Click);
             // 
-            // groupBoxDownloads
+            // labelTagCollection
             // 
-            this.groupBoxDownloads.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBoxDownloads.Controls.Add(this.labelFileNameDescription);
-            this.groupBoxDownloads.Controls.Add(this.numericUpDownSimultaneousDownloads);
-            this.groupBoxDownloads.Controls.Add(this.labelSimultaneousDownloads);
-            this.groupBoxDownloads.Controls.Add(this.textBoxDownloadDir);
-            this.groupBoxDownloads.Controls.Add(this.labelFileName);
-            this.groupBoxDownloads.Controls.Add(this.buttonDownloadDir);
-            this.groupBoxDownloads.Controls.Add(this.textBoxNameFiles);
-            this.groupBoxDownloads.Controls.Add(this.labelDownloadFolder);
-            this.groupBoxDownloads.Location = new System.Drawing.Point(12, 12);
-            this.groupBoxDownloads.Name = "groupBoxDownloads";
-            this.groupBoxDownloads.Size = new System.Drawing.Size(560, 197);
-            this.groupBoxDownloads.TabIndex = 11;
-            this.groupBoxDownloads.TabStop = false;
-            this.groupBoxDownloads.Text = "Загрузки";
+            this.labelTagCollection.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelTagCollection.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.labelTagCollection.Location = new System.Drawing.Point(285, 86);
+            this.labelTagCollection.Name = "labelTagCollection";
+            this.labelTagCollection.Size = new System.Drawing.Size(250, 13);
+            this.labelTagCollection.TabIndex = 7;
+            this.labelTagCollection.Text = "{Collection} - Наименование подборки сериала";
+            this.labelTagCollection.Click += new System.EventHandler(this.labelTagCollection_Click);
             // 
-            // labelFileNameDescription
+            // labelTagType
             // 
-            this.labelFileNameDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelFileNameDescription.Location = new System.Drawing.Point(136, 68);
-            this.labelFileNameDescription.Name = "labelFileNameDescription";
-            this.labelFileNameDescription.Size = new System.Drawing.Size(418, 96);
-            this.labelFileNameDescription.TabIndex = 7;
-            this.labelFileNameDescription.Text = resources.GetString("labelFileNameDescription.Text");
+            this.labelTagType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelTagType.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.labelTagType.Location = new System.Drawing.Point(285, 71);
+            this.labelTagType.Name = "labelTagType";
+            this.labelTagType.Size = new System.Drawing.Size(250, 13);
+            this.labelTagType.TabIndex = 6;
+            this.labelTagType.Text = "{Type} - Наименование списка сериала";
+            this.labelTagType.Click += new System.EventHandler(this.labelTagType_Click);
             // 
-            // numericUpDownSimultaneousDownloads
+            // numericSimultaneousDownloads
             // 
-            this.numericUpDownSimultaneousDownloads.Location = new System.Drawing.Point(152, 167);
-            this.numericUpDownSimultaneousDownloads.Name = "numericUpDownSimultaneousDownloads";
-            this.numericUpDownSimultaneousDownloads.Size = new System.Drawing.Size(71, 20);
-            this.numericUpDownSimultaneousDownloads.TabIndex = 4;
-            this.numericUpDownSimultaneousDownloads.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numericSimultaneousDownloads.Location = new System.Drawing.Point(151, 71);
+            this.numericSimultaneousDownloads.Name = "numericSimultaneousDownloads";
+            this.numericSimultaneousDownloads.Size = new System.Drawing.Size(66, 20);
+            this.numericSimultaneousDownloads.TabIndex = 4;
+            this.numericSimultaneousDownloads.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // labelSimultaneousDownloads
             // 
             this.labelSimultaneousDownloads.AutoSize = true;
-            this.labelSimultaneousDownloads.Location = new System.Drawing.Point(6, 169);
+            this.labelSimultaneousDownloads.Location = new System.Drawing.Point(6, 73);
             this.labelSimultaneousDownloads.Name = "labelSimultaneousDownloads";
             this.labelSimultaneousDownloads.Size = new System.Drawing.Size(139, 13);
-            this.labelSimultaneousDownloads.TabIndex = 6;
+            this.labelSimultaneousDownloads.TabIndex = 5;
             this.labelSimultaneousDownloads.Text = "Одновременных загрузок";
-            // 
-            // textBoxDownloadDir
-            // 
-            this.textBoxDownloadDir.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxDownloadDir.Location = new System.Drawing.Point(136, 19);
-            this.textBoxDownloadDir.Name = "textBoxDownloadDir";
-            this.textBoxDownloadDir.Size = new System.Drawing.Size(337, 20);
-            this.textBoxDownloadDir.TabIndex = 1;
-            // 
-            // labelFileName
-            // 
-            this.labelFileName.AutoSize = true;
-            this.labelFileName.Location = new System.Drawing.Point(6, 48);
-            this.labelFileName.Name = "labelFileName";
-            this.labelFileName.Size = new System.Drawing.Size(124, 13);
-            this.labelFileName.TabIndex = 4;
-            this.labelFileName.Text = "Наименование файлов";
             // 
             // buttonDownloadDir
             // 
             this.buttonDownloadDir.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonDownloadDir.Location = new System.Drawing.Point(479, 17);
+            this.buttonDownloadDir.Location = new System.Drawing.Point(460, 18);
             this.buttonDownloadDir.Name = "buttonDownloadDir";
-            this.buttonDownloadDir.Size = new System.Drawing.Size(75, 23);
+            this.buttonDownloadDir.Size = new System.Drawing.Size(75, 22);
             this.buttonDownloadDir.TabIndex = 2;
             this.buttonDownloadDir.Text = "Обзор";
             this.buttonDownloadDir.UseVisualStyleBackColor = true;
-            this.buttonDownloadDir.Click += new System.EventHandler(this.ButtonDownloadFolder_Click);
+            this.buttonDownloadDir.Click += new System.EventHandler(this.buttonDownloadDir_Click);
             // 
-            // textBoxNameFiles
+            // textNameFiles
             // 
-            this.textBoxNameFiles.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.textNameFiles.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxNameFiles.Location = new System.Drawing.Point(136, 45);
-            this.textBoxNameFiles.Name = "textBoxNameFiles";
-            this.textBoxNameFiles.Size = new System.Drawing.Size(418, 20);
-            this.textBoxNameFiles.TabIndex = 3;
+            this.textNameFiles.Location = new System.Drawing.Point(151, 45);
+            this.textNameFiles.Name = "textNameFiles";
+            this.textNameFiles.Size = new System.Drawing.Size(384, 20);
+            this.textNameFiles.TabIndex = 3;
             // 
-            // labelDownloadFolder
+            // textDownloadDir
             // 
-            this.labelDownloadFolder.AutoSize = true;
-            this.labelDownloadFolder.Location = new System.Drawing.Point(6, 22);
-            this.labelDownloadFolder.Name = "labelDownloadFolder";
-            this.labelDownloadFolder.Size = new System.Drawing.Size(109, 13);
-            this.labelDownloadFolder.TabIndex = 0;
-            this.labelDownloadFolder.Text = "Папка для загрузки";
+            this.textDownloadDir.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textDownloadDir.Location = new System.Drawing.Point(151, 19);
+            this.textDownloadDir.Name = "textDownloadDir";
+            this.textDownloadDir.Size = new System.Drawing.Size(303, 20);
+            this.textDownloadDir.TabIndex = 1;
+            // 
+            // labelDownloadDir
+            // 
+            this.labelDownloadDir.AutoSize = true;
+            this.labelDownloadDir.Location = new System.Drawing.Point(6, 23);
+            this.labelDownloadDir.Name = "labelDownloadDir";
+            this.labelDownloadDir.Size = new System.Drawing.Size(124, 13);
+            this.labelDownloadDir.TabIndex = 1;
+            this.labelDownloadDir.Text = "Наименование файлов";
+            // 
+            // labelNameFiles
+            // 
+            this.labelNameFiles.AutoSize = true;
+            this.labelNameFiles.Location = new System.Drawing.Point(6, 48);
+            this.labelNameFiles.Name = "labelNameFiles";
+            this.labelNameFiles.Size = new System.Drawing.Size(109, 13);
+            this.labelNameFiles.TabIndex = 0;
+            this.labelNameFiles.Text = "Папка для загрузки";
+            // 
+            // panelMain
+            // 
+            this.panelMain.Controls.Add(this.groupProxy);
+            this.panelMain.Controls.Add(this.groupDownloadSerial);
+            this.panelMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelMain.Location = new System.Drawing.Point(6, 6);
+            this.panelMain.Name = "panelMain";
+            this.panelMain.Size = new System.Drawing.Size(547, 436);
+            this.panelMain.TabIndex = 2;
+            // 
+            // groupProxy
+            // 
+            this.groupProxy.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupProxy.Controls.Add(this.numericProxyPort);
+            this.groupProxy.Controls.Add(this.labelProxyPort);
+            this.groupProxy.Controls.Add(this.labelProxyAddress);
+            this.groupProxy.Controls.Add(this.textProxyAddress);
+            this.groupProxy.Controls.Add(this.checkUseProxy);
+            this.groupProxy.Location = new System.Drawing.Point(3, 208);
+            this.groupProxy.Name = "groupProxy";
+            this.groupProxy.Size = new System.Drawing.Size(541, 78);
+            this.groupProxy.TabIndex = 1;
+            this.groupProxy.TabStop = false;
+            this.groupProxy.Text = "Настройка прокси";
+            // 
+            // numericProxyPort
+            // 
+            this.numericProxyPort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numericProxyPort.Location = new System.Drawing.Point(415, 50);
+            this.numericProxyPort.Name = "numericProxyPort";
+            this.numericProxyPort.Size = new System.Drawing.Size(120, 20);
+            this.numericProxyPort.TabIndex = 2;
+            this.numericProxyPort.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numericProxyPort.ThousandsSeparator = true;
+            // 
+            // labelProxyPort
+            // 
+            this.labelProxyPort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelProxyPort.AutoSize = true;
+            this.labelProxyPort.Location = new System.Drawing.Point(374, 52);
+            this.labelProxyPort.Name = "labelProxyPort";
+            this.labelProxyPort.Size = new System.Drawing.Size(35, 13);
+            this.labelProxyPort.TabIndex = 3;
+            this.labelProxyPort.Text = "Порт:";
+            // 
+            // labelProxyAddress
+            // 
+            this.labelProxyAddress.AutoSize = true;
+            this.labelProxyAddress.Location = new System.Drawing.Point(6, 52);
+            this.labelProxyAddress.Name = "labelProxyAddress";
+            this.labelProxyAddress.Size = new System.Drawing.Size(41, 13);
+            this.labelProxyAddress.TabIndex = 2;
+            this.labelProxyAddress.Text = "Адрес:";
+            // 
+            // textProxyAddress
+            // 
+            this.textProxyAddress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textProxyAddress.Location = new System.Drawing.Point(53, 49);
+            this.textProxyAddress.Name = "textProxyAddress";
+            this.textProxyAddress.Size = new System.Drawing.Size(315, 20);
+            this.textProxyAddress.TabIndex = 1;
+            // 
+            // checkUseProxy
+            // 
+            this.checkUseProxy.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.checkUseProxy.Location = new System.Drawing.Point(9, 19);
+            this.checkUseProxy.Name = "checkUseProxy";
+            this.checkUseProxy.Size = new System.Drawing.Size(520, 24);
+            this.checkUseProxy.TabIndex = 0;
+            this.checkUseProxy.Text = "Использовать прокси";
+            this.checkUseProxy.UseVisualStyleBackColor = true;
+            this.checkUseProxy.CheckedChanged += new System.EventHandler(this.checkUseProxy_CheckedChanged);
+            // 
+            // menuMain
+            // 
+            this.menuMain.Location = new System.Drawing.Point(0, 0);
+            this.menuMain.Name = "menuMain";
+            this.menuMain.Size = new System.Drawing.Size(559, 24);
+            this.menuMain.TabIndex = 7;
+            this.menuMain.Text = "menuMain";
+            this.menuMain.Visible = false;
+            // 
+            // labelTagFormat
+            // 
+            this.labelTagFormat.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelTagFormat.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.labelTagFormat.Location = new System.Drawing.Point(285, 176);
+            this.labelTagFormat.Name = "labelTagFormat";
+            this.labelTagFormat.Size = new System.Drawing.Size(250, 13);
+            this.labelTagFormat.TabIndex = 13;
+            this.labelTagFormat.Text = "{Format} - Формат файла";
+            this.labelTagFormat.Click += new System.EventHandler(this.labelTagFormat_Click);
             // 
             // FormOptions
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(584, 302);
+            this.ClientSize = new System.Drawing.Size(559, 448);
             this.Controls.Add(this.panelMain);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.Controls.Add(this.menuMain);
+            this.MainMenuStrip = this.menuMain;
+            this.MinimumSize = new System.Drawing.Size(575, 39);
             this.Name = "FormOptions";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Padding = new System.Windows.Forms.Padding(6);
             this.Text = "Настройки";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormOptions_FormClosing);
-            this.Load += new System.EventHandler(this.FormOptions_Load);
+            this.Shown += new System.EventHandler(this.FormOptions_Shown);
+            this.groupDownloadSerial.ResumeLayout(false);
+            this.groupDownloadSerial.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericSimultaneousDownloads)).EndInit();
             this.panelMain.ResumeLayout(false);
-            this.groupBoxProxy.ResumeLayout(false);
-            this.groupBoxProxy.PerformLayout();
-            this.groupBoxDownloads.ResumeLayout(false);
-            this.groupBoxDownloads.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSimultaneousDownloads)).EndInit();
+            this.groupProxy.ResumeLayout(false);
+            this.groupProxy.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericProxyPort)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Panel panelMain;
-        private System.Windows.Forms.GroupBox groupBoxProxy;
-        private System.Windows.Forms.TextBox textBoxProxyPort;
-        private System.Windows.Forms.CheckBox checkBoxUseProxy;
-        private System.Windows.Forms.Label labelProxyPort;
-        private System.Windows.Forms.TextBox textBoxProxyAddress;
-        private System.Windows.Forms.Label labelProxyAddress;
-        private System.Windows.Forms.GroupBox groupBoxDownloads;
-        private System.Windows.Forms.Label labelFileNameDescription;
-        private System.Windows.Forms.NumericUpDown numericUpDownSimultaneousDownloads;
-        private System.Windows.Forms.Label labelSimultaneousDownloads;
-        private System.Windows.Forms.TextBox textBoxDownloadDir;
-        private System.Windows.Forms.Label labelFileName;
+        private System.Windows.Forms.GroupBox groupDownloadSerial;
+        private System.Windows.Forms.Label labelDownloadDir;
+        private System.Windows.Forms.Label labelNameFiles;
         private System.Windows.Forms.Button buttonDownloadDir;
-        private System.Windows.Forms.TextBox textBoxNameFiles;
-        private System.Windows.Forms.Label labelDownloadFolder;
+        private System.Windows.Forms.TextBox textNameFiles;
+        private System.Windows.Forms.TextBox textDownloadDir;
+        private System.Windows.Forms.Panel panelMain;
+        private System.Windows.Forms.NumericUpDown numericSimultaneousDownloads;
+        private System.Windows.Forms.Label labelSimultaneousDownloads;
+        private System.Windows.Forms.GroupBox groupProxy;
+        private System.Windows.Forms.NumericUpDown numericProxyPort;
+        private System.Windows.Forms.Label labelProxyPort;
+        private System.Windows.Forms.Label labelProxyAddress;
+        private System.Windows.Forms.TextBox textProxyAddress;
+        private System.Windows.Forms.CheckBox checkUseProxy;
+        private System.Windows.Forms.MenuStrip menuMain;
+        private System.Windows.Forms.Label labelTagOriginalName;
+        private System.Windows.Forms.Label labelTagTranslate;
+        private System.Windows.Forms.Label labelTagEpisode;
+        private System.Windows.Forms.Label labelTagSeason;
+        private System.Windows.Forms.Label labelTagSerialName;
+        private System.Windows.Forms.Label labelTagCollection;
+        private System.Windows.Forms.Label labelTagType;
+        private System.Windows.Forms.Label labelTagFormat;
     }
 }

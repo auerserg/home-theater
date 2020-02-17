@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Windows.Forms;
 
-namespace HomeTheater.Helper
+namespace HomeTheater.UI
 {
     internal class ListViewItemComparer : IComparer
     {

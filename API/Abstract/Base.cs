@@ -4,18 +4,24 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace HomeTheater.Serial
+namespace HomeTheater.API.Abstract
 {
-    internal class APIParent
+    internal abstract class Base
     {
-        protected const RegexOptions REGEX_C = RegexOptions.Compiled;
-        protected const RegexOptions REGEX_IC = REGEX_C | RegexOptions.IgnoreCase;
-        protected const RegexOptions REGEX_ICS = REGEX_IC | RegexOptions.Singleline;
+        #region Базовые домены
 
         protected string SERVER_CDN_URL =
             Encoding.UTF8.GetString(Convert.FromBase64String("aHR0cDovL2Nkbi5zZWFzb252YXIucnUvb2Jsb2prYS8="));
 
         protected string SERVER_URL = Encoding.UTF8.GetString(Convert.FromBase64String("aHR0cDovL3NlYXNvbnZhci5ydQ=="));
+
+        #endregion
+
+        #region Парсинг регулярками
+
+        protected const RegexOptions REGEX_C = RegexOptions.Compiled;
+        protected const RegexOptions REGEX_IC = REGEX_C | RegexOptions.IgnoreCase;
+        protected const RegexOptions REGEX_ICS = REGEX_IC | RegexOptions.Singleline;
 
         public static string Match(string input, string pattern, RegexOptions options = REGEX_C, int index = 0)
         {
@@ -37,6 +43,10 @@ namespace HomeTheater.Serial
 
             return result;
         }
+
+        #endregion
+
+        #region Конвертация значений
 
         public static int IntVal(string input)
         {
@@ -65,8 +75,9 @@ namespace HomeTheater.Serial
             if (!string.IsNullOrWhiteSpace(input))
                 DateTime.TryParseExact(input, format, new CultureInfo("de-DE"), DateTimeStyles.None, out result);
 
-
             return result;
         }
+
+        #endregion
     }
 }

@@ -95,7 +95,8 @@ namespace HomeTheater.Helper
             {
                 s = s.Substring(1);
                 var s2 = "";
-                for (var i = 0; i < s.Length; i += 3) s2 += "%u0" + s.Substring(i, i + 3);
+                for (var i = 0; i < s.Length; i += 3)
+                    s2 += "%u0" + s.Substring(i, i + 3);
                 s = Regex.Unescape(s2);
             }
 

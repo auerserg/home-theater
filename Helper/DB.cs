@@ -5,9 +5,15 @@ using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace HomeTheater.Helper
 {
+    /**
+     * * TODO изменить на единый запрос
+     * * INSERT OR IGNORE INTO my_table (name, age) VALUES ('Karen', 34)
+     * UPDATE my_table SET age = 34 WHERE name='Karen'
+     */
     public class DB
     {
         public const string TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -15,7 +21,7 @@ namespace HomeTheater.Helper
         private static DB _i;
         private readonly string baseName = AppDomain.CurrentDomain.FriendlyName.Replace(".exe", ".db3");
 
-        private readonly Dictionary<string, string> cachedOptions = new Dictionary<string, string>();
+        private Dictionary<string, string> cachedOptions = new Dictionary<string, string>();
         public SQLiteConnection connection;
 
         public DB()
@@ -30,20 +36,23 @@ namespace HomeTheater.Helper
             {
                 _createTables();
             }
+
+            OptionGetAll();
         }
 
         public static DB Instance
         {
             get
             {
-                if (_i == null) _load();
+                Load();
                 return _i;
             }
         }
 
-        public static void _load()
+        public static void Load()
         {
-            _i = new DB();
+            if (_i == null)
+                _i = new DB();
         }
 
         private void _createTables()
@@ -51,12 +60,14 @@ namespace HomeTheater.Helper
             _ExecuteNonQuery(@"
 CREATE TABLE IF NOT EXISTS [options] (
     [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-    [name] text NOT NULL,
-    [value] text NOT NULL
+    [name] text NOT NULL UNIQUE,
+    [value] text NOT NULL,
+    [created_date] text,
+    [updated_date] text
 );
 CREATE TABLE IF NOT EXISTS [http_cache] (
     [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-    [url] text,
+    [url] text UNIQUE,
     [content] text,
     [create_date] text
 );
@@ -103,7 +114,6 @@ CREATE TABLE IF NOT EXISTS [season_compilation] (
 );
 CREATE TABLE IF NOT EXISTS [translate] (
     [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-    [key] integer NOT NULL DEFAULT -1,
     [slug] text,
     [name] text
 );
@@ -111,12 +121,11 @@ CREATE TABLE IF NOT EXISTS [playlist] (
 	[id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	[serial_id] INTEGER NOT NULL,
 	[season_id] INTEGER NOT NULL,
-	[translate_id] INTEGER NOT NULL,
-	[translate_key] INTEGER NOT NULL DEFAULT -1,
-	[translate_slug] text,
+	[translate_id] INTEGER NOT NULL DEFAULT 0,
 	[url] TEXT,
 	[percent] TEXT,
 	[secure] TEXT,
+	[order_videos] TEXT,
 	[created_date] TEXT,
 	[updated_date] TEXT
 );
@@ -124,13 +133,11 @@ CREATE TABLE IF NOT EXISTS [video] (
 	[id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	[season_id] INTEGER NOT NULL,
 	[serial_id] INTEGER NOT NULL,
-	[translate_id] INTEGER NOT NULL,
+	[translate_id] INTEGER NOT NULL DEFAULT -1,
 	[translate_name] TEXT,
 	[video_id] TEXT,
 	[video_next_id] TEXT,
     [url] TEXT,
-    [file_name] TEXT,
-	[file_size] INTEGER,
 	[subtitle] TEXT,
 	[secure] TEXT,
 	[created_date] TEXT,
@@ -153,19 +160,19 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         private void _defaultValues()
         {
-            OptionSet("cacheTimeSerial_new", (1 * 24 * 60 * 60).ToString());
-            OptionSet("cacheTimeSerial_nonew", (3 * 24 * 60 * 60).ToString());
-            OptionSet("cacheTimeSerial_want", (3 * 24 * 60 * 60).ToString());
+            OptionSet("cacheTimeSerial_new", (0, 5 * 24 * 60 * 60).ToString());
+            OptionSet("cacheTimeSerial_want", (0, 5 * 24 * 60 * 60).ToString());
+            OptionSet("cacheTimeSerial_nonew", (1 * 24 * 60 * 60).ToString());
             OptionSet("cacheTimeSerial_watched", (7 * 24 * 60 * 60).ToString());
             OptionSet("cacheTimeSerial_none", (20 * 24 * 60 * 60).ToString());
             OptionSet("SimultaneousDownloads", 3.ToString());
             OptionSet("NameFiles",
-                "{Collection}\\{SerialName} {Season}\\{SerialName} S{Season}E{Episode} {Translate} {OriginalName}");
-            OptionSet("listViewSerialsDisplayIndex", "[3,17,2,1,0,4,5,6,18,19,7,8,9,10,11,12,13,14,15,21,20,16]");
-            OptionSet("listViewSerialsWidth", "[0,367,0,0,0,0,0,0,25,150,0,0,0,0,0,0,0,0,0,84,56,0]");
-            OptionSet("listViewSerialsAutoSize", "[0,0,0,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1]");
-            OptionSet("listViewDownloadWidth", "[556,100,100,200]");
-            OptionSet("listViewSerialsView", "");
+                "{Collection}\\{SerialName} {Season}\\{SerialName} S{Season}E{Episode} {Translate} {OriginalName}.{Format}");
+            OptionSet("listSerialsDisplayIndex", "[0,16,1,2,3,4,5,6,17,18,7,8,9,10,11,12,13,14,15,20,19,21]");
+            OptionSet("listSerialsWidth", "[0,377,0,0,0,0,0,0,25,100,0,0,0,0,0,0,0,0,0,84,56,66]");
+            OptionSet("listSerialsAutoSize", "[0,0,0,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1]");
+            OptionSet("listDownloadWidth", "[556,100,100,200]");
+            OptionSet("listSerialsView", "");
         }
 
         private void _checkConnectDataBase()
@@ -180,6 +187,31 @@ CREATE TABLE IF NOT EXISTS [video] (
                 if (_connection.State.Equals(ConnectionState.Open)) connection = _connection;
             }
         }
+
+        #region Player
+
+        public List<int> PlayerGetTranslate(int seasonID)
+        {
+            var data = new List<int>();
+            var result =
+                _ExecuteReader(
+                    @"SELECT translate_key FROM playlist WHERE season_id = @season_id ORDER BY translate_key ASC;",
+                    new Dictionary<string, string> {{"season_id", seasonID.ToString()}});
+            for (var i = 0; i < result.Count; i++)
+            {
+                var translate_key = int.Parse(result[i]["translate_key"]);
+                if (!data.Contains(translate_key))
+                    data.Add(translate_key);
+            }
+
+            return data;
+        }
+
+        #endregion
+
+        #region ExecuteQuery
+
+        #region ExecuteNonQuery
 
         private int _ExecuteNonQuery(string sql)
         {
@@ -207,6 +239,10 @@ CREATE TABLE IF NOT EXISTS [video] (
 
             return result;
         }
+
+        #endregion
+
+        #region ExecuteReader
 
         private List<Dictionary<string, string>> _ExecuteReader(string sql)
         {
@@ -245,81 +281,37 @@ CREATE TABLE IF NOT EXISTS [video] (
             return result;
         }
 
-        public bool VideoSet(int ID, Dictionary<string, string> data)
-        {
-            if (0 == data.Count)
-                return false;
-            var dataOld = VideoGet(ID);
-            if (0 < dataOld.Count)
-            {
-                var dataDiff = data.Where(entry => !dataOld.ContainsKey(entry.Key) || dataOld[entry.Key] != entry.Value)
-                    .ToDictionary(entry => entry.Key, entry => entry.Value);
-                var fields = new List<string>();
-                foreach (var item in dataDiff)
-                    fields.Add(item.Key + " = @" + item.Key);
-                if (0 < fields.Count)
-                {
-#if DEBUG
-                    Console.WriteLine("\tUpdate Video\t{0}:\t{1}", ID, SimpleJson.SimpleJson.SerializeObject(dataDiff));
-#endif
-                    dataDiff.Add("id", ID.ToString());
-                    dataDiff.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
-                    return 0 < _ExecuteNonQuery(
-                               @"UPDATE video SET " + string.Join(", ", fields.ToArray()) +
-                               ", updated_date = @updated_date WHERE id = @id", dataDiff);
-                }
-            }
-            else
-            {
-                data.Add("id", ID.ToString());
-                var date = DateTime.UtcNow.ToString(TIME_FORMAT);
-                data.Add("created_date", date);
-                data.Add("updated_date", date);
-                var fields = new List<string>(data.Keys);
-#if DEBUG
-                Console.WriteLine("\tInsert Video\t{0}:\t{1}", ID, SimpleJson.SimpleJson.SerializeObject(data));
-#endif
-                return 0 < _ExecuteNonQuery(
-                           @"INSERT INTO video (" + string.Join(", ", fields.ToArray()) + ") VALUES (@" +
-                           string.Join(", @", fields.ToArray()) + ")", data);
-            }
+        #endregion
 
-            return false;
-        }
+        #endregion
 
-        public Dictionary<string, string> VideoGet(int ID)
-        {
-            var data = new Dictionary<string, string>();
-            var result = _ExecuteReader(@"SELECT * FROM video WHERE id=@id LIMIT 1;",
-                new Dictionary<string, string> {{"id", ID.ToString()}});
-            if (0 < result.Count)
-                data = result[0];
+        #region Option
 
-            return data;
-        }
-
-        public void OptionSet(string name, string value = null)
+        public int OptionSet(string name, string value = null)
         {
             if (string.IsNullOrEmpty(value))
                 value = "";
 
             var data = new Dictionary<string, string> {{"name", name}, {"value", value}};
-            if ("" == OptionGet(name))
-            {
-                if ("" != value)
-                    if (0 < _ExecuteNonQuery(@"INSERT INTO options (name,value) VALUES (@name,@value)", data))
-                        cachedOptions.Add(name, value);
-            }
-            else if ("" != value)
-            {
-                if (0 < _ExecuteNonQuery(@"UPDATE options SET value = @value WHERE name = @name", data))
-                    cachedOptions[name] = value;
-            }
+            var date = DateTime.UtcNow.ToString(TIME_FORMAT);
+            data.Add("created_date", date);
+            data.Add("updated_date", date);
+            if (cachedOptions.ContainsKey(name))
+                cachedOptions[name] = value;
             else
-            {
-                if (0 < _ExecuteNonQuery(@"DELETE FROM options WHERE name = @name", data))
-                    cachedOptions.Remove(name);
-            }
+                cachedOptions.Add(name, value);
+            return _ExecuteNonQuery(
+                @"INSERT OR REPLACE INTO options (name,value,created_date,updated_date) VALUES (@name,@value,@created_date,@updated_date)",
+                data);
+        }
+
+        public async void OptionSetAsync(string name, string value = null)
+        {
+            await Task.Run(() => OptionSet(name, value));
+            if (cachedOptions.ContainsKey(name))
+                cachedOptions[name] = value;
+            else
+                cachedOptions.Add(name, value);
         }
 
         public string OptionGet(string name)
@@ -336,18 +328,33 @@ CREATE TABLE IF NOT EXISTS [video] (
             return "";
         }
 
+        public void OptionGetAll()
+        {
+            var data = new Dictionary<string, string>();
+            var result = _ExecuteReader(@"SELECT name,value FROM options");
+            foreach (var item in result)
+                if (!data.ContainsKey(item["name"]))
+                    data.Add(item["name"], item["value"]);
+            cachedOptions = data;
+        }
+
+        #endregion
+
+        #region Cache
+
         public int CacheSet(string url, string content = null)
         {
-            var data = new Dictionary<string, string>
-                {{"url", url}, {"content", content}, {"create_date", DateTime.UtcNow.ToString(TIME_FORMAT)}};
-            if (string.IsNullOrWhiteSpace(content))
+            if (string.IsNullOrEmpty(content))
                 return 0;
-            var item = CacheGet(url);
-            if (item.isEmpty)
-                return _ExecuteNonQuery(
-                    @"INSERT INTO http_cache (url,content,create_date) VALUES (@url,@content,@create_date)", data);
             return _ExecuteNonQuery(
-                @"UPDATE http_cache SET content = @content, create_date = @create_date WHERE url = @url", data);
+                @"INSERT OR REPLACE INTO http_cache (url,content,create_date) VALUES (@url,@content,@create_date)",
+                new Dictionary<string, string>
+                    {{"url", url}, {"content", content}, {"create_date", DateTime.UtcNow.ToString(TIME_FORMAT)}});
+        }
+
+        public async Task<int> CacheSetAsync(string url, string content = null)
+        {
+            return await Task.Run(() => CacheSet(url, content));
         }
 
         public string CacheGetContent(string url, int period = 24 * 60 * 60)
@@ -367,47 +374,30 @@ CREATE TABLE IF NOT EXISTS [video] (
             return item;
         }
 
+        #endregion
+
+        #region Season
+
         public bool SeasonSet(int id, Dictionary<string, string> data)
         {
             if (0 == data.Count)
                 return false;
-            var dataOld = SeasonGet(id);
-            if (0 < dataOld.Count)
-            {
-                var dataDiff = data.Where(entry => !dataOld.ContainsKey(entry.Key) || dataOld[entry.Key] != entry.Value)
-                    .ToDictionary(entry => entry.Key, entry => entry.Value);
-                var fields = new List<string>();
-                foreach (var item in dataDiff)
-                    fields.Add(item.Key + " = @" + item.Key);
-                if (0 < fields.Count)
-                {
 #if DEBUG
-                    Console.WriteLine("\tUpdate Season\t{0}:\t{1}", id,
-                        SimpleJson.SimpleJson.SerializeObject(dataDiff));
+            Console.WriteLine("\tDB Season\t{0}:\t{1}", id, SimpleJson.SimpleJson.SerializeObject(data));
 #endif
-                    dataDiff.Add("id", id.ToString());
-                    dataDiff.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
-                    return 0 < _ExecuteNonQuery(
-                               @"UPDATE season SET " + string.Join(", ", fields.ToArray()) +
-                               ", updated_date = @updated_date WHERE id = @id", dataDiff);
-                }
-            }
-            else
-            {
-                data.Add("id", id.ToString());
-                var date = DateTime.UtcNow.ToString(TIME_FORMAT);
-                data.Add("created_date", date);
-                data.Add("updated_date", date);
-                var fields = new List<string>(data.Keys);
-#if DEBUG
-                Console.WriteLine("\tInsert Season\t{0}:\t{1}", id, SimpleJson.SimpleJson.SerializeObject(data));
-#endif
-                return 0 < _ExecuteNonQuery(
-                           @"INSERT INTO season (" + string.Join(", ", fields.ToArray()) + ") VALUES (@" +
-                           string.Join(", @", fields.ToArray()) + ")", data);
-            }
-
-            return false;
+            var fieldsUpdate = new List<string>();
+            foreach (var item in data)
+                fieldsUpdate.Add(item.Key + " = @" + item.Key);
+            data.Add("id", id.ToString());
+            var date = DateTime.UtcNow.ToString(TIME_FORMAT);
+            data.Add("created_date", date);
+            data.Add("updated_date", date);
+            var fieldsInsert = new List<string>(data.Keys);
+            return 0 < _ExecuteNonQuery(
+                       @"INSERT OR IGNORE INTO season (" + string.Join(", ", fieldsInsert.ToArray()) + ") VALUES (@" +
+                       string.Join(", @", fieldsInsert.ToArray()) + "); UPDATE season SET " +
+                       string.Join(", ", fieldsUpdate.ToArray()) +
+                       ", updated_date = @updated_date WHERE id = @id", data);
         }
 
         public bool SeasonRemove(int id)
@@ -421,8 +411,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             if (0 == IDs.Count)
                 return false;
             var strIDs = string.Join(", ", IDs.ToArray());
-            _ExecuteNonQuery(@"UPDATE season SET type=NULL WHERE type<>NULL AND id NOT IN (" + strIDs + ")");
-            _ExecuteNonQuery(@"UPDATE season SET marks_current=NULL WHERE marks_current<>NULL AND id NOT IN (" +
+            _ExecuteNonQuery(@"UPDATE season SET type=NULL WHERE type NOT IN(NULL, 'notwatch') AND id NOT IN (" +
                              strIDs + ")");
             return true;
         }
@@ -457,6 +446,9 @@ CREATE TABLE IF NOT EXISTS [video] (
             return data;
         }
 
+        #endregion
+
+        #region Related
 
         public List<int> RelatedGet(int seasonId)
         {
@@ -511,6 +503,10 @@ CREATE TABLE IF NOT EXISTS [video] (
                        new Dictionary<string, string> {{"season_id", seasonId.ToString()}});
         }
 
+        #endregion
+
+        #region Compilation
+
         public Dictionary<int, string> CompilationGet()
         {
             var data = new Dictionary<int, string>();
@@ -553,6 +549,10 @@ CREATE TABLE IF NOT EXISTS [video] (
                 sql += @"INSERT INTO compilation (id, name) VALUES " + string.Join(", ", fields.ToArray()) + ";";
             return 0 < _ExecuteNonQuery(sql, data);
         }
+
+        #endregion
+
+        #region CompilationRelation
 
         public Dictionary<int, int> CompilationRelationGet()
         {
@@ -616,92 +616,9 @@ CREATE TABLE IF NOT EXISTS [video] (
                        new Dictionary<string, string> {{"serial_id", serialId.ToString()}});
         }
 
-        public bool TranslateSet(Dictionary<string, string> data, Dictionary<string, string> where)
-        {
-            var dataOld = TranslateGet(where);
-            if (0 < dataOld.Count)
-            {
-                var dataDiff = data.Where(entry => !dataOld.ContainsKey(entry.Key) || dataOld[entry.Key] != entry.Value)
-                    .ToDictionary(entry => entry.Key, entry => entry.Value);
-                var fieldsUpdate = new List<string>();
-                foreach (var item in dataDiff)
-                    fieldsUpdate.Add(item.Key + " = @" + item.Key);
+        #endregion
 
-                var fieldsWhere = new List<string>();
-                foreach (var item in where)
-                {
-                    fieldsWhere.Add(string.Format("{0} = @ww{0}", item.Key));
-                    dataDiff.Add("ww" + item.Key, item.Value);
-                }
-
-                if (0 < fieldsUpdate.Count && 0 < fieldsWhere.Count)
-                {
-#if DEBUG
-                    Console.WriteLine("\tUpdate Translate\t{0}:\t{1}", SimpleJson.SimpleJson.SerializeObject(where),
-                        SimpleJson.SimpleJson.SerializeObject(dataDiff));
-#endif
-                    return 0 < _ExecuteNonQuery(
-                               @"UPDATE translate SET " + string.Join(", ", fieldsUpdate.ToArray()) + " WHERE " +
-                               string.Join(" AND ", fieldsWhere.ToArray()), dataDiff);
-                }
-
-
-                return false;
-            }
-
-            var fieldsNew = new List<string>(data.Keys);
-#if DEBUG
-            Console.WriteLine("\tInsert Translate\t{0}:\t{1}", SimpleJson.SimpleJson.SerializeObject(where),
-                SimpleJson.SimpleJson.SerializeObject(data));
-#endif
-            return 0 < _ExecuteNonQuery(
-                       @"INSERT INTO translate (" + string.Join(", ", fieldsNew.ToArray()) + ") VALUES (@" +
-                       string.Join(", @", fieldsNew.ToArray()) + ")", data);
-        }
-
-        public Dictionary<string, string> TranslateGet(Dictionary<string, string> where)
-        {
-            var data = new Dictionary<string, string>();
-            if (0 < where.Count)
-            {
-                if (where.ContainsKey("id"))
-                {
-                    var resultFirst = TranslateGet(where["id"]);
-                    if (0 < resultFirst.Count)
-                        return resultFirst;
-                }
-
-                var fields = new List<string>();
-                var keys = new List<string>(where.Keys);
-                for (var i = 0; i < keys.Count; i++) fields.Add(string.Format("{0} = @{0}", keys[i]));
-                var result =
-                    _ExecuteReader(
-                        @"SELECT id, key, slug, name FROM translate WHERE " + string.Join(" OR ", fields.ToArray()) +
-                        " ORDER BY key ASC LIMIT 1;", where);
-                if (0 < result.Count)
-                    data = result[0];
-            }
-
-
-            return data;
-        }
-
-        public Dictionary<string, string> TranslateGet(string id)
-        {
-            var data = new Dictionary<string, string>();
-            var result =
-                _ExecuteReader(@"SELECT id, key, slug, name FROM translate WHERE id=@id ORDER BY key ASC LIMIT 1;",
-                    new Dictionary<string, string> {{"id", id}});
-            if (0 < result.Count)
-                data = result[0];
-
-            return data;
-        }
-
-        public List<Dictionary<string, string>> TranslateGetAll()
-        {
-            return _ExecuteReader(@"SELECT id, key, slug, name FROM translate ORDER BY key ASC;");
-        }
+        #region Playlist
 
         public bool PlaylistSet(int seasonID, int translateID, Dictionary<string, string> data)
         {
@@ -771,21 +688,98 @@ CREATE TABLE IF NOT EXISTS [video] (
                 new Dictionary<string, string> {{"season_id", seasonID.ToString()}});
         }
 
-        public List<int> PlayerGetTranslate(int seasonID)
+        #endregion
+
+        #region Translate
+
+        public bool TranslateSet(int ID, Dictionary<string, string> data)
         {
-            var data = new List<int>();
+            if (0 == data.Count)
+                return false;
+#if DEBUG
+            Console.WriteLine("\tDB Translate\t{0}:\t{1}", ID,
+                SimpleJson.SimpleJson.SerializeObject(data));
+#endif
+            var fieldsUpdate = new List<string>();
+            foreach (var item in data)
+                fieldsUpdate.Add(item.Key + " = @" + item.Key);
+            if (!data.ContainsKey("id"))
+                data.Add("id", ID.ToString());
+            var fieldsNew = new List<string>(data.Keys);
+            data.Add("old_id", ID.ToString());
+            return 0 < _ExecuteNonQuery(
+                       @"INSERT OR IGNORE INTO translate (" + string.Join(", ", fieldsNew.ToArray()) + ") VALUES (@" +
+                       string.Join(", @", fieldsNew.ToArray()) + ");UPDATE translate SET " +
+                       string.Join(", ", fieldsUpdate.ToArray()) + " WHERE id = @old_id", data);
+        }
+
+        public Dictionary<string, string> TranslateGet(int id)
+        {
+            var data = new Dictionary<string, string>();
             var result =
-                _ExecuteReader(
-                    @"SELECT translate_key FROM playlist WHERE season_id = @season_id ORDER BY translate_key ASC;",
-                    new Dictionary<string, string> {{"season_id", seasonID.ToString()}});
-            for (var i = 0; i < result.Count; i++)
-            {
-                var translate_key = int.Parse(result[i]["translate_key"]);
-                if (!data.Contains(translate_key))
-                    data.Add(translate_key);
-            }
+                _ExecuteReader(@"SELECT * FROM translate WHERE id=@id ORDER BY id ASC LIMIT 1;",
+                    new Dictionary<string, string> {{"id", id.ToString()}});
+            if (0 < result.Count)
+                data = result[0];
 
             return data;
         }
+
+        public List<Dictionary<string, string>> TranslateGetAll()
+        {
+            return _ExecuteReader(@"SELECT * FROM translate ORDER BY id ASC;");
+        }
+
+        #endregion
+
+        #region Video
+
+        public bool VideoSet(int ID, Dictionary<string, string> data)
+        {
+            if (0 == data.Count)
+                return false;
+#if DEBUG
+            Console.WriteLine("\tDB Video\t{0}:\t{1}", ID, SimpleJson.SimpleJson.SerializeObject(data));
+#endif
+            var fieldsUpdate = new List<string>();
+            foreach (var item in data)
+                fieldsUpdate.Add(item.Key + " = @" + item.Key);
+
+            data.Add("id", ID.ToString());
+            var date = DateTime.UtcNow.ToString(TIME_FORMAT);
+            data.Add("created_date", date);
+            data.Add("updated_date", date);
+            var fields = new List<string>(data.Keys);
+            return 0 < _ExecuteNonQuery(
+                       @"INSERT OR IGNORE INTO video (" + string.Join(", ", fields.ToArray()) + ") VALUES (@" +
+                       string.Join(", @", fields.ToArray()) + ");UPDATE video SET " +
+                       string.Join(", ", fieldsUpdate.ToArray()) +
+                       ", updated_date = @updated_date WHERE id = @id", data);
+        }
+
+        public Dictionary<string, string> VideoGet(int ID)
+        {
+            var data = new Dictionary<string, string>();
+            var result = _ExecuteReader(@"SELECT * FROM video WHERE id=@id LIMIT 1;",
+                new Dictionary<string, string> {{"id", ID.ToString()}});
+            if (0 < result.Count)
+                data = result[0];
+
+            return data;
+        }
+
+        public List<Dictionary<string, string>> VideoGetSeason(int SeasonID)
+        {
+            return _ExecuteReader(@"SELECT * FROM video WHERE season_id=@id ORDER BY video_id ASC;",
+                new Dictionary<string, string> {{"id", SeasonID.ToString()}});
+        }
+
+        public List<Dictionary<string, string>> VideoGetSerial(int SerialID)
+        {
+            return _ExecuteReader(@"SELECT * FROM video WHERE serial_id=@id ORDER BY video_id ASC;",
+                new Dictionary<string, string> {{"id", SerialID.ToString()}});
+        }
+
+        #endregion
     }
 }

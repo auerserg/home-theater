@@ -3,25 +3,86 @@ using System.Collections.Generic;
 using System.Linq;
 using HomeTheater.Helper;
 
-namespace HomeTheater.Serial
+namespace HomeTheater.API.Abstract
 {
+    #region Delegate
+
     public delegate Dictionary<string, string> SerialLoadAction();
 
     public delegate bool SerialSaveAction(Dictionary<string, string> data);
 
-    internal abstract class SerialParent : APIParent
+    #endregion
+
+    internal abstract class Serial : Base
     {
+        #region Словари
+
         protected Dictionary<string, DateTime> __data_date = new Dictionary<string, DateTime>();
         protected Dictionary<string, float> __data_float = new Dictionary<string, float>();
         protected Dictionary<string, int> __data_int = new Dictionary<string, int>();
         protected Dictionary<string, string> __data_new = new Dictionary<string, string>();
         protected Dictionary<string, string> __data_old = new Dictionary<string, string>();
 
+        #endregion
+
+        #region Общие обработчики переменных
+
+        protected void LoadValues(SerialLoadAction callback)
+        {
+            __data_old = callback();
+            __data_date = new Dictionary<string, DateTime>();
+            __data_float = new Dictionary<string, float>();
+            __data_int = new Dictionary<string, int>();
+            __data_new = __data_new.Where(entry =>
+                    !__data_old.ContainsKey(entry.Key) || __data_old[entry.Key] != entry.Value)
+                .ToDictionary(entry => entry.Key, entry => entry.Value);
+        }
+
+        protected void SaveValues(SerialSaveAction callback)
+        {
+            if (0 == __data_new.Count)
+                return;
+            var data = __data_new.Where(entry =>
+                    !__data_old.ContainsKey(entry.Key) || __data_old[entry.Key] != entry.Value)
+                .ToDictionary(entry => entry.Key, entry => entry.Value);
+            var result = false;
+            string[] exclude =
+            {
+                "created_date",
+                "updated_date",
+                "cached_date"
+            };
+            foreach (var item in exclude)
+                if (data.ContainsKey(item))
+                    data.Remove(item);
+            if (0 < data.Count)
+                result = callback(data);
+            if (!result)
+                return;
+            foreach (var item in data)
+                if (__data_old.ContainsKey(item.Key))
+                    __data_old[item.Key] = item.Value;
+                else
+                    __data_old.Add(item.Key, item.Value);
+            __data_date = new Dictionary<string, DateTime>();
+            __data_float = new Dictionary<string, float>();
+            __data_int = new Dictionary<string, int>();
+            __data_new = new Dictionary<string, string>();
+        }
+
+        protected virtual void CallValue(string name, string value = null, string value_old = null)
+        {
+        }
+
+        #endregion
+
+        #region Getter
+
         protected string getValue(string name, string _default = "")
         {
-            if (__data_new.ContainsKey(name))
+            if (__data_new.ContainsKey(name) && "" != __data_new[name])
                 return __data_new[name];
-            if (__data_old.ContainsKey(name))
+            if (__data_old.ContainsKey(name) && "" != __data_old[name])
                 return __data_old[name];
             return _default;
         }
@@ -72,50 +133,9 @@ namespace HomeTheater.Serial
             return __data_date[name];
         }
 
-        protected void LoadValues(SerialLoadAction callback)
-        {
-            __data_old = callback();
-            __data_date = new Dictionary<string, DateTime>();
-            __data_float = new Dictionary<string, float>();
-            __data_int = new Dictionary<string, int>();
-            __data_new = __data_new.Where(entry =>
-                    !__data_old.ContainsKey(entry.Key) || __data_old[entry.Key] != entry.Value)
-                .ToDictionary(entry => entry.Key, entry => entry.Value);
-        }
+        #endregion
 
-        protected void SaveValues(SerialSaveAction callback)
-        {
-            if (0 == __data_new.Count)
-                return;
-            var data = __data_new.Where(entry =>
-                    !__data_old.ContainsKey(entry.Key) || __data_old[entry.Key] != entry.Value)
-                .ToDictionary(entry => entry.Key, entry => entry.Value);
-            var result = false;
-            var exclude = new[]
-            {
-                "created_date",
-                "updated_date",
-                "cached_date"
-            };
-            foreach (var item in exclude)
-                if (data.ContainsKey(item))
-                    data.Remove(item);
-            if (0 < data.Count)
-                result = callback(data);
-            if (!result)
-                return;
-            foreach (var item in data)
-                if (__data_old.ContainsKey(item.Key))
-                    __data_old[item.Key] = item.Value;
-                else
-                    __data_old.Add(item.Key, item.Value);
-            __data_date = new Dictionary<string, DateTime>();
-            __data_float = new Dictionary<string, float>();
-            __data_int = new Dictionary<string, int>();
-            __data_new = new Dictionary<string, string>();
-        }
-
-        protected abstract void callbackValue(string name, string value);
+        #region Setter
 
         protected void setValue(string name, string value, string _default = "")
         {
@@ -128,7 +148,19 @@ namespace HomeTheater.Serial
                 __data_new[name] = value;
             else
                 __data_new.Add(name, value);
-            callbackValue(name, value);
+            CallValue(name, value, value_old);
+        }
+
+        protected void setValueEmpty(string name, string value = "")
+        {
+            var value_old = getValue(name);
+            if (value_old == value)
+                return;
+            if (__data_new.ContainsKey(name))
+                __data_new[name] = value;
+            else
+                __data_new.Add(name, value);
+            CallValue(name, value, value_old);
         }
 
         protected void setValue(string name, int value, int _default = 0)
@@ -172,5 +204,7 @@ namespace HomeTheater.Serial
                 __data_date.Add(name, value);
             setValue(name, value.ToString(format));
         }
+
+        #endregion
     }
 }

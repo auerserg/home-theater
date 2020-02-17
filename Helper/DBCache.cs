@@ -31,15 +31,24 @@ namespace HomeTheater.Helper
 
         public bool isActual => !isEmpty && !isOld;
 
-        public override string ToString()
-        {
-            return isActual ? content : "";
-        }
 
         public DBCache setDate(string date, string format)
         {
             DateTime.TryParseExact(date, format, new CultureInfo("en-US"), DateTimeStyles.None, out this.date);
             return this;
+        }
+
+        public DBCache setURL(string url)
+        {
+            this.url = url.Trim();
+            return this;
+        }
+
+        #region Content
+
+        public override string ToString()
+        {
+            return isActual ? content : "";
         }
 
         public DBCache setContent(string content)
@@ -61,15 +70,11 @@ namespace HomeTheater.Helper
             return this;
         }
 
-        private async void saveContent()
+        private void saveContent()
         {
-            var counts = DB.Instance.CacheSet(url, content);
+            _ = DB.Instance.CacheSetAsync(url, content);
         }
 
-        public DBCache setURL(string url)
-        {
-            this.url = url.Trim();
-            return this;
-        }
+        #endregion
     }
 }

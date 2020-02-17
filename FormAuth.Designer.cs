@@ -28,38 +28,39 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.textBoxLogin = new System.Windows.Forms.TextBox();
-            this.textBoxPassword = new System.Windows.Forms.TextBox();
+            this.textLogin = new System.Windows.Forms.TextBox();
+            this.textPassword = new System.Windows.Forms.TextBox();
             this.buttonEnter = new System.Windows.Forms.Button();
             this.linkLabelReg = new System.Windows.Forms.LinkLabel();
             this.linkLabelForgot = new System.Windows.Forms.LinkLabel();
+            this.progressAnimation = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();
             // 
-            // textBoxLogin
+            // textLogin
             // 
-            this.textBoxLogin.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.textLogin.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxLogin.Location = new System.Drawing.Point(12, 12);
-            this.textBoxLogin.Name = "textBoxLogin";
-            this.textBoxLogin.Size = new System.Drawing.Size(216, 20);
-            this.textBoxLogin.TabIndex = 1;
-            this.textBoxLogin.Text = "E-mail";
-            this.textBoxLogin.Enter += new System.EventHandler(this.TextBoxEmail_Enter);
-            this.textBoxLogin.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxLogin_KeyDown);
-            this.textBoxLogin.Leave += new System.EventHandler(this.TextBoxEmail_Leave);
+            this.textLogin.Location = new System.Drawing.Point(12, 12);
+            this.textLogin.Name = "textLogin";
+            this.textLogin.Size = new System.Drawing.Size(216, 20);
+            this.textLogin.TabIndex = 0;
+            this.textLogin.Text = "E-mail";
+            this.textLogin.Enter += new System.EventHandler(this.textLogin_Enter);
+            this.textLogin.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textLogin_KeyDown);
+            this.textLogin.Leave += new System.EventHandler(this.textLogin_Leave);
             // 
-            // textBoxPassword
+            // textPassword
             // 
-            this.textBoxPassword.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.textPassword.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxPassword.Location = new System.Drawing.Point(12, 38);
-            this.textBoxPassword.Name = "textBoxPassword";
-            this.textBoxPassword.Size = new System.Drawing.Size(216, 20);
-            this.textBoxPassword.TabIndex = 2;
-            this.textBoxPassword.Text = "Пароль";
-            this.textBoxPassword.Enter += new System.EventHandler(this.TextBoxPassword_Enter);
-            this.textBoxPassword.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxPassword_KeyDown);
-            this.textBoxPassword.Leave += new System.EventHandler(this.TextBoxPassword_Leave);
+            this.textPassword.Location = new System.Drawing.Point(12, 38);
+            this.textPassword.Name = "textPassword";
+            this.textPassword.Size = new System.Drawing.Size(216, 20);
+            this.textPassword.TabIndex = 1;
+            this.textPassword.Text = "Пароль";
+            this.textPassword.Enter += new System.EventHandler(this.textPassword_Enter);
+            this.textPassword.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textPassword_KeyDown);
+            this.textPassword.Leave += new System.EventHandler(this.textPassword_Leave);
             // 
             // buttonEnter
             // 
@@ -67,34 +68,42 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonEnter.Location = new System.Drawing.Point(12, 64);
             this.buttonEnter.Name = "buttonEnter";
-            this.buttonEnter.Size = new System.Drawing.Size(216, 22);
-            this.buttonEnter.TabIndex = 3;
+            this.buttonEnter.Size = new System.Drawing.Size(216, 23);
+            this.buttonEnter.TabIndex = 2;
             this.buttonEnter.Text = "Войти";
             this.buttonEnter.UseVisualStyleBackColor = true;
-            this.buttonEnter.Click += new System.EventHandler(this.ButtonEnter_Click);
+            this.buttonEnter.Click += new System.EventHandler(this.buttonEnter_Click);
             // 
             // linkLabelReg
             // 
             this.linkLabelReg.AutoSize = true;
-            this.linkLabelReg.Location = new System.Drawing.Point(12, 89);
+            this.linkLabelReg.Location = new System.Drawing.Point(12, 90);
             this.linkLabelReg.Name = "linkLabelReg";
             this.linkLabelReg.Size = new System.Drawing.Size(72, 13);
-            this.linkLabelReg.TabIndex = 4;
+            this.linkLabelReg.TabIndex = 3;
             this.linkLabelReg.TabStop = true;
             this.linkLabelReg.Text = "Регистрация";
-            this.linkLabelReg.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelReg_LinkClicked);
+            this.linkLabelReg.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelReg_LinkClicked);
             // 
             // linkLabelForgot
             // 
             this.linkLabelForgot.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.linkLabelForgot.AutoSize = true;
-            this.linkLabelForgot.Location = new System.Drawing.Point(137, 89);
+            this.linkLabelForgot.Location = new System.Drawing.Point(137, 90);
             this.linkLabelForgot.Name = "linkLabelForgot";
             this.linkLabelForgot.Size = new System.Drawing.Size(91, 13);
-            this.linkLabelForgot.TabIndex = 5;
+            this.linkLabelForgot.TabIndex = 6;
             this.linkLabelForgot.TabStop = true;
             this.linkLabelForgot.Text = "Забыли пароль?";
-            this.linkLabelForgot.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelForgot_LinkClicked);
+            this.linkLabelForgot.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelForgot_LinkClicked);
+            // 
+            // progressAnimation
+            // 
+            this.progressAnimation.Location = new System.Drawing.Point(15, 64);
+            this.progressAnimation.Maximum = 10;
+            this.progressAnimation.Name = "progressAnimation";
+            this.progressAnimation.Size = new System.Drawing.Size(213, 23);
+            this.progressAnimation.TabIndex = 7;
             // 
             // FormAuth
             // 
@@ -104,8 +113,9 @@
             this.Controls.Add(this.linkLabelForgot);
             this.Controls.Add(this.linkLabelReg);
             this.Controls.Add(this.buttonEnter);
-            this.Controls.Add(this.textBoxPassword);
-            this.Controls.Add(this.textBoxLogin);
+            this.Controls.Add(this.textPassword);
+            this.Controls.Add(this.textLogin);
+            this.Controls.Add(this.progressAnimation);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -121,10 +131,11 @@
 
         #endregion
 
-        private System.Windows.Forms.TextBox textBoxLogin;
-        private System.Windows.Forms.TextBox textBoxPassword;
+        private System.Windows.Forms.TextBox textLogin;
+        private System.Windows.Forms.TextBox textPassword;
         private System.Windows.Forms.Button buttonEnter;
         private System.Windows.Forms.LinkLabel linkLabelReg;
         private System.Windows.Forms.LinkLabel linkLabelForgot;
+        private System.Windows.Forms.ProgressBar progressAnimation;
     }
 }
