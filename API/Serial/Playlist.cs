@@ -10,11 +10,10 @@ namespace HomeTheater.API.Serial
     {
         private DateTime __cached_date;
         private bool __forsed_update_playlist;
+        private Dictionary<int, Video> __videos;
         public int SeasonID, timeout;
         public Translate Translate;
 
-        public Dictionary<int, Video> Videos =
-            new Dictionary<int, Video>();
 
         public Dictionary<string, string> VideosOrder = new Dictionary<string, string>();
 
@@ -51,15 +50,6 @@ namespace HomeTheater.API.Serial
             {
                 LoadValues(() => { return data; });
                 getVideosOrder();
-                var videoData = DB.Instance.VideoGetSeason(SeasonID);
-                foreach (var video in videoData)
-                {
-                    var id = IntVal(video["id"]);
-                    if (Videos.ContainsKey(id))
-                        Videos[id] = new Video(id, video);
-                    else
-                        Videos.Add(id, new Video(id, video));
-                }
             }
             else
             {
@@ -69,6 +59,28 @@ namespace HomeTheater.API.Serial
             this.SeasonID = SeasonID;
             this.SerialID = SerialID;
             this.timeout = timeout;
+        }
+
+        public Dictionary<int, Video> Videos
+        {
+            get
+            {
+                if (null == __videos)
+                {
+                    __videos = new Dictionary<int, Video>();
+                    var videoData = DB.Instance.VideoGetSeason(SeasonID);
+                    foreach (var video in videoData)
+                    {
+                        var id = IntVal(video["id"]);
+                        if (__videos.ContainsKey(id))
+                            __videos[id] = new Video(id, video);
+                        else
+                            __videos.Add(id, new Video(id, video));
+                    }
+                }
+
+                return __videos;
+            }
         }
 
         protected override void CallValue(string name, string value = null, string value_old = null)
@@ -87,15 +99,6 @@ namespace HomeTheater.API.Serial
                 return;
             LoadValues(() => { return DB.Instance.PlaylistGet(SeasonID, TranslateID); });
             getVideosOrder();
-            var videoData = DB.Instance.VideoGetSeason(SeasonID);
-            foreach (var video in videoData)
-            {
-                var id = IntVal(video["id"]);
-                if (Videos.ContainsKey(id))
-                    Videos[id] = new Video(id, video);
-                else
-                    Videos.Add(id, new Video(id, video));
-            }
         }
 
         private void Save()
