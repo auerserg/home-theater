@@ -34,7 +34,7 @@ namespace HomeTheater
                 if (attributes.Length > 0)
                 {
                     var titleAttribute = (AssemblyTitleAttribute) attributes[0];
-                    if (titleAttribute.Title != "") return titleAttribute.Title;
+                    if (!string.IsNullOrEmpty(titleAttribute.Title)) return titleAttribute.Title;
                 }
 
                 return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
