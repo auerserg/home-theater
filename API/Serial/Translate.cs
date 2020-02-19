@@ -23,14 +23,14 @@ namespace HomeTheater.API.Serial
         {
             if (0 > value)
                 return;
-            var value_old = getValueInt(name, _default);
+            var value_old = GetValueInt(name, _default);
             if (value_old == value)
                 return;
             if (__data_int.ContainsKey(name))
                 __data_int[name] = value;
             else
                 __data_int.Add(name, value);
-            setValue(name, value.ToString());
+            SetValue(name, value.ToString());
         }
 
         protected override void CallValue(string name, string value = null, string value_old = null)
@@ -82,7 +82,7 @@ namespace HomeTheater.API.Serial
 
         public int ID
         {
-            get => getValueInt("id", -1);
+            get => GetValueInt("id", -1);
             set => setValue0("id", value);
         }
 
@@ -100,18 +100,18 @@ namespace HomeTheater.API.Serial
 
         public string Name
         {
-            get => getValue("name");
-            set => setValue("name", value);
+            get => GetValue("name");
+            set => SetValue("name", value);
         }
 
         public string Slug
         {
-            get => getValue("slug");
+            get => GetValue("slug");
             set
             {
-                setValue("slug", value);
+                SetValue("slug", value);
                 if (string.IsNullOrEmpty(Name))
-                    setValue("name", HttpUtility.UrlDecode(value));
+                    SetValue("name", HttpUtility.UrlDecode(value));
             }
         }
 

@@ -9,11 +9,6 @@ using System.Threading.Tasks;
 
 namespace HomeTheater.Helper
 {
-    /**
-     * * TODO изменить на единый запрос
-     * * INSERT OR IGNORE INTO my_table (name, age) VALUES ('Karen', 34)
-     * UPDATE my_table SET age = 34 WHERE name='Karen'
-     */
     public class DB
     {
         public const string TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -380,7 +375,7 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         public bool SeasonSet(int id, Dictionary<string, string> data)
         {
-            if (0 == data.Count)
+            if (null == data || 0 == data.Count)
                 return false;
 #if DEBUG
             Console.WriteLine("\tDB Season\t{0}:\t{1}", id, SimpleJson.SimpleJson.SerializeObject(data));
@@ -738,23 +733,29 @@ CREATE TABLE IF NOT EXISTS [video] (
         {
             if (0 == data.Count)
                 return false;
-#if DEBUG
-            Console.WriteLine("\tDB Video\t{0}:\t{1}", ID, SimpleJson.SimpleJson.SerializeObject(data));
-#endif
+
             var fieldsUpdate = new List<string>();
             foreach (var item in data)
                 fieldsUpdate.Add(item.Key + " = @" + item.Key);
-
+#if DEBUG
+            Console.WriteLine("\tDB Video\t{0}:\t{1}", ID,
+                SimpleJson.SimpleJson.SerializeObject(data));
+#endif
             data.Add("id", ID.ToString());
             var date = DateTime.UtcNow.ToString(TIME_FORMAT);
             data.Add("created_date", date);
             data.Add("updated_date", date);
             var fields = new List<string>(data.Keys);
-            return 0 < _ExecuteNonQuery(
-                       @"INSERT OR IGNORE INTO video (" + string.Join(", ", fields.ToArray()) + ") VALUES (@" +
-                       string.Join(", @", fields.ToArray()) + ");UPDATE video SET " +
-                       string.Join(", ", fieldsUpdate.ToArray()) +
-                       ", updated_date = @updated_date WHERE id = @id", data);
+            var _sql = "";
+            if (data.ContainsKey("season_id") && data.ContainsKey("translate_id") && data.ContainsKey("video_id"))
+                _sql =
+                    @"DELETE FROM video WHERE season_id = @season_id AND translate_id = @translate_id AND video_id = @video_id;";
+            return 0 < _ExecuteNonQuery(_sql +
+                                        @"INSERT OR IGNORE INTO video (" + string.Join(", ", fields.ToArray()) +
+                                        ") VALUES (@" +
+                                        string.Join(", @", fields.ToArray()) + ");UPDATE video SET " +
+                                        string.Join(", ", fieldsUpdate.ToArray()) +
+                                        ", updated_date = @updated_date WHERE id = @id", data);
         }
 
         public Dictionary<string, string> VideoGet(int ID)

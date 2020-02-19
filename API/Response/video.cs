@@ -3,10 +3,10 @@ using HomeTheater.Helper;
 
 namespace HomeTheater.API.Response
 {
-    internal class video
+    internal class Video
     {
         public string file, galabel, id, subtitle, title, vars;
-        public List<video> folder;
+        public List<Video> folder;
 
         public string fileReal
         {

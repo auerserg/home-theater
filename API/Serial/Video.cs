@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using HomeTheater.API.Response;
 using HomeTheater.Helper;
 
@@ -19,7 +20,17 @@ namespace HomeTheater.API.Serial
 
         public async void SaveAsync()
         {
-            Save();
+            await Task.Run(() =>
+            {
+                try
+                {
+                    Save();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+            }).ConfigureAwait(true);
         }
 
         public void Save()
@@ -44,7 +55,7 @@ namespace HomeTheater.API.Serial
 #endif
         }
 
-        public void parseVideo(video data)
+        public void parseVideo(Response.Video data)
         {
             SubTitle = data.subtitle;
             var url = data.fileReal;
@@ -58,7 +69,7 @@ namespace HomeTheater.API.Serial
 
         #region Конструктор
 
-        public Video(int id, int seasonId, int serialId, video data,
+        public Video(int id, int seasonId, int serialId, Response.Video data,
             Translate translate = null)
         {
             ID = id;
@@ -70,7 +81,7 @@ namespace HomeTheater.API.Serial
             parseVideo(data);
         }
 
-        public Video(int id, int seasonId, int serialId, video data, int translateKey = -1)
+        public Video(int id, int seasonId, int serialId, Response.Video data, int translateKey = -1)
         {
             ID = id;
             Load();
@@ -81,7 +92,7 @@ namespace HomeTheater.API.Serial
             parseVideo(data);
         }
 
-        public Video(int id, int seasonId, int serialId, video data,
+        public Video(int id, int seasonId, int serialId, Response.Video data,
             string translateName = "")
         {
             ID = id;
@@ -97,6 +108,8 @@ namespace HomeTheater.API.Serial
         {
             ID = id;
             LoadValues(() => { return data; });
+            if (__data_old.ContainsKey("translate_id") && null == Translate)
+                Translate = new Translate(IntVal(__data_old["translate_id"]));
         }
 
         #endregion
@@ -105,38 +118,38 @@ namespace HomeTheater.API.Serial
 
         public int SerialID
         {
-            get => getValueInt("serial_id");
-            set => setValue("serial_id", value);
+            get => GetValueInt("serial_id");
+            set => SetValue("serial_id", value);
         }
 
         public int SeasonID
         {
-            get => getValueInt("season_id");
-            set => setValue("season_id", value);
+            get => GetValueInt("season_id");
+            set => SetValue("season_id", value);
         }
 
         public string URL
         {
-            get => Server.Instance.prepareSecureUrl(getValue("url"));
-            set => setValue("url", value);
+            get => Server.Instance.prepareSecureUrl(GetValue("url"));
+            set => SetValue("url", value);
         }
 
         public string Secure
         {
-            get => getValue("secure", Server.Instance.Secure);
+            get => GetValue("secure", Server.Instance.Secure);
             set
             {
                 if (Server.Instance.Secure != value)
-                    setValue("secure", value);
+                    SetValue("secure", value);
                 else
-                    setValueEmpty("secure");
+                    SetValueEmpty("secure");
             }
         }
 
         protected string SubTitle
         {
-            get => getValue("subtitle");
-            private set => setValue("subtitle", value);
+            get => GetValue("subtitle");
+            private set => SetValue("subtitle", value);
         }
 
         public Dictionary<string, string> SubTitles
@@ -157,27 +170,27 @@ namespace HomeTheater.API.Serial
 
         public string VideoID
         {
-            get => getValue("video_id");
-            set => setValue("video_id", value);
+            get => GetValue("video_id");
+            set => SetValue("video_id", value);
         }
 
         public string VideoNextID
         {
-            get => getValue("video_next_id");
-            set => setValue("video_next_id", value);
+            get => GetValue("video_next_id");
+            set => SetValue("video_next_id", value);
         }
 
         public int TranslateID => null != Translate ? Translate.ID : 0;
 
         public string TranslateName
         {
-            get => getValue("translate_name", TranslateBaseName);
+            get => GetValue("translate_name", TranslateBaseName);
             set
             {
                 if (TranslateBaseName != value)
-                    setValue("translate_name", value);
+                    SetValue("translate_name", value);
                 else
-                    setValueEmpty("translate_name");
+                    SetValueEmpty("translate_name");
             }
         }
 
@@ -185,9 +198,9 @@ namespace HomeTheater.API.Serial
 
         public string TranslateSlug => null != Translate ? Translate.Slug : "";
 
-        public DateTime CreatedDate => getValueDate("created_date");
+        public DateTime CreatedDate => GetValueDate("created_date");
 
-        public DateTime UpdatedDate => getValueDate("updated_date");
+        public DateTime UpdatedDate => GetValueDate("updated_date");
 
         #endregion
     }

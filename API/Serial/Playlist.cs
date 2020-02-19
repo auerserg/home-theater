@@ -212,27 +212,27 @@ namespace HomeTheater.API.Serial
 
         public string URL
         {
-            get => getValue("url");
-            set => setValue("url", value);
+            get => GetValue("url");
+            set => SetValue("url", value);
         }
 
         public string newURL => Server.Instance.prepareSecureUrl(URL);
 
         public int SerialID
         {
-            get => getValueInt("serial_id");
-            set => setValue("serial_id", value);
+            get => GetValueInt("serial_id");
+            set => SetValue("serial_id", value);
         }
 
         public string Secure
         {
-            get => getValue("secure", Server.Instance.Secure);
+            get => GetValue("secure", Server.Instance.Secure);
             set
             {
                 if (Server.Instance.Secure != value)
-                    setValue("secure", value);
+                    SetValue("secure", value);
                 else
-                    setValueEmpty("secure");
+                    SetValueEmpty("secure");
             }
         }
 
@@ -256,23 +256,23 @@ namespace HomeTheater.API.Serial
 
         public float TranslatePercent
         {
-            get => getValueFloat("percent");
-            set => setValue("percent", value);
+            get => GetValueFloat("percent");
+            set => SetValue("percent", value);
         }
 
         protected string OrderVideos
         {
-            get => getValue("order_videos");
-            set => setValue("order_videos", value);
+            get => GetValue("order_videos");
+            set => SetValue("order_videos", value);
         }
 
-        public DateTime CreatedDate => getValueDate("created_date");
+        public DateTime CreatedDate => GetValueDate("created_date");
 
-        public DateTime UpdatedDate => getValueDate("updated_date");
+        public DateTime UpdatedDate => GetValueDate("updated_date");
 
         public DateTime CachedDate
         {
-            get => __cached_date != new DateTime() ? __cached_date : getValueDate("cached_date");
+            get => __cached_date != new DateTime() ? __cached_date : GetValueDate("cached_date");
             set => __cached_date = value;
         }
 
@@ -282,10 +282,10 @@ namespace HomeTheater.API.Serial
 
         private void parse(string html)
         {
-            var data = new List<video>();
+            var data = new List<Response.Video>();
             try
             {
-                data = SimpleJson.SimpleJson.DeserializeObject<List<video>>(html);
+                data = SimpleJson.SimpleJson.DeserializeObject<List<Response.Video>>(html);
             }
             catch (Exception ex)
             {
@@ -295,7 +295,7 @@ namespace HomeTheater.API.Serial
             parseVideo(data);
         }
 
-        private void parseVideo(List<video> data)
+        private void parseVideo(List<Response.Video> data)
         {
             foreach (var item in data)
                 if (null == item.folder)

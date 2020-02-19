@@ -112,17 +112,11 @@ namespace HomeTheater.API.Serial
             var _js = Match(html, "<ul class=\"pgs-trans\">(.*?)</ul>", REGEX_ICS, 1);
             _parseTranslate(_js);
             _js = Match(js, "var arEpisodes = ([[{].*?[]}]);", REGEX_ICS, 1);
-            if (string.IsNullOrEmpty(_js))
-            {
+            if (!string.IsNullOrEmpty(_js))
                 _parseSeries(_js);
-            }
+#if DEBUG
             else
-            {
-#if DEBUG
                 Console.WriteLine("Не найден список эпизодов\t{0}\t{1}", SerialID, SeasonID);
-#endif
-            }
-#if DEBUG
             Console.WriteLine("\tParse Player\t{0}\t{1}:\t{2}", SerialID, SeasonID,
                 DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif

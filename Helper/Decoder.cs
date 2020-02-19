@@ -114,7 +114,7 @@ namespace HomeTheater.Helper
             var a = x.Substring(2);
             for (var i = 4; i > -1; i--)
                 if (v.ContainsKey("bk" + i))
-                    if (v["bk" + i] != "")
+                    if (!string.IsNullOrEmpty(v["bk" + i]))
                         a = a.Replace(v["file3_separator"] + b1(v["bk" + i]), "");
             try
             {

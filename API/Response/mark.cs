@@ -1,6 +1,6 @@
 ﻿namespace HomeTheater.API.Response
 {
-    internal class mark
+    internal class Mark
     {
         public string href;
         public int trans;

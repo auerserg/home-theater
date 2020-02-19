@@ -78,20 +78,20 @@ namespace HomeTheater.API.Abstract
 
         #region Getter
 
-        protected string getValue(string name, string _default = "")
+        protected string GetValue(string name, string _default = "")
         {
-            if (__data_new.ContainsKey(name) && "" != __data_new[name])
+            if (__data_new.ContainsKey(name) && !string.IsNullOrEmpty(__data_new[name]))
                 return __data_new[name];
-            if (__data_old.ContainsKey(name) && "" != __data_old[name])
+            if (__data_old.ContainsKey(name) && !string.IsNullOrEmpty(__data_old[name]))
                 return __data_old[name];
             return _default;
         }
 
-        protected int getValueInt(string name, int _default = 0)
+        protected int GetValueInt(string name, int _default = 0)
         {
             if (__data_int.ContainsKey(name) && __data_int[name] != 0)
                 return __data_int[name];
-            var value = IntVal(getValue(name, _default.ToString()));
+            var value = IntVal(GetValue(name, _default.ToString()));
             if (__data_int.ContainsKey(name))
                 __data_int[name] = value;
             else
@@ -99,11 +99,11 @@ namespace HomeTheater.API.Abstract
             return __data_int[name];
         }
 
-        protected float getValueFloat(string name, float _default = 0)
+        protected float GetValueFloat(string name, float _default = 0)
         {
             if (__data_float.ContainsKey(name) && __data_float[name] != 0)
                 return __data_float[name];
-            var value = floatVal(getValue(name, _default.ToString()));
+            var value = floatVal(GetValue(name, _default.ToString()));
             if (__data_float.ContainsKey(name))
                 __data_float[name] = value;
             else
@@ -111,21 +111,21 @@ namespace HomeTheater.API.Abstract
             return __data_float[name];
         }
 
-        protected DateTime getValueDate(string name)
+        protected DateTime GetValueDate(string name)
         {
-            return getValueDate(name, new DateTime());
+            return GetValueDate(name, new DateTime());
         }
 
-        protected DateTime getValueDate(string name, string format = DB.TIME_FORMAT)
+        protected DateTime GetValueDate(string name, string format = DB.TIME_FORMAT)
         {
-            return getValueDate(name, new DateTime(), format);
+            return GetValueDate(name, new DateTime(), format);
         }
 
-        protected DateTime getValueDate(string name, DateTime _default = new DateTime(), string format = DB.TIME_FORMAT)
+        protected DateTime GetValueDate(string name, DateTime _default = new DateTime(), string format = DB.TIME_FORMAT)
         {
             if (__data_date.ContainsKey(name) && __data_date[name] != new DateTime())
                 return __data_date[name];
-            var value = DateVal(getValue(name, _default.ToString(format)), format);
+            var value = DateVal(GetValue(name, _default.ToString(format)), format);
             if (__data_date.ContainsKey(name))
                 __data_date[name] = value;
             else
@@ -137,11 +137,11 @@ namespace HomeTheater.API.Abstract
 
         #region Setter
 
-        protected void setValue(string name, string value, string _default = "")
+        protected void SetValue(string name, string value, string _default = "")
         {
             if (string.IsNullOrWhiteSpace(value))
                 return;
-            var value_old = getValue(name, _default);
+            var value_old = GetValue(name, _default);
             if (value_old == value)
                 return;
             if (__data_new.ContainsKey(name))
@@ -151,9 +151,9 @@ namespace HomeTheater.API.Abstract
             CallValue(name, value, value_old);
         }
 
-        protected void setValueEmpty(string name, string value = "")
+        protected void SetValueEmpty(string name, string value = "")
         {
-            var value_old = getValue(name);
+            var value_old = GetValue(name);
             if (value_old == value)
                 return;
             if (__data_new.ContainsKey(name))
@@ -163,46 +163,46 @@ namespace HomeTheater.API.Abstract
             CallValue(name, value, value_old);
         }
 
-        protected void setValue(string name, int value, int _default = 0)
+        protected void SetValue(string name, int value, int _default = 0)
         {
             if (0 == value)
                 return;
-            var value_old = getValueInt(name, _default);
+            var value_old = GetValueInt(name, _default);
             if (value_old == value)
                 return;
             if (__data_int.ContainsKey(name))
                 __data_int[name] = value;
             else
                 __data_int.Add(name, value);
-            setValue(name, value.ToString());
+            SetValue(name, value.ToString());
         }
 
-        protected void setValue(string name, float value, float _default = 0)
+        protected void SetValue(string name, float value, float _default = 0)
         {
             if (0 == value)
                 return;
-            var value_old = getValueFloat(name, _default);
+            var value_old = GetValueFloat(name, _default);
             if (value_old == value)
                 return;
             if (__data_float.ContainsKey(name))
                 __data_float[name] = value;
             else
                 __data_float.Add(name, value);
-            setValue(name, value.ToString());
+            SetValue(name, value.ToString());
         }
 
-        protected void setValue(string name, DateTime value, string format = DB.TIME_FORMAT)
+        protected void SetValue(string name, DateTime value, string format = DB.TIME_FORMAT)
         {
             if (new DateTime() == value)
                 return;
-            var value_old = getValueDate(name, format);
+            var value_old = GetValueDate(name, format);
             if (value_old == value)
                 return;
             if (__data_date.ContainsKey(name))
                 __data_date[name] = value;
             else
                 __data_date.Add(name, value);
-            setValue(name, value.ToString(format));
+            SetValue(name, value.ToString(format));
         }
 
         #endregion

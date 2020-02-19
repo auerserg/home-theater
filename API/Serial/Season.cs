@@ -21,7 +21,6 @@ namespace HomeTheater.API.Serial
         private Player __player;
         private List<int> __related = new List<int>();
         private Dictionary<int, int> __seasons = new Dictionary<int, int>();
-        private string __secure_mark = "";
         private int __timeout;
 
         public ListViewItem ListViewItem = new ListViewItem(new[]
@@ -75,6 +74,9 @@ namespace HomeTheater.API.Serial
         {
             switch (name)
             {
+                case "type":
+                    if ("nonew" == value_old && "new" == value) __forsed_update_player = true;
+                    break;
                 case "marks_last":
                     __forsed_update_player = true;
                     break;
@@ -266,29 +268,29 @@ namespace HomeTheater.API.Serial
 
         public int SerialID
         {
-            get => getValueInt("serial_id");
-            set => setValue("serial_id", value);
+            get => GetValueInt("serial_id");
+            set => SetValue("serial_id", value);
         }
 
         public int SeasonNum
         {
-            get => getValueInt("season");
-            set => setValue("season", value);
+            get => GetValueInt("season");
+            set => SetValue("season", value);
         }
 
         public int UserComments
         {
-            get => getValueInt("user_comments");
-            set => setValue("user_comments", value);
+            get => GetValueInt("user_comments");
+            set => SetValue("user_comments", value);
         }
 
         public int UserViewsLastDay
         {
-            get => getValueInt("user_views_last_day");
+            get => GetValueInt("user_views_last_day");
             set
             {
                 if (UserViewsLastDay < value)
-                    setValue("user_views_last_day", value);
+                    SetValue("user_views_last_day", value);
             }
         }
 
@@ -320,95 +322,95 @@ namespace HomeTheater.API.Serial
 
         public string Genre
         {
-            get => getValue("genre");
-            set => setValue("genre", value);
+            get => GetValue("genre");
+            set => SetValue("genre", value);
         }
 
         public string Country
         {
-            get => getValue("country");
-            set => setValue("country", value);
+            get => GetValue("country");
+            set => SetValue("country", value);
         }
 
         public string Release
         {
-            get => getValue("release");
-            set => setValue("release", value);
+            get => GetValue("release");
+            set => SetValue("release", value);
         }
 
         public float IMDB
         {
-            get => getValueFloat("imdb");
-            set => setValue("imdb", value);
+            get => GetValueFloat("imdb");
+            set => SetValue("imdb", value);
         }
 
         public float KinoPoisk
         {
-            get => getValueFloat("kinopoisk");
-            set => setValue("kinopoisk", value);
+            get => GetValueFloat("kinopoisk");
+            set => SetValue("kinopoisk", value);
         }
 
         public string Limitation
         {
-            get => getValue("limitation");
-            set => setValue("limitation", value);
+            get => GetValue("limitation");
+            set => SetValue("limitation", value);
         }
 
         public string URL
         {
-            get => getValue("url");
-            set => setValue("url", value);
+            get => GetValue("url");
+            set => SetValue("url", value);
         }
 
         public string Title
         {
-            get => getValue("title");
-            set => setValue("title", value);
+            get => GetValue("title");
+            set => SetValue("title", value);
         }
 
         public string TitleRU
         {
-            get => getValue("title_ru");
-            set => setValue("title_ru", value);
+            get => GetValue("title_ru");
+            set => SetValue("title_ru", value);
         }
 
         public string TitleEN
         {
-            get => getValue("title_en");
-            set => setValue("title_en", value);
+            get => GetValue("title_en");
+            set => SetValue("title_en", value);
         }
 
         public string TitleFull
         {
-            get => getValue("title_full");
-            set => setValue("title_full", value);
+            get => GetValue("title_full");
+            set => SetValue("title_full", value);
         }
 
         public string TitleOriginal
         {
-            get => getValue("title_original");
-            set => setValue("title_original", value);
+            get => GetValue("title_original");
+            set => SetValue("title_original", value);
         }
 
         public string Description
         {
-            get => getValue("description");
-            set => setValue("description", value);
+            get => GetValue("description");
+            set => SetValue("description", value);
         }
 
         public string MarkCurrent
         {
-            get => getValue("marks_current");
-            set => setValue("marks_current", value);
+            get => GetValue("marks_current");
+            set => SetValue("marks_current", value);
         }
 
-        public string TypeOLD => getValue("type_old");
+        public string TypeOLD => GetValue("type_old");
 
         public string Type
         {
             get
             {
-                var value = getValue("type");
+                var value = GetValue("type");
                 if (!string.IsNullOrEmpty(value))
                     return value;
                 return "none";
@@ -418,17 +420,17 @@ namespace HomeTheater.API.Serial
                 if (TypeOLD != value)
                 {
                     if ("none" != value)
-                        setValue("type", value);
+                        SetValue("type", value);
                     else
-                        setValueEmpty("type");
+                        SetValueEmpty("type");
                 }
             }
         }
 
         public string MarkLast
         {
-            get => getValue("marks_last");
-            set => setValue("marks_last", value);
+            get => GetValue("marks_last");
+            set => SetValue("marks_last", value);
         }
 
         public string Mark
@@ -443,13 +445,13 @@ namespace HomeTheater.API.Serial
 
         public string Secure
         {
-            get => getValue("secure", Server.Instance.Secure);
+            get => GetValue("secure", Server.Instance.Secure);
             set
             {
                 if (Server.Instance.Secure != value)
-                    setValue("secure", value);
+                    SetValue("secure", value);
                 else
-                    setValueEmpty("secure");
+                    SetValueEmpty("secure");
             }
         }
 
@@ -461,17 +463,17 @@ namespace HomeTheater.API.Serial
 
         public DateTime SiteUpdated
         {
-            get => getValueDate("site_updated", DB.DATE_FORMAT);
-            set => setValue("site_updated", value, DB.DATE_FORMAT);
+            get => GetValueDate("site_updated", DB.DATE_FORMAT);
+            set => SetValue("site_updated", value, DB.DATE_FORMAT);
         }
 
-        public DateTime CreatedDate => getValueDate("created_date");
+        public DateTime CreatedDate => GetValueDate("created_date");
 
-        public DateTime UpdatedDate => getValueDate("updated_date");
+        public DateTime UpdatedDate => GetValueDate("updated_date");
 
         public DateTime CachedDate
         {
-            get => __cached_date != new DateTime() ? __cached_date : getValueDate("cached_date");
+            get => __cached_date != new DateTime() ? __cached_date : GetValueDate("cached_date");
             set => __cached_date = value;
         }
 
@@ -656,7 +658,7 @@ namespace HomeTheater.API.Serial
             }
 
             html = Regex.Replace(html, "'", "\"");
-            var Data4Play = SimpleJson.SimpleJson.DeserializeObject<data4play>(html);
+            var Data4Play = SimpleJson.SimpleJson.DeserializeObject<Data4play>(html);
             return Data4Play.secureMark;
         }
 
@@ -666,7 +668,7 @@ namespace HomeTheater.API.Serial
             if (!string.IsNullOrEmpty(html))
             {
                 html = Regex.Replace(html, "'", "\"");
-                var mark = SimpleJson.SimpleJson.DeserializeObject<mark>(html);
+                var mark = SimpleJson.SimpleJson.DeserializeObject<Mark>(html);
                 var matchurl = Regex.Match(mark.href, "^(.*?)#rewind=(.*?)_seriya$", REGEX_IC);
                 if (matchurl.Success)
                 {
@@ -987,6 +989,7 @@ namespace HomeTheater.API.Serial
             {
                 Type = "notwatch";
                 SaveAsync();
+                CompilationRemove();
                 DB.Instance.OptionSetAsync("needListUpdate", "1");
             }
         }
@@ -999,6 +1002,7 @@ namespace HomeTheater.API.Serial
             {
                 Type = "none";
                 SaveAsync();
+                CompilationRemove();
                 DB.Instance.OptionSetAsync("needListUpdate", "1");
             }
         }
