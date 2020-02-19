@@ -95,12 +95,11 @@ namespace HomeTheater
             StatusMessageSet(ERROR_AUTH);
         }
 
-        public void StatusTimerSet(double est, double timer = 0)
+        public void StatusTimerSet(double est)
         {
             var time = TimeSpan.FromMilliseconds(est).ToString(@"hh\:mm\:ss");
-            var time2 = 0 < timer ? " / " + TimeSpan.FromMilliseconds(timer).ToString(@"hh\:mm\:ss") : "";
 
-            statusTimer.Text = time + time2;
+            statusTimer.Text = time;
         }
 
         public void StatusMessageSet(string status, object arg0 = null, object arg1 = null, object arg2 = null,
@@ -129,7 +128,7 @@ namespace HomeTheater
                 statusProgress.Value++;
             double est = (statusProgress.Maximum - statusProgress.Value) * Timer.ElapsedMilliseconds /
                          statusProgress.Value;
-            StatusTimerSet(est, Timer.ElapsedMilliseconds);
+            StatusTimerSet(est);
         }
 
         public void StatusProgressEnd()
