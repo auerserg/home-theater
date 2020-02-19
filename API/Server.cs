@@ -115,7 +115,6 @@ namespace HomeTheater.API
         private const string MARK_PATH = "/jsonMark.php";
         private const string PAUSE_PATH = "/?mod=pause";
         private const string PLAYER_PATH = "/player.php";
-        private const string PLAYLIST_PATH = "/playls2/{0:S}/trans{1:S}/{2}/plist.txt";
         private const string REGISTER_PATH = "/?mod=reg";
         protected string PROFILE_PATH;
 
