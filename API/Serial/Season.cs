@@ -142,7 +142,7 @@ namespace HomeTheater.API.Serial
                 {
                     Logger.Instance.Error(ex);
                 }
-            }).ConfigureAwait(true);
+            });
         }
 
         public string GetOnlySecure()
@@ -902,7 +902,7 @@ namespace HomeTheater.API.Serial
                 {
                     Logger.Instance.Error(ex);
                 }
-            }).ConfigureAwait(true);
+            });
         }
 
         public void _saveRelated()

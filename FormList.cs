@@ -329,9 +329,9 @@ namespace HomeTheater
                 {
                     Logger.Instance.Error(ex);
                 }
-            }, token).ConfigureAwait(true);
+            }, token);
 
-            await LoadTableSerialsAsync().ConfigureAwait(true);
+            await LoadTableSerialsAsync();
             остановитьToolStripMenuItem.Visible = false;
         }
 
@@ -379,7 +379,7 @@ namespace HomeTheater
                 {
                     Logger.Instance.Error(ex);
                 }
-            }).ConfigureAwait(true);
+            });
         }
 
         private async Task listSerials_updateAsync(Dictionary<int, Season> collection)
@@ -909,7 +909,7 @@ namespace HomeTheater
                 {
                     Logger.Instance.Error(ex);
                 }
-            }, token).ConfigureAwait(true);
+            }, token);
             await LoadTableSerialsAsync(true);
             остановитьToolStripMenuItem.Visible = false;
         }
@@ -936,7 +936,7 @@ namespace HomeTheater
 
         private async void видеоToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            await SyncSelectedSerialsAsync(false, false, true).ConfigureAwait(true);
+            await SyncSelectedSerialsAsync(false, false, true);
         }
 
 
@@ -983,7 +983,7 @@ namespace HomeTheater
                 {
                     Logger.Instance.Error(ex);
                 }
-            }).ConfigureAwait(true);
+            });
             _ = LoadTableSerialsAsync();
         }
 

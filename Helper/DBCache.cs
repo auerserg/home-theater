@@ -40,7 +40,8 @@ namespace HomeTheater.Helper
 
         public DBCache setURL(string url)
         {
-            this.url = url.Trim();
+            if (null != url)
+                this.url = url.Trim();
             return this;
         }
 
@@ -53,13 +54,14 @@ namespace HomeTheater.Helper
 
         public DBCache setContent(string content)
         {
-            this.content = content.Trim();
+            if (null != content)
+                this.content = content.Trim();
             return this;
         }
 
         public DBCache updateContent(string content)
         {
-            this.content = content.Trim();
+            setContent(content);
             if (!string.IsNullOrEmpty(this.content))
             {
                 isNew = true;

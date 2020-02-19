@@ -135,7 +135,7 @@ namespace HomeTheater.API.Serial
                 {
                     Logger.Instance.Error(ex);
                 }
-            }).ConfigureAwait(true);
+            });
         }
 
 

@@ -69,7 +69,7 @@ namespace HomeTheater.API.Abstract
 #if DEBUG
             var start = DateTime.UtcNow;
 #endif
-            var wc = (HttpWebRequest) WebRequest.Create(url);
+            var wc = (HttpWebRequest) WebRequest.Create(new Uri(url));
             var _header = new WebHeaderCollection();
             if (null != header && 0 < header.Count)
                 for (var i = 0; i < header.Count; i++)
@@ -95,7 +95,7 @@ namespace HomeTheater.API.Abstract
             var start = DateTime.UtcNow;
 #endif
             var headerResponse = new header();
-            var wc = (HttpWebRequest) WebRequest.Create(url);
+            var wc = (HttpWebRequest) WebRequest.Create(new Uri(url));
             var _header = new WebHeaderCollection();
             if (null != header && 0 < header.Count)
                 for (var i = 0; i < header.Count; i++)

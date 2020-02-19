@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -10,7 +11,9 @@ namespace HomeTheater.UI
     /// <summary>
     ///     Zusammenfassung fьr ListViewEx.
     /// </summary>
+#pragma warning disable CA1060 // Переместите вызовы PInvoke в класс собственных методов
     public class ListViewEx : ListView
+#pragma warning restore CA1060 // Переместите вызовы PInvoke в класс собственных методов
     {
         private readonly ArrayList _embeddedControls = new ArrayList();
 
@@ -62,7 +65,9 @@ namespace HomeTheater.UI
             var subItemRect = Rectangle.Empty;
 
             if (Item == null)
+#pragma warning disable CA1507 // Используйте nameof для выражения имен символов
                 throw new ArgumentNullException("Item");
+#pragma warning restore CA1507 // Используйте nameof для выражения имен символов
 
             var order = GetColumnOrder();
             if (order == null) // No Columns
@@ -113,9 +118,13 @@ namespace HomeTheater.UI
         public void AddEmbeddedControl(Control c, int col, int row, DockStyle dock)
         {
             if (c == null)
+#pragma warning disable CA2208 // Правильно создавайте экземпляры исключений аргументов
                 throw new ArgumentNullException();
+#pragma warning restore CA2208 // Правильно создавайте экземпляры исключений аргументов
             if (col >= Columns.Count || row >= Items.Count)
+#pragma warning disable CA2208 // Правильно создавайте экземпляры исключений аргументов
                 throw new ArgumentOutOfRangeException();
+#pragma warning restore CA2208 // Правильно создавайте экземпляры исключений аргументов
 
             if (c.Disposing || c.IsDisposed)
             {
@@ -145,7 +154,9 @@ namespace HomeTheater.UI
         public void RemoveEmbeddedControl(Control c)
         {
             if (c == null)
+#pragma warning disable CA2208 // Правильно создавайте экземпляры исключений аргументов
                 throw new ArgumentNullException();
+#pragma warning restore CA2208 // Правильно создавайте экземпляры исключений аргументов
 
             for (var i = 0; i < _embeddedControls.Count; i++)
             {
@@ -257,6 +268,7 @@ namespace HomeTheater.UI
 
         #region Interop-Defines
 
+        [SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
         [DllImport("user32.dll")]
         private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wPar, IntPtr lPar);
 

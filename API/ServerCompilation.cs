@@ -38,7 +38,7 @@ namespace HomeTheater.API
         public void CompilationUpdate(Dictionary<int, string> data)
         {
             var needSave = false;
-            if (0 < data.Count)
+            if (null != data && 0 < data.Count)
                 foreach (var item in data)
                     if (!compilation.ContainsKey(item.Key))
                     {
@@ -62,7 +62,7 @@ namespace HomeTheater.API
                 {
                     Logger.Instance.Error(ex);
                 }
-            }).ConfigureAwait(true);
+            });
         }
 
         private void _CompilationLoad()
@@ -91,7 +91,7 @@ namespace HomeTheater.API
                 {
                     Logger.Instance.Error(ex);
                 }
-            }).ConfigureAwait(true);
+            });
         }
 
         private void _RelationLoad()
@@ -212,7 +212,7 @@ namespace HomeTheater.API
                 {
                     Logger.Instance.Error(ex);
                 }
-            }).ConfigureAwait(true);
+            });
         }
 
         public void Update(bool forsed = true, bool compilation = true, bool relation = true)

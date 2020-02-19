@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -213,6 +214,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             return _ExecuteNonQuery(sql, new Dictionary<string, string>());
         }
 
+        [SuppressMessage("Microsoft.Security", "CA2100:Проверка запросов SQL на уязвимости безопасности")]
         private int _ExecuteNonQuery(string sql, Dictionary<string, string> data)
         {
             var result = 0;
@@ -221,12 +223,12 @@ CREATE TABLE IF NOT EXISTS [video] (
             try
             {
                 _checkConnectDataBase();
-#pragma warning disable CA2100
+
                 var command = new SQLiteCommand(sql, connection)
                 {
                     CommandType = CommandType.Text
                 };
-#pragma warning restore CA2100
+
                 foreach (var item in data)
                     command.Parameters.AddWithValue("@" + item.Key, item.Value);
                 result = command.ExecuteNonQuery();
@@ -248,18 +250,21 @@ CREATE TABLE IF NOT EXISTS [video] (
             return _ExecuteReader(sql, new Dictionary<string, string>());
         }
 
+        [SuppressMessage("Microsoft.Security", "CA2100:Проверка запросов SQL на уязвимости безопасности")]
         private List<Dictionary<string, string>> _ExecuteReader(string sql, Dictionary<string, string> data)
         {
             var result = new List<Dictionary<string, string>>();
             try
             {
                 _checkConnectDataBase();
-#pragma warning disable CA2100
+
+#pragma warning disable CA2100 // Проверка запросов SQL на уязвимости безопасности
                 var command = new SQLiteCommand(sql, connection)
                 {
                     CommandType = CommandType.Text
                 };
-#pragma warning restore CA2100
+#pragma warning restore CA2100 // Проверка запросов SQL на уязвимости безопасности
+
                 foreach (var item in data)
                     command.Parameters.AddWithValue("@" + item.Key, item.Value);
                 var reader = command.ExecuteReader();
@@ -411,7 +416,7 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         public bool SeasonClearOld(List<int> IDs)
         {
-            if (0 == IDs.Count)
+            if (null == IDs || 0 == IDs.Count)
                 return false;
             var strIDs = string.Join(", ", IDs.ToArray());
             _ExecuteNonQuery(@"UPDATE season SET type=NULL WHERE type NOT IN(NULL, 'notwatch') AND id NOT IN (" +
@@ -472,7 +477,7 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         public bool RelatedSet(int seasonId, List<int> related)
         {
-            if (0 >= related.Count)
+            if (null == related || 0 >= related.Count)
                 return false;
             var keysOld = RelatedGet(seasonId);
 
@@ -526,7 +531,7 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         public bool CompilationSet(Dictionary<int, string> compilation)
         {
-            if (0 == compilation.Count)
+            if (null == compilation || 0 == compilation.Count)
                 return false;
             var keysOld = new List<int>(CompilationGet().Keys);
             var fields = new List<string>();
@@ -576,7 +581,7 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         public bool CompilationRelationSet(Dictionary<int, int> compilation)
         {
-            if (0 == compilation.Count)
+            if (null == compilation || 0 == compilation.Count)
                 return false;
             var keysOld = new List<int>(CompilationRelationGet().Keys);
             var fields = new List<string>();
@@ -625,7 +630,7 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         public bool PlaylistSet(int seasonID, int translateID, Dictionary<string, string> data)
         {
-            if (0 == data.Count)
+            if (null == data || 0 == data.Count)
                 return false;
             var dataOld = PlaylistGet(seasonID, translateID);
             if (0 < dataOld.Count)
@@ -697,7 +702,7 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         public bool TranslateSet(int ID, Dictionary<string, string> data)
         {
-            if (0 == data.Count)
+            if (null == data || 0 == data.Count)
                 return false;
 #if DEBUG
             Console.WriteLine("\tDB Translate\t{0}:\t{1}", ID,
@@ -739,7 +744,7 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         public bool VideoSet(int ID, Dictionary<string, string> data)
         {
-            if (0 == data.Count)
+            if (null == data || 0 == data.Count)
                 return false;
 
             var fieldsUpdate = new List<string>();

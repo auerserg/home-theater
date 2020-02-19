@@ -13,3 +13,24 @@ dotnet_diagnostic.CA1054.severity = none
 
 # CA1304: Укажите CultureInfo
 dotnet_diagnostic.CA1304.severity = none
+
+# CA1031: Не перехватывать исключения общих типов
+dotnet_diagnostic.CA1031.severity = none
+
+# CA1051: Не объявляйте видимые поля экземпляров
+dotnet_diagnostic.CA1051.severity = none
+
+# CA1303: Не передавать литералы в качестве локализованных параметров
+dotnet_diagnostic.CA1303.severity = silent
+
+# CA1307: Укажите StringComparison
+dotnet_diagnostic.CA1307.severity = silent
+
+# CA2000: Ликвидировать объекты перед потерей области
+dotnet_diagnostic.CA2000.severity = silent
+
+# CA1707: Идентификаторы не должны содержать символы подчеркивания
+dotnet_diagnostic.CA1707.severity = silent
+
+# CA2007: Попробуйте вызвать ConfigureAwait для ожидаемой задачи
+dotnet_diagnostic.CA2007.severity = silent
