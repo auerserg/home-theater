@@ -31,9 +31,10 @@ namespace HomeTheater
                 width += statusMain.Items[i].Width;
             var widthParent = statusMain.Width - 40 - 100;
             statusTimer.Width = 100;
-            for (var i = 0; i < statusMain.Items.Count; i++)
-                if ("statusTimer" != statusMain.Items[i].Name)
-                    statusMain.Items[i].Width = widthParent * statusMain.Items[i].Width / width;
+            if (0 < widthParent)
+                for (var i = 0; i < statusMain.Items.Count; i++)
+                    if ("statusTimer" != statusMain.Items[i].Name)
+                        statusMain.Items[i].Width = widthParent * statusMain.Items[i].Width / width;
         }
 
         #region Методы Формы
