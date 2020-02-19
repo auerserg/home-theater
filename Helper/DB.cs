@@ -221,8 +221,12 @@ CREATE TABLE IF NOT EXISTS [video] (
             try
             {
                 _checkConnectDataBase();
-                var command = new SQLiteCommand(sql, connection);
-                command.CommandType = CommandType.Text;
+#pragma warning disable CA2100
+                var command = new SQLiteCommand(sql, connection)
+                {
+                    CommandType = CommandType.Text
+                };
+#pragma warning restore CA2100
                 foreach (var item in data)
                     command.Parameters.AddWithValue("@" + item.Key, item.Value);
                 result = command.ExecuteNonQuery();
@@ -250,8 +254,12 @@ CREATE TABLE IF NOT EXISTS [video] (
             try
             {
                 _checkConnectDataBase();
-                var command = new SQLiteCommand(sql, connection);
-                command.CommandType = CommandType.Text;
+#pragma warning disable CA2100
+                var command = new SQLiteCommand(sql, connection)
+                {
+                    CommandType = CommandType.Text
+                };
+#pragma warning restore CA2100
                 foreach (var item in data)
                     command.Parameters.AddWithValue("@" + item.Key, item.Value);
                 var reader = command.ExecuteReader();

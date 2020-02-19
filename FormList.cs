@@ -110,6 +110,7 @@ namespace HomeTheater
             DB.Instance.OptionSet("listSerialsWidth", SimpleJson.SimpleJson.SerializeObject(listViewSerialsWidth));
             DB.Instance.OptionSet("listDownloadWidth",
                 SimpleJson.SimpleJson.SerializeObject(listViewDownloadWidth));
+            tokenSource.Cancel();
         }
 
         private void LoadFormView()
@@ -159,26 +160,6 @@ namespace HomeTheater
             ToolStripMenuItemSerialSiteUpdated.Checked = 0 < columnSerialSiteUpdated.Width;
             ToolStripMenuItemSerialUserComments.Checked = 0 < columnSerialUserComments.Width;
             ToolStripMenuItemSerialUserViewsLastDay.Checked = 0 < columnSerialUserViewsLastDay.Width;
-        }
-
-        private void SaveFormView()
-        {
-            List<int> listSerialsDisplayIndex = new List<int>();
-            List<int> listSerialsWidth = new List<int>();
-            for (int i = 0; i < listSerials.Columns.Count; i++)
-            {
-                listSerialsDisplayIndex.Add(listSerials.Columns[i].DisplayIndex);
-                listSerialsWidth.Add(listSerials.Columns[i].Width);
-            }
-
-            List<int> listDownloadWidth = new List<int>();
-            for (int i = 0; i < listDownload.Columns.Count; i++)
-                listDownloadWidth.Add(listDownload.Columns[i].Width);
-            DB.Instance.OptionSet("listSerialsDisplayIndex",
-                SimpleJson.SimpleJson.SerializeObject(listSerialsDisplayIndex));
-            DB.Instance.OptionSet("listSerialsWidth", SimpleJson.SimpleJson.SerializeObject(listSerialsWidth));
-            DB.Instance.OptionSet("listDownloadWidth",
-                SimpleJson.SimpleJson.SerializeObject(listDownloadWidth));
         }
 
         #region Синхронизация
@@ -235,7 +216,7 @@ namespace HomeTheater
                     Invoke(new Action(() =>
                     {
                         MainParent.StatusMessageSet("Обновление таблицы");
-                        RefreshSerials();
+                        _ = RefreshSerials();
                     }));
 
                     #region Синхронизация Страниц
@@ -256,7 +237,7 @@ namespace HomeTheater
                             title = string.Format(0 < item.Value.SeasonNum ? "{0} {1} сезон" : "{0}",
                                 item.Value.TitleRU, item.Value.SeasonNum);
                         Invoke(new Action(() => MainParent.StatusMessageSet("Обработка страницы: " + title)));
-                        item.Value.syncPage(first || serials && "notwatch" != item.Value.Type);
+                        item.Value.syncPage(first || serials && "notwatch" != item.Value.Type || all);
                         if (first)
                         {
                             Invoke(new Action(() => Server.Instance.Secure = item.Value.Secure));
@@ -294,7 +275,7 @@ namespace HomeTheater
                         string title = item.Value.TitleFull;
                         Invoke(new Action(() => MainParent.StatusMessageSet("Обработка плейлистов: " + title)));
                         item.Value.syncPlayer(
-                            playlists && "watched" != item.Value.Type && "notwatch" != item.Value.Type);
+                            playlists && "watched" != item.Value.Type && "notwatch" != item.Value.Type || all);
                         Invoke(new Action(() =>
                         {
                             //item.Value.ToListViewItem();
@@ -323,7 +304,7 @@ namespace HomeTheater
                         string title = item.Value.TitleFull;
                         Invoke(new Action(() => MainParent.StatusMessageSet("Обработка видео: " + title)));
                         item.Value.syncPlaylists(
-                            videos && "watched" != item.Value.Type && "notwatch" != item.Value.Type);
+                            videos && "watched" != item.Value.Type && "notwatch" != item.Value.Type || all);
                         Invoke(new Action(() =>
                         {
                             //item.value.tolistviewitem();
@@ -416,6 +397,7 @@ namespace HomeTheater
                 }
 
                 listSerials.EndUpdate();
+                await Task.Delay(10);
                 listSerials.Enabled = true;
                 listSerials_ClientSizeChanged(null, null);
             }
@@ -435,27 +417,27 @@ namespace HomeTheater
 
         private void cпискиСериаловToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
-            SyncAsync(true);
+            _ = SyncAsync(true);
         }
 
         private void cтраницыСериаловToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
-            SyncAsync(false, true);
+            _ = SyncAsync(false, true);
         }
 
         private void cпискиПлейлиствоToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
-            SyncAsync(false, false, true);
+            _ = SyncAsync(false, false, true);
         }
 
         private void спискиВидеоToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
-            SyncAsync(false, false, false, true);
+            _ = SyncAsync(false, false, false, true);
         }
 
         private void всеToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
-            SyncAsync(true, true, true, true);
+            _ = SyncAsync(true, true, true, true);
         }
 
         #endregion
@@ -1039,13 +1021,14 @@ namespace HomeTheater
         private void textFilter_TextChanged(object sender, EventArgs e)
         {
             // TODO Добавить дебоунсер
-            RefreshSerials();
+            _ = RefreshSerials();
         }
 
         private bool isFiltred = true;
 
         private async Task RefreshSerials()
         {
+            await Task.Delay(50);
             if (2 < textFilter.Text.Length)
             {
                 Dictionary<int, Season> data = new Dictionary<int, Season>();
@@ -1074,12 +1057,12 @@ namespace HomeTheater
                         data.Add(item.Key, item.Value);
                 }
 
-                listSerials_updateAsync(data);
+                await listSerials_updateAsync(data);
                 isFiltred = true;
             }
             else if (isFiltred)
             {
-                listSerials_updateAsync(Serials);
+                await listSerials_updateAsync(Serials);
                 isFiltred = false;
             }
         }

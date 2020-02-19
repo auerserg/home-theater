@@ -44,7 +44,7 @@ namespace HomeTheater.Helper
             }
         }
 
-        private void Close()
+        public void Close()
         {
             streamWriter.Close();
         }
@@ -169,19 +169,19 @@ namespace HomeTheater.Helper
 
         private void WriteLine(string type, Exception ex)
         {
-            streamWriter.WriteLine("[{0: yyyy-MM-dd HH:mm:ss}] {1:S}: {2:S}\n{3:S}", DateTime.UtcNow, type.ToUpper(),
+            streamWriter.WriteLine("[{0: yyyy-MM-dd HH:mm:ss}] {1}: {2}\n{3}", DateTime.UtcNow, type.ToUpper(),
                 ex.Message, ex.StackTrace);
 #if DEBUG
-            Console.WriteLine("{1:S}: {2:S}\n{3:S}", DateTime.UtcNow, type.ToUpper(), ex.Message, ex.StackTrace);
+            Console.WriteLine("{0}: {1}\n{2}", type.ToUpper(), ex.Message, ex.StackTrace);
 #endif
         }
 
         private void WriteLine(string type, object value)
         {
-            streamWriter.WriteLine("[{0: yyyy-MM-dd HH:mm:ss}] {1:S}: ", DateTime.UtcNow, type.ToUpper());
+            streamWriter.WriteLine("[{0: yyyy-MM-dd HH:mm:ss}] {1}: ", DateTime.UtcNow, type.ToUpper());
             streamWriter.WriteLine(value);
 #if DEBUG
-            Console.WriteLine("{1:S}: ", DateTime.UtcNow, type.ToUpper());
+            Console.WriteLine("{0}: ", type.ToUpper());
             Console.WriteLine(value);
 #endif
         }

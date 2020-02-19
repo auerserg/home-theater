@@ -31,9 +31,11 @@ namespace HomeTheater.API.Abstract
                 var start = DateTime.UtcNow;
 #endif
                 var uri = new Uri(url);
-                var _header = new WebHeaderCollection();
-                _header.Add(HttpRequestHeader.Referer, SERVER_URL);
-                _header.Add(HttpRequestHeader.UserAgent, USER_AGENT);
+                var _header = new WebHeaderCollection
+                {
+                    {HttpRequestHeader.Referer, SERVER_URL},
+                    {HttpRequestHeader.UserAgent, USER_AGENT}
+                };
                 if (null != header && 0 < header.Count)
                     for (var i = 0; i < header.Count; i++)
                         _header.Set(header.GetKey(i), header.Get(i));
@@ -122,8 +124,10 @@ namespace HomeTheater.API.Abstract
 
         public string DownloadXHR(string url, NameValueCollection postData = null, WebHeaderCollection header = null)
         {
-            var _header = new WebHeaderCollection();
-            _header.Add("X-Requested-With", "XMLHttpRequest");
+            var _header = new WebHeaderCollection
+            {
+                {"X-Requested-With", "XMLHttpRequest"}
+            };
             if (null != header && 0 < header.Count)
                 for (var i = 0; i < header.Count; i++)
                     _header.Set(header.GetKey(i), header.Get(i));

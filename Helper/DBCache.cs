@@ -15,7 +15,7 @@ namespace HomeTheater.Helper
         public DBCache(string url, string content = "", int period = 0)
         {
             setURL(url);
-            setContent(url);
+            setContent(content);
             this.period = period;
         }
 

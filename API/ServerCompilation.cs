@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using HomeTheater.Helper;
 
 namespace HomeTheater.API
@@ -50,7 +52,17 @@ namespace HomeTheater.API
 
         private async void _CompilationSave()
         {
-            DB.Instance.CompilationSet(compilation);
+            await Task.Run(() =>
+            {
+                try
+                {
+                    DB.Instance.CompilationSet(compilation);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+            }).ConfigureAwait(true);
         }
 
         private void _CompilationLoad()
@@ -67,9 +79,19 @@ namespace HomeTheater.API
             }
         }
 
-        private async void _RelationSave()
+        private async Task _RelationSaveAsync()
         {
-            DB.Instance.CompilationRelationSet(relation);
+            await Task.Run(() =>
+            {
+                try
+                {
+                    DB.Instance.CompilationRelationSet(relation);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+            }).ConfigureAwait(true);
         }
 
         private void _RelationLoad()
@@ -143,13 +165,13 @@ namespace HomeTheater.API
             return false;
         }
 
-        private bool _Remove(int serialId, int compilationId)
-        {
-            if (compilationId > 0 && serialId > 0)
-                return _do(new NameValueCollection
-                    {{"serial_id", serialId.ToString()}, {"compilationRemove", compilationId.ToString()}});
-            return false;
-        }
+        //private bool _Remove(int serialId, int compilationId)
+        //{
+        //    if (compilationId > 0 && serialId > 0)
+        //        return _do(new NameValueCollection
+        //            {{"serial_id", serialId.ToString()}, {"compilationRemove", compilationId.ToString()}});
+        //    return false;
+        //}
 
         public string Get(int serialId)
         {
@@ -180,7 +202,17 @@ namespace HomeTheater.API
 
         public async void UpdateAsync(bool forsed = true, bool compilation = true, bool relation = true)
         {
-            Update(forsed, compilation, relation);
+            await Task.Run(() =>
+            {
+                try
+                {
+                    Update(forsed, compilation, relation);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+            }).ConfigureAwait(true);
         }
 
         public void Update(bool forsed = true, bool compilation = true, bool relation = true)
@@ -194,7 +226,7 @@ namespace HomeTheater.API
             if (relation)
             {
                 _parseCompilation(0, forsed);
-                _RelationSave();
+                _ = _RelationSaveAsync();
             }
         }
 

@@ -192,6 +192,7 @@
             this.Name = "FormMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Домашний Театр";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormMain_FormClosed);
             this.MdiChildActivate += new System.EventHandler(this.FormMain_MdiChildActivate);
             this.Shown += new System.EventHandler(this.FormMain_Shown);
             this.menuMain.ResumeLayout(false);

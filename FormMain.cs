@@ -81,6 +81,11 @@ namespace HomeTheater
             xToolStripMenuItem.Visible = !(ActiveMdiChild is FormList);
         }
 
+        private void FormMain_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Logger.Instance.Close();
+        }
+
         #endregion
 
         #region StatusMessage
@@ -165,15 +170,19 @@ namespace HomeTheater
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = new FormAbout();
-            form.Owner = this;
+            var form = new FormAbout
+            {
+                Owner = this
+            };
             form.ShowDialog();
         }
 
         public void авторизацияToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = new FormAuth();
-            form.Owner = this;
+            var form = new FormAuth
+            {
+                Owner = this
+            };
             form.ShowDialog();
         }
 

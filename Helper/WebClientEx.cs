@@ -15,8 +15,7 @@ namespace HomeTheater.Helper
         protected override WebRequest GetWebRequest(Uri address)
         {
             var r = base.GetWebRequest(address);
-            var request = r as HttpWebRequest;
-            if (request != null) request.CookieContainer = CookieContainer;
+            if (r is HttpWebRequest request) request.CookieContainer = CookieContainer;
             return r;
         }
 
@@ -36,8 +35,7 @@ namespace HomeTheater.Helper
 
         private void ReadCookies(WebResponse r)
         {
-            var response = r as HttpWebResponse;
-            if (response != null)
+            if (r is HttpWebResponse response)
             {
                 var cookies = response.Cookies;
                 CookieContainer.Add(cookies);

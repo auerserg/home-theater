@@ -233,7 +233,7 @@ namespace HomeTheater.API.Serial
             {
                 case "small":
                 case "large":
-                    size = size + "/";
+                    size += "/";
                     break;
                 default:
                     size = "";
@@ -770,6 +770,12 @@ namespace HomeTheater.API.Serial
                             case "КиноПоиск":
                                 KinoPoisk = floatVal(value);
                                 break;
+                            default:
+                                if (_MetaInfo.ContainsKey(name))
+                                    _MetaInfo[name] = value;
+                                else
+                                    _MetaInfo.Add(name, value);
+                                break;
                         }
                 }
             }
@@ -785,8 +791,10 @@ namespace HomeTheater.API.Serial
             {
                 var url = SERVER_URL + "/" + matchInfo.Groups[1].ToString().Trim();
                 if (URL == url) continue;
-                var season = new Season(url);
-                season.TitleRU = Match(matchInfo.Groups[3].ToString(), "<div>(.+?)</div>", REGEX_ICS, 1);
+                var season = new Season(url)
+                {
+                    TitleRU = Match(matchInfo.Groups[3].ToString(), "<div>(.+?)</div>", REGEX_ICS, 1)
+                };
                 season.SaveAsync();
                 if (!_related.Contains(season.ID)) _related.Add(season.ID);
             }
@@ -808,23 +816,23 @@ namespace HomeTheater.API.Serial
             }
         }
 
-        private void _parseTags(string html)
-        {
-            // TODO: Посмотреть насколько востребованы теги
-            if (string.IsNullOrEmpty(html))
-                return;
-            foreach (Match matchTag in Regex.Matches(html, "<a[^<>]*>(.*?)</a>", REGEX_ICS))
-            {
-                var _html = matchTag.Groups[1].ToString();
-                var __html = Match(html, "data-tagid=\"([0-9]+)\"", REGEX_ICS, 1);
-                _html = Regex.Replace(_html, "<[^<>]+>[^<>]+</[^<>]+>", "").Trim();
-                if (!string.IsNullOrEmpty(__html) && !string.IsNullOrEmpty(_html))
-                {
-                    var id = int.Parse(__html);
-                    if (Tags.ContainsKey(id)) Tags.Add(id, _html);
-                }
-            }
-        }
+        //private void _parseTags(string html)
+        //{
+        //    // TODO: Посмотреть насколько востребованы теги
+        //    if (string.IsNullOrEmpty(html))
+        //        return;
+        //    foreach (Match matchTag in Regex.Matches(html, "<a[^<>]*>(.*?)</a>", REGEX_ICS))
+        //    {
+        //        var _html = matchTag.Groups[1].ToString();
+        //        var __html = Match(html, "data-tagid=\"([0-9]+)\"", REGEX_ICS, 1);
+        //        _html = Regex.Replace(_html, "<[^<>]+>[^<>]+</[^<>]+>", "").Trim();
+        //        if (!string.IsNullOrEmpty(__html) && !string.IsNullOrEmpty(_html))
+        //        {
+        //            var id = int.Parse(__html);
+        //            if (Tags.ContainsKey(id)) Tags.Add(id, _html);
+        //        }
+        //    }
+        //}
 
         private void _parseSeasons(string html)
         {
@@ -881,10 +889,20 @@ namespace HomeTheater.API.Serial
             ServerCompilation.Instance.CompilationUpdate(data);
         }
 
-        private async void _parseRelatedAsync(string html)
+        private void _parseRelatedAsync(string html)
         {
-            _parseRelated(html);
-            _saveRelated();
+            Task.Run(() =>
+            {
+                try
+                {
+                    _parseRelated(html);
+                    _saveRelated();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+            }).ConfigureAwait(true);
         }
 
         public void _saveRelated()
@@ -1011,7 +1029,7 @@ namespace HomeTheater.API.Serial
         {
             if (0 == ID)
                 return false;
-            NameValueCollection postData = null;
+            NameValueCollection postData;
             switch (type)
             {
                 case "pauseadd":
