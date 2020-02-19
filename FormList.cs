@@ -33,13 +33,14 @@ namespace HomeTheater
             for (int i = 0; i < listDownload.Columns.Count; i++)
                 width += listDownload.Columns[i].Width;
             int widthParent = listDownload.Width - 25;
-            for (int i = 0; i < listDownload.Columns.Count; i++)
-                if (0 < listDownload.Columns[i].Width)
-                {
-                    int widthItem = listDownload.Columns[i].Width * widthParent / width;
-                    if (0 < widthItem)
-                        listDownload.Columns[i].Width = widthItem;
-                }
+            if (0 < widthParent)
+                for (int i = 0; i < listDownload.Columns.Count; i++)
+                    if (0 < listDownload.Columns[i].Width)
+                    {
+                        int widthItem = listDownload.Columns[i].Width * widthParent / width;
+                        if (0 < widthItem)
+                            listDownload.Columns[i].Width = widthItem;
+                    }
         }
 
         #endregion
@@ -76,6 +77,11 @@ namespace HomeTheater
         {
             InitializeComponent();
             menuMain.Visible = false;
+        }
+
+        private void FormList_Load(object sender, EventArgs e)
+        {
+            splitContainerMainList.Panel2Collapsed = true;
         }
 
         private void FormList_Shown(object sender, System.EventArgs e)
@@ -182,14 +188,14 @@ namespace HomeTheater
         private void остановитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
             tokenSource.Cancel();
-            остановитьToolStripMenuItem.Visible = false;
         }
 
         private void CancelSync()
         {
             MainParent.StatusProgressEnd();
             MainParent.StatusMessageSet(Serials.Count + " сериалов");
-            listSerials_ClientSizeChanged(null, null);
+            остановитьToolStripMenuItem.Visible = false;
+            _ = LoadTableSerialsAsync();
         }
 
         public async Task SyncAsync(bool list = false, bool serials = false, bool playlists = false,
@@ -197,7 +203,7 @@ namespace HomeTheater
         {
             tokenSource.Cancel();
             tokenSource = new CancellationTokenSource();
-            CancellationToken ct = tokenSource.Token;
+            var token = tokenSource.Token;
             остановитьToolStripMenuItem.Visible = true;
             await Task.Run(() =>
             {
@@ -211,7 +217,7 @@ namespace HomeTheater
                         return;
                     }
 
-                    if (ct.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
                     {
                         Invoke(new Action(() => CancelSync()));
                         return;
@@ -220,17 +226,21 @@ namespace HomeTheater
                     Invoke(new Action(() => MainParent.StatusMessageSet("Получение списка сериалов")));
                     Serials = Server.Instance.getPause(list);
 
-                    if (ct.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
                     {
                         Invoke(new Action(() => CancelSync()));
                         return;
                     }
 
-                    Invoke(new Action(() => listSerials_updateAsync()));
+                    Invoke(new Action(() =>
+                    {
+                        MainParent.StatusMessageSet("Обновление таблицы");
+                        RefreshSerials();
+                    }));
 
                     #region Синхронизация Страниц
 
-                    if (ct.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
                     {
                         Invoke(new Action(() => CancelSync()));
                         return;
@@ -259,7 +269,7 @@ namespace HomeTheater
                             item.Value.ToListViewItem();
                             MainParent.StatusProgressStep();
                         }));
-                        if (ct.IsCancellationRequested)
+                        if (token.IsCancellationRequested)
                         {
                             Invoke(new Action(() => CancelSync()));
                             return;
@@ -270,7 +280,7 @@ namespace HomeTheater
 
                     #endregion
 
-                    if (ct.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
                     {
                         Invoke(new Action(() => CancelSync()));
                         return;
@@ -290,7 +300,7 @@ namespace HomeTheater
                             //item.Value.ToListViewItem();
                             MainParent.StatusProgressStep();
                         }));
-                        if (ct.IsCancellationRequested)
+                        if (token.IsCancellationRequested)
                         {
                             Invoke(new Action(() => CancelSync()));
                             return;
@@ -299,7 +309,7 @@ namespace HomeTheater
 
                     #endregion
 
-                    if (ct.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
                     {
                         Invoke(new Action(() => CancelSync()));
                         return;
@@ -319,14 +329,18 @@ namespace HomeTheater
                             //item.value.tolistviewitem();
                             MainParent.StatusProgressStep();
                         }));
-                        if (ct.IsCancellationRequested)
+                        if (token.IsCancellationRequested)
                         {
                             Invoke(new Action(() => CancelSync()));
                             return;
                         }
                     }
 
-                    Invoke(new Action(() => MainParent.StatusProgressEnd()));
+                    Invoke(new Action(() =>
+                    {
+                        MainParent.StatusProgressEnd();
+                        остановитьToolStripMenuItem.Visible = false;
+                    }));
 
                     #endregion
                 }
@@ -334,7 +348,7 @@ namespace HomeTheater
                 {
                     Logger.Instance.Error(ex);
                 }
-            }, ct).ConfigureAwait(true);
+            }, token).ConfigureAwait(true);
 
             await LoadTableSerialsAsync().ConfigureAwait(true);
             остановитьToolStripMenuItem.Visible = false;
@@ -361,8 +375,14 @@ namespace HomeTheater
                     {
                         Invoke(new Action(() =>
                         {
-                            item.Value.ListViewItem.Group = listSerials.Groups["listViewGroup" + item.Value.Type];
                             item.Value.ToListViewItem();
+                            item.Value.ListViewItem.Group = listSerials.Groups["listViewGroup" + item.Value.Type];
+                            if (item.Value.URL == pictureSeasonImage.Tag as string)
+                            {
+                                item.Value.ListViewItem.Selected = true;
+                                item.Value.ListViewItem.Focused = true;
+                            }
+
                             MainParent.StatusProgressStep();
                         }));
                     }
@@ -381,26 +401,23 @@ namespace HomeTheater
             }).ConfigureAwait(true);
         }
 
-        private async Task listSerials_updateAsync()
+        private async Task listSerials_updateAsync(Dictionary<int, Season> collection)
         {
             try
             {
-                MainParent.StatusMessageSet("Обновление таблицы");
-                MainParent.StatusProgressReset(Serials.Count);
-                listSerials.Items.Clear();
                 listSerials.Enabled = false;
-                foreach (KeyValuePair<int, Season> item in Serials)
+                listSerials.BeginUpdate();
+                listSerials.Items.Clear();
+                foreach (KeyValuePair<int, Season> item in collection)
                 {
                     item.Value.ListViewItem.Group = listSerials.Groups["listViewGroup" + item.Value.Type];
                     if (!listSerials.Items.ContainsKey(item.Key.ToString()))
                         listSerials.Items.Add(item.Value.ToListViewItem());
-                    MainParent.StatusProgressStep();
                 }
 
-                MainParent.StatusProgressEnd();
-                MainParent.StatusMessageSet(Serials.Count + " сериалов");
-                listSerials_ClientSizeChanged(null, null);
+                listSerials.EndUpdate();
                 listSerials.Enabled = true;
+                listSerials_ClientSizeChanged(null, null);
             }
             catch (Exception ex)
             {
@@ -703,14 +720,14 @@ namespace HomeTheater
                         width += listSerials.Columns[i].Width;
 
             int widthParent = listSerials.Width - _width - 25;
-
-            for (int i = 0; i < listSerials.Columns.Count; i++)
-                if (0 < listSerials.Columns[i].Width && !data[i])
-                {
-                    int widthItem = widthParent * listSerials.Columns[i].Width / width;
-                    if (0 <= widthItem)
-                        listSerials.Columns[i].Width = widthItem;
-                }
+            if (0 < widthParent)
+                for (int i = 0; i < listSerials.Columns.Count; i++)
+                    if (0 < listSerials.Columns[i].Width && !data[i])
+                    {
+                        int widthItem = widthParent * listSerials.Columns[i].Width / width;
+                        if (0 <= widthItem)
+                            listSerials.Columns[i].Width = widthItem;
+                    }
         }
 
         private void listSerials_ColumnClick(object sender, ColumnClickEventArgs e)
@@ -734,15 +751,12 @@ namespace HomeTheater
             int id = (0 < listSerials.SelectedItems.Count) ? Convert.ToInt32(listSerials.SelectedItems[0].Tag) : 0;
             if (!Serials.ContainsKey(id))
             {
-                pictureSeasonImage.Visible = false;
-                panelTexts.Visible = false;
-                labelDescription.Visible = false;
+                //pictureSeasonImage.Visible = false;
+                //panelTexts.Visible = false;
+                //labelDescription.Visible = false;
                 return;
             }
 
-            pictureSeasonImage.Visible = true;
-            panelTexts.Visible = true;
-            labelDescription.Visible = true;
             var item = Serials[id];
             if (item.URL == pictureSeasonImage.Tag as string)
                 return;
@@ -762,6 +776,10 @@ namespace HomeTheater
             labelCompilation.Text = item.Compilation;
             labelSiteUpdated.Text = (new DateTime() != item.SiteUpdated) ? item.SiteUpdated.ToString("dd.MM.yyyy") : "";
             labelDescription.Text = "    " + item.Description.Replace("\r\n", "\r\n    ");
+            splitContainerMainList.Panel2Collapsed = false;
+            pictureSeasonImage.Visible = true;
+            panelTexts.Visible = true;
+            labelDescription.Visible = true;
         }
 
         private void listSerials_MouseClick(object sender, MouseEventArgs e)
@@ -827,7 +845,7 @@ namespace HomeTheater
 
             tokenSource.Cancel();
             tokenSource = new CancellationTokenSource();
-            CancellationToken ct = tokenSource.Token;
+            var token = tokenSource.Token;
             остановитьToolStripMenuItem.Visible = true;
             await Task.Run(() =>
             {
@@ -844,14 +862,14 @@ namespace HomeTheater
                             MainParent.StatusProgressStep();
                         }));
                         Serials[seasonID].syncPage(serials);
-                        if (ct.IsCancellationRequested)
+                        if (token.IsCancellationRequested)
                         {
                             Invoke(new Action(() => CancelSync()));
                             return;
                         }
                     }
 
-                    if (ct.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
                     {
                         Invoke(new Action(() => CancelSync()));
                         return;
@@ -868,14 +886,14 @@ namespace HomeTheater
                             MainParent.StatusProgressStep();
                         }));
                         Serials[seasonID].syncPlayer(playlists);
-                        if (ct.IsCancellationRequested)
+                        if (token.IsCancellationRequested)
                         {
                             Invoke(new Action(() => CancelSync()));
                             return;
                         }
                     }
 
-                    if (ct.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
                     {
                         Invoke(new Action(() => CancelSync()));
                         return;
@@ -892,20 +910,24 @@ namespace HomeTheater
                             MainParent.StatusProgressStep();
                         }));
                         Serials[seasonID].syncPlaylists(videos);
-                        if (ct.IsCancellationRequested)
+                        if (token.IsCancellationRequested)
                         {
                             Invoke(new Action(() => CancelSync()));
                             return;
                         }
                     }
 
-                    Invoke(new Action(() => MainParent.StatusProgressEnd()));
+                    Invoke(new Action(() =>
+                    {
+                        MainParent.StatusProgressEnd();
+                        остановитьToolStripMenuItem.Visible = false;
+                    }));
                 }
                 catch (Exception ex)
                 {
                     Logger.Instance.Error(ex);
                 }
-            }, ct).ConfigureAwait(true);
+            }, token).ConfigureAwait(true);
             await LoadTableSerialsAsync(true);
             остановитьToolStripMenuItem.Visible = false;
         }
@@ -914,10 +936,10 @@ namespace HomeTheater
         {
         }
 
-        private async void toolStripMenuItem2_Click(object sender, EventArgs e)
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
+            _ = SyncSelectedSerialsAsync(true, true, true);
             contextMenuStripSerials.Close();
-            await SyncSelectedSerialsAsync(true, true, true);
         }
 
         private async void страницуToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1009,6 +1031,58 @@ namespace HomeTheater
         }
 
         #endregion
+
+        #endregion
+
+        #region Filter
+
+        private void textFilter_TextChanged(object sender, EventArgs e)
+        {
+            // TODO Добавить дебоунсер
+            RefreshSerials();
+        }
+
+        private bool isFiltred = true;
+
+        private async Task RefreshSerials()
+        {
+            if (2 < textFilter.Text.Length)
+            {
+                Dictionary<int, Season> data = new Dictionary<int, Season>();
+                String[] words = textFilter.Text.Split(' ');
+                foreach (var item in Serials)
+                {
+                    var result = true;
+                    foreach (String i in words)
+                    {
+                        if (i.Length == 0) continue;
+                        bool invert = i.StartsWith("-");
+                        string _i = invert ? i.Substring(1) : i;
+                        _i = _i.ToLower();
+
+                        bool _result = item.Value.Title.ToLower().Contains(i) ||
+                                       item.Value.Genre.ToLower().Contains(i) ||
+                                       item.Value.ID.ToString() == i;
+
+                        if (invert)
+                            _result = !_result;
+
+                        result = result && _result;
+                    }
+
+                    if (result)
+                        data.Add(item.Key, item.Value);
+                }
+
+                listSerials_updateAsync(data);
+                isFiltred = true;
+            }
+            else if (isFiltred)
+            {
+                listSerials_updateAsync(Serials);
+                isFiltred = false;
+            }
+        }
 
         #endregion
     }

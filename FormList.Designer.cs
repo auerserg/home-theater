@@ -43,6 +43,7 @@
             this.спискиВидеоToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.всеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.остановитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.заголовокToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemSerialTitleFull = new System.Windows.Forms.ToolStripMenuItem();
@@ -139,7 +140,6 @@
             this.toolStripOpenFolder = new System.Windows.Forms.ToolStripButton();
             this.toolStripResumeAll = new System.Windows.Forms.ToolStripButton();
             this.toolStripPauseAll = new System.Windows.Forms.ToolStripButton();
-            this.остановитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
@@ -223,6 +223,14 @@
             this.всеToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
             this.всеToolStripMenuItem.Text = "Все";
             this.всеToolStripMenuItem.Click += new System.EventHandler(this.всеToolStripMenuItem_Click);
+            // 
+            // остановитьToolStripMenuItem
+            // 
+            this.остановитьToolStripMenuItem.Name = "остановитьToolStripMenuItem";
+            this.остановитьToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.остановитьToolStripMenuItem.Text = "Остановить";
+            this.остановитьToolStripMenuItem.Visible = false;
+            this.остановитьToolStripMenuItem.Click += new System.EventHandler(this.остановитьToolStripMenuItem_Click);
             // 
             // видToolStripMenuItem
             // 
@@ -412,7 +420,7 @@
             // splitContainerMain
             // 
             this.splitContainerMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainerMain.Location = new System.Drawing.Point(6, 30);
+            this.splitContainerMain.Location = new System.Drawing.Point(6, 6);
             this.splitContainerMain.Name = "splitContainerMain";
             this.splitContainerMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -424,8 +432,8 @@
             // 
             this.splitContainerMain.Panel2.Controls.Add(this.listDownload);
             this.splitContainerMain.Panel2.Controls.Add(this.toolDownload);
-            this.splitContainerMain.Size = new System.Drawing.Size(982, 632);
-            this.splitContainerMain.SplitterDistance = 410;
+            this.splitContainerMain.Size = new System.Drawing.Size(982, 656);
+            this.splitContainerMain.SplitterDistance = 425;
             this.splitContainerMain.TabIndex = 0;
             // 
             // splitContainerMainList
@@ -445,8 +453,9 @@
             this.splitContainerMainList.Panel2.Controls.Add(this.labelDescription);
             this.splitContainerMainList.Panel2.Controls.Add(this.pictureSeasonImage);
             this.splitContainerMainList.Panel2.ClientSizeChanged += new System.EventHandler(this.splitContainerMainList_Panel2_ClientSizeChanged);
-            this.splitContainerMainList.Size = new System.Drawing.Size(982, 410);
-            this.splitContainerMainList.SplitterDistance = 727;
+            this.splitContainerMainList.Panel2MinSize = 211;
+            this.splitContainerMainList.Size = new System.Drawing.Size(982, 425);
+            this.splitContainerMainList.SplitterDistance = 760;
             this.splitContainerMainList.TabIndex = 0;
             // 
             // listSerials
@@ -502,7 +511,7 @@
             this.listSerials.HideSelection = false;
             this.listSerials.Location = new System.Drawing.Point(0, 26);
             this.listSerials.Name = "listSerials";
-            this.listSerials.Size = new System.Drawing.Size(727, 384);
+            this.listSerials.Size = new System.Drawing.Size(760, 399);
             this.listSerials.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.listSerials.TabIndex = 4;
             this.listSerials.UseCompatibleStateImageBehavior = false;
@@ -761,7 +770,7 @@
             this.panelFilter.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelFilter.Location = new System.Drawing.Point(0, 0);
             this.panelFilter.Name = "panelFilter";
-            this.panelFilter.Size = new System.Drawing.Size(727, 26);
+            this.panelFilter.Size = new System.Drawing.Size(760, 26);
             this.panelFilter.TabIndex = 3;
             // 
             // textFilter
@@ -770,8 +779,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textFilter.Location = new System.Drawing.Point(0, 0);
             this.textFilter.Name = "textFilter";
-            this.textFilter.Size = new System.Drawing.Size(727, 20);
+            this.textFilter.Size = new System.Drawing.Size(760, 20);
             this.textFilter.TabIndex = 0;
+            this.textFilter.TextChanged += new System.EventHandler(this.textFilter_TextChanged);
             // 
             // panelTexts
             // 
@@ -797,7 +807,7 @@
             this.panelTexts.Location = new System.Drawing.Point(0, 190);
             this.panelTexts.Name = "panelTexts";
             this.panelTexts.Padding = new System.Windows.Forms.Padding(6);
-            this.panelTexts.Size = new System.Drawing.Size(251, 190);
+            this.panelTexts.Size = new System.Drawing.Size(218, 190);
             this.panelTexts.TabIndex = 3;
             this.panelTexts.Visible = false;
             // 
@@ -959,9 +969,9 @@
             // labelDescription
             // 
             this.labelDescription.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.labelDescription.Location = new System.Drawing.Point(0, 365);
+            this.labelDescription.Location = new System.Drawing.Point(0, 380);
             this.labelDescription.Name = "labelDescription";
-            this.labelDescription.Size = new System.Drawing.Size(251, 45);
+            this.labelDescription.Size = new System.Drawing.Size(218, 45);
             this.labelDescription.TabIndex = 2;
             // 
             // pictureSeasonImage
@@ -976,7 +986,6 @@
             this.pictureSeasonImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureSeasonImage.TabIndex = 0;
             this.pictureSeasonImage.TabStop = false;
-            this.pictureSeasonImage.Visible = false;
             this.pictureSeasonImage.Click += new System.EventHandler(this.pictureSeasonImage_Click);
             // 
             // listDownload
@@ -991,7 +1000,7 @@
             this.listDownload.HideSelection = false;
             this.listDownload.Location = new System.Drawing.Point(0, 25);
             this.listDownload.Name = "listDownload";
-            this.listDownload.Size = new System.Drawing.Size(982, 193);
+            this.listDownload.Size = new System.Drawing.Size(982, 202);
             this.listDownload.TabIndex = 100;
             this.listDownload.UseCompatibleStateImageBehavior = false;
             this.listDownload.View = System.Windows.Forms.View.Details;
@@ -1094,14 +1103,6 @@
             this.toolStripPauseAll.Size = new System.Drawing.Size(134, 22);
             this.toolStripPauseAll.Text = "Приостановить Все";
             // 
-            // остановитьToolStripMenuItem
-            // 
-            this.остановитьToolStripMenuItem.Name = "остановитьToolStripMenuItem";
-            this.остановитьToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
-            this.остановитьToolStripMenuItem.Text = "Остановить";
-            this.остановитьToolStripMenuItem.Visible = false;
-            this.остановитьToolStripMenuItem.Click += new System.EventHandler(this.остановитьToolStripMenuItem_Click);
-            // 
             // FormList
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1115,6 +1116,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Список Сериалов";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormList_FormClosing);
+            this.Load += new System.EventHandler(this.FormList_Load);
             this.Shown += new System.EventHandler(this.FormList_Shown);
             this.menuMain.ResumeLayout(false);
             this.menuMain.PerformLayout();
