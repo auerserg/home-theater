@@ -220,6 +220,8 @@ namespace HomeTheater.API
                             }
                         }
                 }
+
+                DB.Instance.OptionSetAsync("needListUpdate", "0");
             }
             catch (Exception ex)
             {
