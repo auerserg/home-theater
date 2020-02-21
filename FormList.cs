@@ -583,12 +583,12 @@ namespace HomeTheater
                     {
                         MainParent.StatusProgressReset(Serials.Count);
                         MainParent.StatusMessageSet("Обновление таблицы...");
+                        listSerials.BeginUpdate();
                     }));
                     foreach (KeyValuePair<int, Season> item in Serials)
                     {
                         Invoke(new Action(() =>
                         {
-                            listSerials.BeginUpdate();
                             item.Value.ToListViewItem();
                             item.Value.ListViewItem.Group = listSerials.Groups["listViewGroup" + item.Value.Type];
                             if (item.Value.URL == pictureSeasonImage.Tag as string)
@@ -597,13 +597,13 @@ namespace HomeTheater
                                 item.Value.ListViewItem.Focused = true;
                             }
 
-                            listSerials.EndUpdate();
                             MainParent.StatusProgressStep();
                         }));
                     }
 
                     Invoke(new Action(() =>
                     {
+                        listSerials.EndUpdate();
                         MainParent.StatusProgressEnd();
                         MainParent.StatusMessageSet(Serials.Count + " сериалов");
                         listSerials_ClientSizeChanged(null, null);

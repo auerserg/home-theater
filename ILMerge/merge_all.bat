@@ -67,4 +67,4 @@ IF %ErrorLevel% EQU 0 (
     )
 
 @echo Merge %status%
-exit %errlvl% 
+exit 0
