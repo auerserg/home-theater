@@ -218,12 +218,17 @@ namespace HomeTheater.API.Serial
                     ListViewItem.Text = newData[0];
                 ListViewItem.Tag = ID;
             }
+#if DEBUG
             catch (Exception ex)
             {
-#if DEBUG
                 Console.WriteLine("\tЭто нормально:\t{0:S}", ex.Message);
-#endif
             }
+# else
+            catch (Exception)
+            {
+            }
+#endif
+
 
             return ListViewItem;
         }
