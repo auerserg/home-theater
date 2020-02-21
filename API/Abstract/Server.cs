@@ -158,10 +158,13 @@ namespace HomeTheater.API.Abstract
                 try
                 {
                     var cookies = DB.Instance.OptionGet("Cookies");
-                    using (var stream = new MemoryStream(Convert.FromBase64String(cookies)))
-                    {
-                        CookieContainer = (CookieContainer) new BinaryFormatter().Deserialize(stream);
-                    }
+                    if (string.IsNullOrEmpty(cookies))
+                        CookieContainer = new CookieContainer();
+                    else
+                        using (var stream = new MemoryStream(Convert.FromBase64String(cookies)))
+                        {
+                            CookieContainer = (CookieContainer) new BinaryFormatter().Deserialize(stream);
+                        }
                 }
                 catch (Exception ex)
                 {
