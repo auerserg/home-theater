@@ -275,6 +275,6 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)\ILMerge\merge_all.bat" "$(ILMergeConsolePath)" "$(TargetPath)" $(ConfigurationName) &gt; "$(TargetDir)Output\ILMerge.log"</PostBuildEvent>
+    <PostBuildEvent>"$(SolutionDir)\ILMerge\merge_all.bat" "$(ILMergeConsolePath)" "$(TargetPath)" $(ConfigurationName)</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -37,8 +37,8 @@ IF EXIST "%outdir%" rmdir /S /Q "%outdir%"
 md "%outdir%"
 
 rem #    run merge cmd
-@echo Merging: '"%ILMerge%" /wildcards /out:"%result%" %target_path% "%target_dir%EntityFramework.dll" "%target_dir%EntityFramework.SqlServer.dll" "%target_dir%System.Data.SQLite.dll" "%target_dir%System.Data.SQLite.EF6.dll" "%target_dir%System.Data.SQLite.Linq.dll" "%target_dir%x64\SQLite.Interop.dll" "%target_dir%x86\SQLite.Interop.dll"'
-"%ILMerge%" /wildcards /out:"%result%" %target_path% "%target_dir%EntityFramework.dll" "%target_dir%EntityFramework.SqlServer.dll"  "%target_dir%System.Data.SQLite.dll" "%target_dir%System.Data.SQLite.EF6.dll" "%target_dir%System.Data.SQLite.Linq.dll" "%target_dir%x64\SQLite.Interop.dll" "%target_dir%x86\SQLite.Interop.dll"
+@echo Merging: '"%ILMerge%" /wildcards /out:"%result%" %target_path% "%target_dir%*.dll"'
+"%ILMerge%" /wildcards /out:"%result%" %target_path% "%target_dir%*.dll"
 
 rem #    if succeded
 IF %ErrorLevel% EQU 0 (
@@ -46,11 +46,11 @@ IF %ErrorLevel% EQU 0 (
     rem #    clear real output folder and put there result assembly
     IF %ConfigurationName%==Release (
 
-        del  %target_dir%*.*
-        del  %target_dir%*.dll
-        del  %target_dir%*.pdb
-        del  %target_dir%*.xml
-        del  %target_dir%*.*
+        del /S %target_dir%*.*
+        del /S %target_dir%*.dll
+        del /S %target_dir%*.pdb
+        del /S %target_dir%*.xml
+        del /S %target_dir%*.*
         
         copy %result% %target_dir%
         rmdir /S /Q %outdir%
@@ -67,4 +67,4 @@ IF %ErrorLevel% EQU 0 (
     )
 
 @echo Merge %status%
-exit 0
+exit %errlvl%
