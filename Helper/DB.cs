@@ -14,7 +14,7 @@ namespace HomeTheater.Helper
         public const string TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
         public const string DATE_FORMAT = "yyyy-MM-dd";
         private static DB _i;
-        private readonly string baseName = AppDomain.CurrentDomain.FriendlyName.Replace(".exe", ".db3");
+        private readonly string baseName = AppDomain.CurrentDomain.FriendlyName.Replace(".exe", ".sqlite");
 
         private Dictionary<string, string> cachedOptions = new Dictionary<string, string>();
         public SQLiteConnection connection;
