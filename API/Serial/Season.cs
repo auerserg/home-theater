@@ -20,11 +20,12 @@ namespace HomeTheater.API.Serial
         private bool __needSaveRelated;
         private Player __player;
         private List<int> __related = new List<int>();
-        private Dictionary<int, int> __seasons = new Dictionary<int, int>();
         private int __timeout;
 
         public ListViewItem ListViewItem = new ListViewItem(new[]
             {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""});
+
+        public Dictionary<int, int> Seasons = new Dictionary<int, int>();
 
         public Dictionary<int, string> Tags = new Dictionary<int, string>();
 
@@ -101,7 +102,7 @@ namespace HomeTheater.API.Serial
 
                 return data;
             });
-            __seasons = DB.Instance.SeasonsGet(SerialID, ID);
+            Seasons = DB.Instance.SeasonsGet(SerialID, ID);
             __related = DB.Instance.RelatedGet(ID);
             ToListViewItem();
 
@@ -263,6 +264,8 @@ namespace HomeTheater.API.Serial
             get => LoadPlayer();
             set => __player = value;
         }
+
+        public Dictionary<int, Playlist> Playlists => Player.Playlists;
 
         public bool ExistPlayer => null != LoadPlayer();
 
@@ -857,14 +860,14 @@ namespace HomeTheater.API.Serial
                 season.SaveAsync();
                 if (0 < season.SeasonNum)
                 {
-                    if (!__seasons.ContainsKey(season.SeasonNum))
-                        __seasons.Add(season.SeasonNum, season.ID);
+                    if (!Seasons.ContainsKey(season.SeasonNum))
+                        Seasons.Add(season.SeasonNum, season.ID);
                 }
                 else
                 {
                     i--;
-                    if (!__seasons.ContainsKey(i))
-                        __seasons.Add(i, season.ID);
+                    if (!Seasons.ContainsKey(i))
+                        Seasons.Add(i, season.ID);
                 }
             }
         }
@@ -1020,7 +1023,6 @@ namespace HomeTheater.API.Serial
             {
                 Type = "none";
                 SaveAsync();
-                CompilationRemove();
                 DB.Instance.OptionSetAsync("needListUpdate", "1");
             }
         }

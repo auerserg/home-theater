@@ -34,3 +34,15 @@ dotnet_diagnostic.CA1707.severity = silent
 
 # CA2007: Попробуйте вызвать ConfigureAwait для ожидаемой задачи
 dotnet_diagnostic.CA2007.severity = silent
+
+# CA1063: Правильно реализуйте IDisposable
+dotnet_diagnostic.CA1063.severity = silent
+
+# CA1812: Data4play является внутренним классом, экземпляр которого никогда не создается. Если это так, удалите код из сборки. Если этот класс должен содержать только статические методы, сделайте его статическим (Shared в Visual Basic).
+dotnet_diagnostic.CA1812.severity = silent
+
+# CA1822: Член AssemblyDescription не обращается к данным экземпляров, поэтому его можно пометить как статический (Shared в Visual Basic).
+dotnet_diagnostic.CA1822.severity = silent
+
+# CA2213: "FormList" содержит поле "timer", которое имеет тип IDisposable "CountDownTimer", но никогда не удаляется. Измените метод Dispose для "FormList" на вызов Close или Dispose для этого поля.
+dotnet_diagnostic.CA2213.severity = silent

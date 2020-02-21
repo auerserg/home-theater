@@ -37,8 +37,8 @@ IF EXIST "%outdir%" rmdir /S /Q "%outdir%"
 md "%outdir%"
 
 rem #    run merge cmd
-@echo Merging: '"%ILMerge%" /wildcards /targetplatform:%net% /out:"%result%" %target_path% "%target_dir%*.dll"'
-"%ILMerge%" /wildcards /targetplatform:%net% /out:"%result%" %target_path% "%target_dir%*.dll"
+@echo Merging: '"%ILMerge%" /wildcards /out:"%result%" %target_path% "%target_dir%EntityFramework.dll" "%target_dir%EntityFramework.SqlServer.dll" "%target_dir%System.Data.SQLite.dll" "%target_dir%System.Data.SQLite.EF6.dll" "%target_dir%System.Data.SQLite.Linq.dll" "%target_dir%x64\SQLite.Interop.dll" "%target_dir%x86\SQLite.Interop.dll"'
+"%ILMerge%" /wildcards /out:"%result%" %target_path% "%target_dir%EntityFramework.dll" "%target_dir%EntityFramework.SqlServer.dll"  "%target_dir%System.Data.SQLite.dll" "%target_dir%System.Data.SQLite.EF6.dll" "%target_dir%System.Data.SQLite.Linq.dll" "%target_dir%x64\SQLite.Interop.dll" "%target_dir%x86\SQLite.Interop.dll"
 
 rem #    if succeded
 IF %ErrorLevel% EQU 0 (

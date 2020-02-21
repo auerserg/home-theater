@@ -35,6 +35,7 @@ namespace HomeTheater
             textDownloadDir.Text = DB.Instance.OptionGet("DownloadDir");
             textNameFiles.Text = DB.Instance.OptionGet("NameFiles");
             numericSimultaneousDownloads.Value = Convert.ToInt32(DB.Instance.OptionGet("SimultaneousDownloads"));
+            numericTimer.Value = Convert.ToInt32(DB.Instance.OptionGet("Timer"));
             checkUseProxy.Checked = DB.Instance.OptionGet("proxy.Use") == "1";
             if (checkUseProxy.Checked)
             {
@@ -47,12 +48,16 @@ namespace HomeTheater
 
         private void FormOptions_FormClosing(object sender, FormClosingEventArgs e)
         {
+            var changeTimer = DB.Instance.OptionGet("Timer") != numericTimer.Value.ToString();
             DB.Instance.OptionSetAsync("DownloadDir", textDownloadDir.Text);
             DB.Instance.OptionSetAsync("NameFiles", textNameFiles.Text);
             DB.Instance.OptionSetAsync("SimultaneousDownloads", numericSimultaneousDownloads.Value.ToString());
+            DB.Instance.OptionSetAsync("Timer", numericTimer.Value.ToString());
             DB.Instance.OptionSetAsync("proxy.Use", checkUseProxy.Checked ? "1" : "0");
             DB.Instance.OptionSetAsync("proxy.Host", textProxyAddress.Text);
             DB.Instance.OptionSetAsync("proxy.Port", numericProxyPort.Value.ToString());
+            if (changeTimer)
+                (MdiParent as FormMain)?.List.LoadTimer((int) numericTimer.Value);
         }
 
         #endregion

@@ -30,12 +30,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.ListViewGroup listViewGroup7 = new System.Windows.Forms.ListViewGroup("Обновления", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup8 = new System.Windows.Forms.ListViewGroup("Хочу посмотреть", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup9 = new System.Windows.Forms.ListViewGroup("Нет новых серий", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup10 = new System.Windows.Forms.ListViewGroup("Посмотрел", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup11 = new System.Windows.Forms.ListViewGroup("В черном списке", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup12 = new System.Windows.Forms.ListViewGroup("", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Обновления", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Хочу посмотреть", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Нет новых серий", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("Посмотрел", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("В черном списке", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("", System.Windows.Forms.HorizontalAlignment.Left);
             this.menuMain = new System.Windows.Forms.MenuStrip();
             this.обновитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cпискиСериаловToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,6 +68,8 @@
             this.ToolStripMenuItemSerialMarkLast = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemSerialMark = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemSerialSiteUpdated = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.выполнитьСейчасToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
             this.splitContainerMainList = new System.Windows.Forms.SplitContainer();
             this.listSerials = new System.Windows.Forms.ListView();
@@ -161,7 +163,8 @@
             // 
             this.menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.обновитьToolStripMenuItem,
-            this.видToolStripMenuItem});
+            this.видToolStripMenuItem,
+            this.toolStripMenuItem4});
             this.menuMain.Location = new System.Drawing.Point(6, 6);
             this.menuMain.Name = "menuMain";
             this.menuMain.Size = new System.Drawing.Size(982, 24);
@@ -418,6 +421,25 @@
             this.ToolStripMenuItemSerialSiteUpdated.Text = "Последнее обновление";
             this.ToolStripMenuItemSerialSiteUpdated.Click += new System.EventHandler(this.ToolStripMenuItemSerialSiteUpdated_Click);
             // 
+            // toolStripMenuItem4
+            // 
+            this.toolStripMenuItem4.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripMenuItem4.AutoToolTip = true;
+            this.toolStripMenuItem4.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.выполнитьСейчасToolStripMenuItem});
+            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(42, 20);
+            this.toolStripMenuItem4.Text = "--:--";
+            // 
+            // выполнитьСейчасToolStripMenuItem
+            // 
+            this.выполнитьСейчасToolStripMenuItem.AutoToolTip = true;
+            this.выполнитьСейчасToolStripMenuItem.Image = global::HomeTheater.Properties.Resources.control;
+            this.выполнитьСейчасToolStripMenuItem.Name = "выполнитьСейчасToolStripMenuItem";
+            this.выполнитьСейчасToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.выполнитьСейчасToolStripMenuItem.Text = "Выполнить сейчас";
+            this.выполнитьСейчасToolStripMenuItem.Click += new System.EventHandler(this.выполнитьСейчасToolStripMenuItem_Click);
+            // 
             // splitContainerMain
             // 
             this.splitContainerMain.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -434,7 +456,7 @@
             this.splitContainerMain.Panel2.Controls.Add(this.listDownload);
             this.splitContainerMain.Panel2.Controls.Add(this.toolDownload);
             this.splitContainerMain.Size = new System.Drawing.Size(982, 656);
-            this.splitContainerMain.SplitterDistance = 425;
+            this.splitContainerMain.SplitterDistance = 424;
             this.splitContainerMain.TabIndex = 0;
             // 
             // splitContainerMainList
@@ -455,7 +477,7 @@
             this.splitContainerMainList.Panel2.Controls.Add(this.pictureSeasonImage);
             this.splitContainerMainList.Panel2.ClientSizeChanged += new System.EventHandler(this.splitContainerMainList_Panel2_ClientSizeChanged);
             this.splitContainerMainList.Panel2MinSize = 211;
-            this.splitContainerMainList.Size = new System.Drawing.Size(982, 425);
+            this.splitContainerMainList.Size = new System.Drawing.Size(982, 424);
             this.splitContainerMainList.SplitterDistance = 760;
             this.splitContainerMainList.TabIndex = 0;
             // 
@@ -490,29 +512,29 @@
             this.listSerials.Enabled = false;
             this.listSerials.FullRowSelect = true;
             this.listSerials.GridLines = true;
-            listViewGroup7.Header = "Обновления";
-            listViewGroup7.Name = "listViewGroupnew";
-            listViewGroup8.Header = "Хочу посмотреть";
-            listViewGroup8.Name = "listViewGroupwant";
-            listViewGroup9.Header = "Нет новых серий";
-            listViewGroup9.Name = "listViewGroupnonew";
-            listViewGroup10.Header = "Посмотрел";
-            listViewGroup10.Name = "listViewGroupwatched";
-            listViewGroup11.Header = "В черном списке";
-            listViewGroup11.Name = "listViewGroupnotwatch";
-            listViewGroup12.Header = "";
-            listViewGroup12.Name = "listViewGroupnone";
+            listViewGroup1.Header = "Обновления";
+            listViewGroup1.Name = "listViewGroupnew";
+            listViewGroup2.Header = "Хочу посмотреть";
+            listViewGroup2.Name = "listViewGroupwant";
+            listViewGroup3.Header = "Нет новых серий";
+            listViewGroup3.Name = "listViewGroupnonew";
+            listViewGroup4.Header = "Посмотрел";
+            listViewGroup4.Name = "listViewGroupwatched";
+            listViewGroup5.Header = "В черном списке";
+            listViewGroup5.Name = "listViewGroupnotwatch";
+            listViewGroup6.Header = "";
+            listViewGroup6.Name = "listViewGroupnone";
             this.listSerials.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup7,
-            listViewGroup8,
-            listViewGroup9,
-            listViewGroup10,
-            listViewGroup11,
-            listViewGroup12});
+            listViewGroup1,
+            listViewGroup2,
+            listViewGroup3,
+            listViewGroup4,
+            listViewGroup5,
+            listViewGroup6});
             this.listSerials.HideSelection = false;
             this.listSerials.Location = new System.Drawing.Point(0, 26);
             this.listSerials.Name = "listSerials";
-            this.listSerials.Size = new System.Drawing.Size(760, 399);
+            this.listSerials.Size = new System.Drawing.Size(760, 398);
             this.listSerials.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.listSerials.TabIndex = 4;
             this.listSerials.UseCompatibleStateImageBehavior = false;
@@ -970,7 +992,7 @@
             // labelDescription
             // 
             this.labelDescription.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.labelDescription.Location = new System.Drawing.Point(0, 380);
+            this.labelDescription.Location = new System.Drawing.Point(0, 379);
             this.labelDescription.Name = "labelDescription";
             this.labelDescription.Size = new System.Drawing.Size(218, 45);
             this.labelDescription.TabIndex = 2;
@@ -1001,7 +1023,7 @@
             this.listDownload.HideSelection = false;
             this.listDownload.Location = new System.Drawing.Point(0, 25);
             this.listDownload.Name = "listDownload";
-            this.listDownload.Size = new System.Drawing.Size(982, 202);
+            this.listDownload.Size = new System.Drawing.Size(982, 203);
             this.listDownload.TabIndex = 100;
             this.listDownload.UseCompatibleStateImageBehavior = false;
             this.listDownload.View = System.Windows.Forms.View.Details;
@@ -1250,5 +1272,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem удалитьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem остановитьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
+        private System.Windows.Forms.ToolStripMenuItem выполнитьСейчасToolStripMenuItem;
     }
 }

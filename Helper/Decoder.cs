@@ -104,7 +104,9 @@ namespace HomeTheater.Helper
         }
 
 #pragma warning disable IDE0060 // Удалите неиспользуемый параметр
+#pragma warning disable CA1801
         private static string fd3(string x)
+#pragma warning restore CA1801
 #pragma warning restore IDE0060 // Удалите неиспользуемый параметр
         {
             string a = null;

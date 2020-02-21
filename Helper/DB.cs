@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.SQLite;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -156,12 +155,14 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         private void _defaultValues()
         {
-            OptionSet("cacheTimeSerial_new", (0, 5 * 24 * 60 * 60).ToString());
-            OptionSet("cacheTimeSerial_want", (0, 5 * 24 * 60 * 60).ToString());
+            OptionSet("cacheTimeSerial_new", (1 * 24 * 60 * 60).ToString());
+            OptionSet("cacheTimeSerial_want", (1 * 24 * 60 * 60).ToString());
             OptionSet("cacheTimeSerial_nonew", (1 * 24 * 60 * 60).ToString());
             OptionSet("cacheTimeSerial_watched", (7 * 24 * 60 * 60).ToString());
             OptionSet("cacheTimeSerial_none", (20 * 24 * 60 * 60).ToString());
+            OptionSet("OldesDaysSeason", (365 * 1).ToString());
             OptionSet("SimultaneousDownloads", 3.ToString());
+            OptionSet("Timer", 60.ToString());
             OptionSet("NameFiles",
                 "{Collection}\\{SerialName} {Season}\\{SerialName} S{Season}E{Episode} {Translate} {OriginalName}.{Format}");
             OptionSet("listSerialsDisplayIndex", "[0,16,1,2,3,4,5,6,17,18,7,8,9,10,11,12,13,14,15,20,19,21]");
@@ -176,9 +177,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             if (null == connection || null != connection &&
                 (connection.State.Equals(ConnectionState.Closed) || connection.State.Equals(ConnectionState.Broken)))
             {
-                var factory = (SQLiteFactory) DbProviderFactories.GetFactory("System.Data.SQLite");
-                var _connection = (SQLiteConnection) factory.CreateConnection();
-                _connection.ConnectionString = "Data Source = " + baseName;
+                var _connection = new SQLiteConnection(string.Format("Data Source={0};Version=3;", baseName));
                 _connection.Open();
                 if (_connection.State.Equals(ConnectionState.Open)) connection = _connection;
             }
@@ -419,7 +418,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             if (null == IDs || 0 == IDs.Count)
                 return false;
             var strIDs = string.Join(", ", IDs.ToArray());
-            _ExecuteNonQuery(@"UPDATE season SET type=NULL WHERE type NOT IN(NULL, 'notwatch') AND id NOT IN (" +
+            _ExecuteNonQuery(@"UPDATE season SET type=NULL WHERE type NOT NULL AND type<>'notwatch' AND id NOT IN (" +
                              strIDs + ")");
             return true;
         }
@@ -778,6 +777,18 @@ CREATE TABLE IF NOT EXISTS [video] (
                 new Dictionary<string, string> {{"id", ID.ToString()}});
             if (0 < result.Count)
                 data = result[0];
+
+            return data;
+        }
+
+        public List<int> VideoGetTemp()
+        {
+            var data = new List<int>();
+            var result =
+                _ExecuteReader(@"SELECT DISTINCT season_id FROM video WHERE url LIKE '%temp-cdn%' ORDER BY season_id;");
+            if (0 < result.Count)
+                foreach (var item in result)
+                    data.Add(Convert.ToInt32(item["season_id"]));
 
             return data;
         }

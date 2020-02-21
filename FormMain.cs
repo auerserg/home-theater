@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
 using HomeTheater.API;
@@ -76,14 +77,44 @@ namespace HomeTheater
             }
         }
 
+        public void FormMain_ShowDiffUpdate(List<int> newSeason, List<int> OldSeason, List<int> OldestSeason)
+        {
+            var text = "Требуется ваше внимание в приложение!";
+            if (null != newSeason && 0 < newSeason.Count)
+                text += "\nПоявился новый сезон.";
+            if (null != OldestSeason && 0 < OldestSeason.Count)
+                text += "\nЕсть устаревшие сезоны.";
+            if (null != OldSeason && 0 < OldSeason.Count)
+                text += "\nЕсть сезоны для удаления.";
+            StatusShowBalloonTip(text, "Авторедактор Списка", 5000);
+            Form form = null;
+            foreach (var childForm in MdiChildren)
+                if (childForm is FormDiffUpdate)
+                {
+                    form = childForm as FormDiffUpdate;
+                    break;
+                }
+
+            if (null != form)
+            {
+                form.Focus();
+                (form as FormDiffUpdate).UpdateNotice(newSeason, OldSeason, OldestSeason);
+            }
+            else
+            {
+                prepareMDI(new FormDiffUpdate(newSeason, OldSeason, OldestSeason));
+            }
+        }
+
         private void FormMain_MdiChildActivate(object sender, EventArgs e)
         {
             xToolStripMenuItem.Visible = !(ActiveMdiChild is FormList);
         }
 
-        private void FormMain_FormClosed(object sender, FormClosedEventArgs e)
+        private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             Logger.Instance.Close();
+            List.Close();
         }
 
         #endregion
@@ -141,6 +172,15 @@ namespace HomeTheater
             Timer.Stop();
             statusProgress.Visible = false;
             statusTimer.Visible = false;
+        }
+
+        public void StatusShowBalloonTip(string text = "", string title = "", int timeout = 0,
+            ToolTipIcon icon = ToolTipIcon.None)
+        {
+            notifyTray.BalloonTipTitle = title;
+            notifyTray.BalloonTipText = text;
+            notifyTray.BalloonTipIcon = icon;
+            notifyTray.ShowBalloonTip(timeout);
         }
 
         #endregion

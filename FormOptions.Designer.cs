@@ -29,6 +29,9 @@
         private void InitializeComponent()
         {
             this.groupDownloadSerial = new System.Windows.Forms.GroupBox();
+            this.numericTimer = new System.Windows.Forms.NumericUpDown();
+            this.labelTimer = new System.Windows.Forms.Label();
+            this.labelTagFormat = new System.Windows.Forms.Label();
             this.labelTagOriginalName = new System.Windows.Forms.Label();
             this.labelTagTranslate = new System.Windows.Forms.Label();
             this.labelTagEpisode = new System.Windows.Forms.Label();
@@ -51,8 +54,8 @@
             this.textProxyAddress = new System.Windows.Forms.TextBox();
             this.checkUseProxy = new System.Windows.Forms.CheckBox();
             this.menuMain = new System.Windows.Forms.MenuStrip();
-            this.labelTagFormat = new System.Windows.Forms.Label();
             this.groupDownloadSerial.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericTimer)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSimultaneousDownloads)).BeginInit();
             this.panelMain.SuspendLayout();
             this.groupProxy.SuspendLayout();
@@ -63,6 +66,8 @@
             // 
             this.groupDownloadSerial.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupDownloadSerial.Controls.Add(this.numericTimer);
+            this.groupDownloadSerial.Controls.Add(this.labelTimer);
             this.groupDownloadSerial.Controls.Add(this.labelTagFormat);
             this.groupDownloadSerial.Controls.Add(this.labelTagOriginalName);
             this.groupDownloadSerial.Controls.Add(this.labelTagTranslate);
@@ -85,6 +90,54 @@
             this.groupDownloadSerial.TabIndex = 0;
             this.groupDownloadSerial.TabStop = false;
             this.groupDownloadSerial.Text = "Загрузка Серий";
+            // 
+            // numericTimer
+            // 
+            this.numericTimer.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numericTimer.Location = new System.Drawing.Point(151, 97);
+            this.numericTimer.Maximum = new decimal(new int[] {
+            1430,
+            0,
+            0,
+            0});
+            this.numericTimer.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numericTimer.Name = "numericTimer";
+            this.numericTimer.Size = new System.Drawing.Size(66, 20);
+            this.numericTimer.TabIndex = 5;
+            this.numericTimer.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numericTimer.Value = new decimal(new int[] {
+            30,
+            0,
+            0,
+            0});
+            // 
+            // labelTimer
+            // 
+            this.labelTimer.AutoSize = true;
+            this.labelTimer.Location = new System.Drawing.Point(6, 99);
+            this.labelTimer.Name = "labelTimer";
+            this.labelTimer.Size = new System.Drawing.Size(135, 13);
+            this.labelTimer.TabIndex = 14;
+            this.labelTimer.Text = "Время обновления (мин.)";
+            // 
+            // labelTagFormat
+            // 
+            this.labelTagFormat.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelTagFormat.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.labelTagFormat.Location = new System.Drawing.Point(285, 176);
+            this.labelTagFormat.Name = "labelTagFormat";
+            this.labelTagFormat.Size = new System.Drawing.Size(250, 13);
+            this.labelTagFormat.TabIndex = 13;
+            this.labelTagFormat.Text = "{Format} - Формат файла";
+            this.labelTagFormat.Click += new System.EventHandler(this.labelTagFormat_Click);
             // 
             // labelTagOriginalName
             // 
@@ -166,10 +219,20 @@
             // numericSimultaneousDownloads
             // 
             this.numericSimultaneousDownloads.Location = new System.Drawing.Point(151, 71);
+            this.numericSimultaneousDownloads.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.numericSimultaneousDownloads.Name = "numericSimultaneousDownloads";
             this.numericSimultaneousDownloads.Size = new System.Drawing.Size(66, 20);
             this.numericSimultaneousDownloads.TabIndex = 4;
             this.numericSimultaneousDownloads.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numericSimultaneousDownloads.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // labelSimultaneousDownloads
             // 
@@ -311,17 +374,6 @@
             this.menuMain.Text = "menuMain";
             this.menuMain.Visible = false;
             // 
-            // labelTagFormat
-            // 
-            this.labelTagFormat.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelTagFormat.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.labelTagFormat.Location = new System.Drawing.Point(285, 176);
-            this.labelTagFormat.Name = "labelTagFormat";
-            this.labelTagFormat.Size = new System.Drawing.Size(250, 13);
-            this.labelTagFormat.TabIndex = 13;
-            this.labelTagFormat.Text = "{Format} - Формат файла";
-            this.labelTagFormat.Click += new System.EventHandler(this.labelTagFormat_Click);
-            // 
             // FormOptions
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -338,6 +390,7 @@
             this.Shown += new System.EventHandler(this.FormOptions_Shown);
             this.groupDownloadSerial.ResumeLayout(false);
             this.groupDownloadSerial.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericTimer)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSimultaneousDownloads)).EndInit();
             this.panelMain.ResumeLayout(false);
             this.groupProxy.ResumeLayout(false);
@@ -374,5 +427,7 @@
         private System.Windows.Forms.Label labelTagCollection;
         private System.Windows.Forms.Label labelTagType;
         private System.Windows.Forms.Label labelTagFormat;
+        private System.Windows.Forms.Label labelTimer;
+        private System.Windows.Forms.NumericUpDown numericTimer;
     }
 }

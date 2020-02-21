@@ -19,6 +19,7 @@ namespace HomeTheater
         private int currentOrderColumn;
         private bool currentOrderInverted;
         private Dictionary<int, Season> Serials;
+        public CountDownTimer timer = new CountDownTimer();
 
         private FormMain MainParent
         {
@@ -34,6 +35,8 @@ namespace HomeTheater
                 width += listDownload.Columns[i].Width;
             int widthParent = listDownload.Width - 25;
             if (0 < widthParent)
+            {
+                listDownload.BeginUpdate();
                 for (int i = 0; i < listDownload.Columns.Count; i++)
                     if (0 < listDownload.Columns[i].Width)
                     {
@@ -41,6 +44,9 @@ namespace HomeTheater
                         if (0 < widthItem)
                             listDownload.Columns[i].Width = widthItem;
                     }
+
+                listDownload.EndUpdate();
+            }
         }
 
         #endregion
@@ -71,6 +77,11 @@ namespace HomeTheater
             Process.Start(pictureSeasonImage.Tag.ToString());
         }
 
+        private void выполнитьСейчасToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _ = SyncSilent();
+        }
+
         #region Form
 
         public FormList()
@@ -79,14 +90,28 @@ namespace HomeTheater
             menuMain.Visible = false;
         }
 
+        public void LoadTimer(int time = 0)
+        {
+            if (0 == time)
+                time = Convert.ToInt32(DB.Instance.OptionGet("Timer"));
+            timer.SetTime(time);
+            timer.Reset();
+        }
+
         private void FormList_Load(object sender, EventArgs e)
         {
-            splitContainerMainList.Panel2Collapsed = true;
+            timer.TimeChanged += () => toolStripMenuItem4.Text = timer.TimeLeftStr;
+#pragma warning disable CS4014 // Так как этот вызов не ожидается, выполнение существующего метода продолжается до тех пор, пока вызов не будет завершен
+            timer.CountDownFinished += () => SyncSilent();
+#pragma warning restore CS4014 // Так как этот вызов не ожидается, выполнение существующего метода продолжается до тех пор, пока вызов не будет завершен
+            LoadTimer();
         }
 
         private void FormList_Shown(object sender, System.EventArgs e)
         {
             LoadFormView();
+            if (0 < columnSerialSiteUpdated.Width)
+                listSerials.ListViewItemSorter = new ListViewItemComparer(columnSerialSiteUpdated.Index, false);
             listSerials_ClientSizeChanged(null, null);
             listDownload_ClientSizeChanged(null, null);
             splitContainerMainList_Panel2_ClientSizeChanged(null, null);
@@ -111,6 +136,7 @@ namespace HomeTheater
             DB.Instance.OptionSet("listDownloadWidth",
                 SimpleJson.SimpleJson.SerializeObject(listViewDownloadWidth));
             tokenSource.Cancel();
+            timer.Dispose();
         }
 
         private void LoadFormView()
@@ -182,6 +208,7 @@ namespace HomeTheater
         public async Task SyncAsync(bool list = false, bool serials = false, bool playlists = false,
             bool videos = false, bool all = false)
         {
+            timer.Stop();
             tokenSource.Cancel();
             tokenSource = new CancellationTokenSource();
             var token = tokenSource.Token;
@@ -237,7 +264,15 @@ namespace HomeTheater
                             title = string.Format(0 < item.Value.SeasonNum ? "{0} {1} сезон" : "{0}",
                                 item.Value.TitleRU, item.Value.SeasonNum);
                         Invoke(new Action(() => MainParent.StatusMessageSet("Обработка страницы: " + title)));
-                        item.Value.syncPage(first || serials && "notwatch" != item.Value.Type || all);
+                        try
+                        {
+                            item.Value.syncPage(first || serials && "notwatch" != item.Value.Type || all);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Instance.Error(ex);
+                        }
+
                         if (first)
                         {
                             Invoke(new Action(() => Server.Instance.Secure = item.Value.Secure));
@@ -274,8 +309,16 @@ namespace HomeTheater
                     {
                         string title = item.Value.TitleFull;
                         Invoke(new Action(() => MainParent.StatusMessageSet("Обработка плейлистов: " + title)));
-                        item.Value.syncPlayer(
-                            playlists && "watched" != item.Value.Type && "notwatch" != item.Value.Type || all);
+                        try
+                        {
+                            item.Value.syncPlayer(
+                                playlists && "watched" != item.Value.Type && "notwatch" != item.Value.Type || all);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Instance.Error(ex);
+                        }
+
                         Invoke(new Action(() =>
                         {
                             //item.Value.ToListViewItem();
@@ -303,8 +346,16 @@ namespace HomeTheater
                     {
                         string title = item.Value.TitleFull;
                         Invoke(new Action(() => MainParent.StatusMessageSet("Обработка видео: " + title)));
-                        item.Value.syncPlaylists(
-                            videos && "watched" != item.Value.Type && "notwatch" != item.Value.Type || all);
+                        try
+                        {
+                            item.Value.syncPlaylists(
+                                videos && "watched" != item.Value.Type && "notwatch" != item.Value.Type || all);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Instance.Error(ex);
+                        }
+
                         Invoke(new Action(() =>
                         {
                             //item.value.tolistviewitem();
@@ -331,8 +382,187 @@ namespace HomeTheater
                 }
             }, token);
 
+            timer.Restart();
             await LoadTableSerialsAsync();
+            _ = SyncUpdateList();
             остановитьToolStripMenuItem.Visible = false;
+        }
+
+        public async Task SyncSilent()
+        {
+            timer.Stop();
+            выполнитьСейчасToolStripMenuItem.Visible = false;
+            toolStripMenuItem4.Enabled = false;
+            toolStripMenuItem4.Text = "--:--";
+            toolStripMenuItem4.ToolTipText = "";
+            await Task.Run(() =>
+            {
+                try
+                {
+                    Serials = Server.Instance.getPause(true);
+
+                    Invoke(new Action(() => { _ = RefreshSerials(); }));
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            List<int> IDs = new List<int>();
+                            bool first = true;
+                            foreach (KeyValuePair<int, Season> item in Serials)
+                            {
+                                try
+                                {
+                                    item.Value.syncPage(first);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.Instance.Error(ex);
+                                }
+
+                                if (first)
+                                {
+                                    Invoke(new Action(() => Server.Instance.Secure = item.Value.Secure));
+                                    first = false;
+                                }
+
+                                IDs.Add(item.Key);
+                            }
+
+                            DB.Instance.SeasonClearOld(IDs);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Instance.Error(ex);
+                        }
+                    });
+                    var incList = DB.Instance.VideoGetTemp();
+                    int maxind = 0;
+                    foreach (KeyValuePair<int, Season> item in Serials)
+                        if ("new" == item.Value.Type || "want" == item.Value.Type || incList.Contains(item.Key))
+                            maxind++;
+                    var silentTimer = new Stopwatch();
+                    int ind = 0;
+                    silentTimer.Start();
+                    foreach (KeyValuePair<int, Season> item in Serials)
+                    {
+                        if ("new" == item.Value.Type || "want" == item.Value.Type || incList.Contains(item.Key))
+                        {
+                            try
+                            {
+                                item.Value.syncPlayer(true);
+                                item.Value.syncPlaylists(true);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Instance.Error(ex);
+                            }
+
+                            ind++;
+                            double estD = (maxind - ind) * silentTimer.ElapsedMilliseconds / ind;
+                            string est = TimeSpan.FromMilliseconds(estD).ToString(@"\-mm\:ss");
+                            Invoke(new Action(() => toolStripMenuItem4.Text = est));
+                        }
+                    }
+
+                    silentTimer.Stop();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+            });
+
+            timer.Restart();
+            выполнитьСейчасToolStripMenuItem.Visible = true;
+            toolStripMenuItem4.Enabled = true;
+            toolStripMenuItem4.ToolTipText = "";
+            await LoadTableSerialsAsync();
+        }
+
+        public async Task SyncUpdateList()
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var option = DB.Instance.OptionGet("newIgnore");
+                    List<int> newIgnore = string.IsNullOrEmpty(option)
+                        ? new List<int>()
+                        : SimpleJson.SimpleJson.DeserializeObject<List<int>>(option);
+                    option = DB.Instance.OptionGet("oldIgnore");
+                    List<int> oldIgnore = string.IsNullOrEmpty(option)
+                        ? new List<int>()
+                        : SimpleJson.SimpleJson.DeserializeObject<List<int>>(option);
+                    option = DB.Instance.OptionGet("oldestIgnore");
+                    List<int> oldestIgnore = string.IsNullOrEmpty(option)
+                        ? new List<int>()
+                        : SimpleJson.SimpleJson.DeserializeObject<List<int>>(option);
+
+                    var NewSeasons = new List<int>();
+                    var OldSeasons = new List<int>();
+                    var OldestSeasons = new List<int>();
+                    var OldInterval = Convert.ToInt32(DB.Instance.OptionGet("OldesDaysSeason"));
+
+                    foreach (var item in Serials)
+                    {
+                        if (0 < item.Value.Seasons.Count)
+                        {
+                            var seeason = item.Value.SeasonNum;
+                            foreach (var _item in item.Value.Seasons)
+                            {
+                                if (seeason < _item.Key)
+                                {
+                                    if (Serials.ContainsKey(_item.Value))
+                                    {
+                                        if (
+                                            (
+                                                (
+                                                    "new" != item.Value.Type &&
+                                                    "want" != item.Value.Type
+                                                ) ||
+                                                (
+                                                    "new" == item.Value.Type &&
+                                                    item.Value.MarkLast == item.Value.MarkCurrent
+                                                )
+                                            ) &&
+                                            !oldIgnore.Contains(item.Key) &&
+                                            !OldSeasons.Contains(item.Key) &&
+                                            string.IsNullOrEmpty(Serials[_item.Value].MarkLast)
+                                        )
+                                            OldSeasons.Add(item.Key);
+                                    }
+                                    else if (!newIgnore.Contains(_item.Value) &&
+                                             !NewSeasons.Contains(_item.Value))
+                                        NewSeasons.Add(_item.Value);
+                                }
+                            }
+                        }
+
+                        if ("nonew" == item.Value.Type &&
+                            !oldestIgnore.Contains(item.Key) &&
+                            !OldestSeasons.Contains(item.Key) &&
+                            OldInterval < DateTime.UtcNow.Subtract(item.Value.SiteUpdated).TotalDays)
+                            OldestSeasons.Add(item.Key);
+                    }
+
+                    if (0 < NewSeasons.Count || 0 < OldSeasons.Count || 0 < OldestSeasons.Count)
+                        Invoke(new Action(() =>
+                        {
+                            try
+                            {
+                                MainParent.FormMain_ShowDiffUpdate(NewSeasons, OldSeasons, OldestSeasons);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Instance.Error(ex);
+                            }
+                        }));
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+            });
         }
 
         public async Task LoadTableSerialsAsync(bool load = false)
@@ -356,6 +586,7 @@ namespace HomeTheater
                     {
                         Invoke(new Action(() =>
                         {
+                            listSerials.BeginUpdate();
                             item.Value.ToListViewItem();
                             item.Value.ListViewItem.Group = listSerials.Groups["listViewGroup" + item.Value.Type];
                             if (item.Value.URL == pictureSeasonImage.Tag as string)
@@ -364,6 +595,7 @@ namespace HomeTheater
                                 item.Value.ListViewItem.Focused = true;
                             }
 
+                            listSerials.EndUpdate();
                             MainParent.StatusProgressStep();
                         }));
                     }
@@ -392,10 +624,10 @@ namespace HomeTheater
                 foreach (KeyValuePair<int, Season> item in collection)
                 {
                     item.Value.ListViewItem.Group = listSerials.Groups["listViewGroup" + item.Value.Type];
-                    if (!listSerials.Items.ContainsKey(item.Key.ToString()))
-                        listSerials.Items.Add(item.Value.ToListViewItem());
+                    listSerials.Items.Add(item.Value.ToListViewItem());
                 }
 
+                listSerials.Sort();
                 listSerials.EndUpdate();
                 await Task.Delay(10);
                 listSerials.Enabled = true;
@@ -703,6 +935,8 @@ namespace HomeTheater
 
             int widthParent = listSerials.Width - _width - 25;
             if (0 < widthParent)
+            {
+                listSerials.BeginUpdate();
                 for (int i = 0; i < listSerials.Columns.Count; i++)
                     if (0 < listSerials.Columns[i].Width && !data[i])
                     {
@@ -710,6 +944,9 @@ namespace HomeTheater
                         if (0 <= widthItem)
                             listSerials.Columns[i].Width = widthItem;
                     }
+
+                listSerials.EndUpdate();
+            }
         }
 
         private void listSerials_ColumnClick(object sender, ColumnClickEventArgs e)
@@ -725,7 +962,9 @@ namespace HomeTheater
             }
 
             listSerials.ListViewItemSorter = new ListViewItemComparer(currentOrderColumn, currentOrderInverted);
+            listSerials.BeginUpdate();
             listSerials.Sort();
+            listSerials.EndUpdate();
         }
 
         private void listSerials_SelectedIndexChanged(object sender, EventArgs e)
@@ -733,7 +972,6 @@ namespace HomeTheater
             int id = (0 < listSerials.SelectedItems.Count) ? Convert.ToInt32(listSerials.SelectedItems[0].Tag) : 0;
             if (!Serials.ContainsKey(id))
             {
-                //pictureSeasonImage.Visible = false;
                 //panelTexts.Visible = false;
                 //labelDescription.Visible = false;
                 return;
@@ -758,8 +996,6 @@ namespace HomeTheater
             labelCompilation.Text = item.Compilation;
             labelSiteUpdated.Text = (new DateTime() != item.SiteUpdated) ? item.SiteUpdated.ToString("dd.MM.yyyy") : "";
             labelDescription.Text = "    " + item.Description.Replace("\r\n", "\r\n    ");
-            splitContainerMainList.Panel2Collapsed = false;
-            pictureSeasonImage.Visible = true;
             panelTexts.Visible = true;
             labelDescription.Visible = true;
         }

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.menuMain = new System.Windows.Forms.MenuStrip();
             this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,6 +45,8 @@
             this.statusLabelMessage = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.statusTimer = new System.Windows.Forms.ToolStripStatusLabel();
+            this.notifyTray = new System.Windows.Forms.NotifyIcon(this.components);
+            this.contextMenuTray = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuMain.SuspendLayout();
             this.statusMain.SuspendLayout();
             this.SuspendLayout();
@@ -175,9 +178,21 @@
             // statusTimer
             // 
             this.statusTimer.Name = "statusTimer";
-            this.statusTimer.Size = new System.Drawing.Size(70, 17);
-            this.statusTimer.Text = "00:00:00:000";
+            this.statusTimer.Size = new System.Drawing.Size(49, 17);
+            this.statusTimer.Text = "00:00:00";
             this.statusTimer.Visible = false;
+            // 
+            // notifyTray
+            // 
+            this.notifyTray.ContextMenuStrip = this.contextMenuTray;
+            this.notifyTray.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyTray.Icon")));
+            this.notifyTray.Text = "Домашний Театр";
+            this.notifyTray.Visible = true;
+            // 
+            // contextMenuTray
+            // 
+            this.contextMenuTray.Name = "contextMenuTray";
+            this.contextMenuTray.Size = new System.Drawing.Size(61, 4);
             // 
             // FormMain
             // 
@@ -192,7 +207,7 @@
             this.Name = "FormMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Домашний Театр";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormMain_FormClosed);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
             this.MdiChildActivate += new System.EventHandler(this.FormMain_MdiChildActivate);
             this.Shown += new System.EventHandler(this.FormMain_Shown);
             this.menuMain.ResumeLayout(false);
@@ -221,6 +236,8 @@
         private System.Windows.Forms.ToolStripMenuItem обновитьToolStripMenuItem;
         private System.Windows.Forms.ToolStripProgressBar statusProgress;
         private System.Windows.Forms.ToolStripStatusLabel statusTimer;
+        public System.Windows.Forms.NotifyIcon notifyTray;
+        public System.Windows.Forms.ContextMenuStrip contextMenuTray;
     }
 }
 

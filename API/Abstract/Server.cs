@@ -11,13 +11,6 @@ namespace HomeTheater.API.Abstract
 {
     internal abstract class Server : Base
     {
-        #region Cookies
-
-        protected CookieContainer CookieContainer;
-        protected string COOKIES_PATH = AppDomain.CurrentDomain.FriendlyName.Replace(".exe", ".cookies");
-
-        #endregion
-
         #region Download
 
         protected const string USER_AGENT =
@@ -138,28 +131,43 @@ namespace HomeTheater.API.Abstract
 
         #region Cookies
 
+        protected CookieContainer CookieContainer;
+        protected string COOKIES_PATH = AppDomain.CurrentDomain.FriendlyName.Replace(".exe", ".cookies");
+
         public void SetCookies(CookieContainer cookies)
         {
-            var stream = File.Create(COOKIES_PATH);
-            var formatter = new BinaryFormatter();
-            formatter.Serialize(stream, cookies);
-            stream.Close();
             CookieContainer = cookies;
+            using (var stream = new MemoryStream())
+            {
+                try
+                {
+                    new BinaryFormatter().Serialize(stream, cookies);
+                    var str = Convert.ToBase64String(stream.ToArray());
+                    DB.Instance.OptionSetAsync("Cookies", str);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+            }
         }
 
         public CookieContainer GetCookie()
         {
             if (null == CookieContainer)
-            {
-                CookieContainer = new CookieContainer();
-                if (File.Exists(COOKIES_PATH))
+                try
                 {
-                    var stream = File.OpenRead(COOKIES_PATH);
-                    var formatter = new BinaryFormatter();
-                    CookieContainer = (CookieContainer) formatter.Deserialize(stream);
-                    stream.Close();
+                    var cookies = DB.Instance.OptionGet("Cookies");
+                    using (var stream = new MemoryStream(Convert.FromBase64String(cookies)))
+                    {
+                        CookieContainer = (CookieContainer) new BinaryFormatter().Deserialize(stream);
+                    }
                 }
-            }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                    CookieContainer = new CookieContainer();
+                }
 
             return CookieContainer;
         }
