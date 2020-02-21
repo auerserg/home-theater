@@ -527,7 +527,9 @@ namespace HomeTheater
                                             ) &&
                                             !oldIgnore.Contains(item.Key) &&
                                             !OldSeasons.Contains(item.Key) &&
-                                            string.IsNullOrEmpty(Serials[_item.Value].MarkLast)
+#pragma warning disable CA1820 // Проверяйте наличие пустых строк, используя длину строки
+                                            "" != Serials[_item.Value].MarkLast
+#pragma warning restore CA1820 // Проверяйте наличие пустых строк, используя длину строки
                                         )
                                             OldSeasons.Add(item.Key);
                                     }
