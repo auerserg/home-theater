@@ -114,7 +114,6 @@ CREATE TABLE IF NOT EXISTS [translate] (
 );
 CREATE TABLE IF NOT EXISTS [playlist] (
 	[id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	[serial_id] INTEGER NOT NULL,
 	[season_id] INTEGER NOT NULL,
 	[translate_id] INTEGER NOT NULL DEFAULT 0,
 	[url] TEXT,
@@ -122,12 +121,12 @@ CREATE TABLE IF NOT EXISTS [playlist] (
 	[secure] TEXT,
 	[order_videos] TEXT,
 	[created_date] TEXT,
-	[updated_date] TEXT
+	[updated_date] TEXT,
+	[removed_date] TEXT DEFAULT ''
 );
 CREATE TABLE IF NOT EXISTS [video] (
 	[id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	[season_id] INTEGER NOT NULL,
-	[serial_id] INTEGER NOT NULL,
 	[translate_id] INTEGER NOT NULL DEFAULT -1,
 	[translate_name] TEXT,
 	[video_id] TEXT,
@@ -136,7 +135,8 @@ CREATE TABLE IF NOT EXISTS [video] (
 	[subtitle] TEXT,
 	[secure] TEXT,
 	[created_date] TEXT,
-	[updated_date] TEXT
+	[updated_date] TEXT,
+	[removed_date] TEXT DEFAULT ''
 );
 ");
             if (!ExistIndex("http_cache", "idx_http_cache_url"))
@@ -170,6 +170,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             OptionSet("listSerialsAutoSize", "[0,0,0,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1]");
             OptionSet("listDownloadWidth", "[556,100,100,200]");
             OptionSet("listSerialsView", "");
+            OptionSet("firstLaunch", "1");
         }
 
         private void _checkConnectDataBase()
@@ -664,6 +665,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             var date = DateTime.UtcNow.ToString(TIME_FORMAT);
             data.Add("created_date", date);
             data.Add("updated_date", date);
+            data.Add("removed_date", "");
             var fieldsNew = new List<string>(data.Keys);
 #if DEBUG
             Console.WriteLine("\tInsert Playlist\t{0}\t{1}:\t{2}", seasonID, translateID,
@@ -691,8 +693,24 @@ CREATE TABLE IF NOT EXISTS [video] (
         public List<Dictionary<string, string>> PlaylistGets(int seasonID)
         {
             return _ExecuteReader(
-                @"SELECT playlist.*, http_cache.create_date AS cached_date FROM playlist LEFT JOIN http_cache ON playlist.url = http_cache.url WHERE season_id=@season_id;",
+                @"SELECT playlist.*, http_cache.create_date AS cached_date FROM playlist LEFT JOIN http_cache ON playlist.url = http_cache.url WHERE season_id=@season_id AND removed_date = '';",
                 new Dictionary<string, string> {{"season_id", seasonID.ToString()}});
+        }
+
+        public bool PlaylistSetOld(int seasonID, List<int> translateIDs)
+        {
+            var sql =
+                @"UPDATE playlist SET removed_date=@removed_date WHERE season_id = @season_id";
+            if (null != translateIDs && 0 < translateIDs.Count)
+                sql +=
+                    @" AND translate_id NOT IN (" +
+                    string.Join(", ", translateIDs.ToArray()) +
+                    ")";
+            return 0 < _ExecuteNonQuery(sql,
+                       new Dictionary<string, string>
+                       {
+                           {"removed_date", DateTime.UtcNow.ToString(TIME_FORMAT)}, {"season_id", seasonID.ToString()}
+                       });
         }
 
         #endregion
@@ -757,11 +775,12 @@ CREATE TABLE IF NOT EXISTS [video] (
             var date = DateTime.UtcNow.ToString(TIME_FORMAT);
             data.Add("created_date", date);
             data.Add("updated_date", date);
+            data.Add("removed_date", "");
             var fields = new List<string>(data.Keys);
             var _sql = "";
             if (data.ContainsKey("season_id") && data.ContainsKey("translate_id") && data.ContainsKey("video_id"))
                 _sql =
-                    @"DELETE FROM video WHERE season_id = @season_id AND translate_id = @translate_id AND video_id = @video_id;";
+                    @"UPDATE video SET removed_date=@updated_date WHERE season_id = @season_id AND translate_id = @translate_id AND video_id <> @video_id;";
             return 0 < _ExecuteNonQuery(_sql +
                                         @"INSERT OR IGNORE INTO video (" + string.Join(", ", fields.ToArray()) +
                                         ") VALUES (@" +
@@ -785,7 +804,8 @@ CREATE TABLE IF NOT EXISTS [video] (
         {
             var data = new List<int>();
             var result =
-                _ExecuteReader(@"SELECT DISTINCT season_id FROM video WHERE url LIKE '%temp-cdn%' ORDER BY season_id;");
+                _ExecuteReader(
+                    @"SELECT DISTINCT season_id FROM video WHERE url LIKE '%temp-cdn%' AND removed_date='' ORDER BY season_id;");
             if (0 < result.Count)
                 foreach (var item in result)
                     data.Add(Convert.ToInt32(item["season_id"]));
@@ -793,16 +813,26 @@ CREATE TABLE IF NOT EXISTS [video] (
             return data;
         }
 
-        public List<Dictionary<string, string>> VideoGetSeason(int SeasonID)
+        public List<Dictionary<string, string>> VideoGets(int SeasonID)
         {
-            return _ExecuteReader(@"SELECT * FROM video WHERE season_id=@id ORDER BY video_id ASC;",
+            return _ExecuteReader(@"SELECT * FROM video WHERE season_id=@id AND removed_date='' ORDER BY video_id ASC;",
                 new Dictionary<string, string> {{"id", SeasonID.ToString()}});
         }
 
-        public List<Dictionary<string, string>> VideoGetSerial(int SerialID)
+        public bool VideoSetOld(int seasonID, List<int> videoIDs)
         {
-            return _ExecuteReader(@"SELECT * FROM video WHERE serial_id=@id ORDER BY video_id ASC;",
-                new Dictionary<string, string> {{"id", SerialID.ToString()}});
+            var sql =
+                @"UPDATE video SET removed_date=@removed_date WHERE season_id = @season_id";
+            if (null != videoIDs && 0 < videoIDs.Count)
+                sql +=
+                    @" AND id NOT IN (" +
+                    string.Join(", ", videoIDs.ToArray()) +
+                    ")";
+            return 0 < _ExecuteNonQuery(sql,
+                       new Dictionary<string, string>
+                       {
+                           {"removed_date", DateTime.UtcNow.ToString(TIME_FORMAT)}, {"season_id", seasonID.ToString()}
+                       });
         }
 
         #endregion
