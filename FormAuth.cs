@@ -48,6 +48,7 @@ namespace HomeTheater
                         buttonEnter.Visible = true;
                         FormParent.StatusMessageAuthSucs();
                         Close();
+                        FormParent.List.firstRun = true;
                         FormParent.SyncAsync(true);
                     }));
                 }

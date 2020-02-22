@@ -18,6 +18,7 @@ namespace HomeTheater
     {
         private int currentOrderColumn;
         private bool currentOrderInverted;
+        public bool firstRun = true;
         private Dictionary<int, Season> Serials;
         public CountDownTimer timer = new CountDownTimer();
 
@@ -100,11 +101,18 @@ namespace HomeTheater
 
         private void FormList_Load(object sender, EventArgs e)
         {
-            timer.TimeChanged += () => toolStripMenuItem4.Text = timer.TimeLeftStr;
+            timer.TimeChanged += () => toolStripSyncTimer.Text = timer.TimeLeftStr;
 #pragma warning disable CS4014 // Так как этот вызов не ожидается, выполнение существующего метода продолжается до тех пор, пока вызов не будет завершен
             timer.CountDownFinished += () => SyncSilent();
 #pragma warning restore CS4014 // Так как этот вызов не ожидается, выполнение существующего метода продолжается до тех пор, пока вызов не будет завершен
             LoadTimer();
+            CreateOverlay();
+        }
+
+        private void CreateOverlay()
+        {
+            panelOverlay.Dock = DockStyle.Fill;
+            panelOverlay.Visible = true;
         }
 
         private void FormList_Shown(object sender, System.EventArgs e)
@@ -213,6 +221,7 @@ namespace HomeTheater
             tokenSource = new CancellationTokenSource();
             var token = tokenSource.Token;
             остановитьToolStripMenuItem.Visible = true;
+            MainParent.авторизацияToolStripMenuItem.Enabled = !firstRun;
             await Task.Run(() =>
             {
                 try
@@ -245,6 +254,12 @@ namespace HomeTheater
                         MainParent.StatusMessageSet("Обновление таблицы");
                         _ = RefreshSerials();
                     }));
+                    Task.Run(() =>
+                    {
+                        foreach (KeyValuePair<int, Season> item in Serials)
+                            item.Value.SaveAsync();
+                    });
+
 
                     #region Синхронизация Страниц
 
@@ -255,7 +270,6 @@ namespace HomeTheater
                     }
 
                     Invoke(new Action(() => MainParent.StatusProgressReset(Serials.Count)));
-                    List<int> IDs = new List<int>();
                     bool first = true;
                     foreach (KeyValuePair<int, Season> item in Serials)
                     {
@@ -266,7 +280,8 @@ namespace HomeTheater
                         Invoke(new Action(() => MainParent.StatusMessageSet("Обработка страницы: " + title)));
                         try
                         {
-                            item.Value.syncPage(first || serials && "notwatch" != item.Value.Type || all);
+                            bool forsed = first || serials && "notwatch" != item.Value.Type || all;
+                            item.Value.syncPage(forsed);
                         }
                         catch (Exception ex)
                         {
@@ -279,7 +294,6 @@ namespace HomeTheater
                             first = false;
                         }
 
-                        IDs.Add(item.Key);
                         Invoke(new Action(() =>
                         {
                             item.Value.ToListViewItem();
@@ -292,7 +306,7 @@ namespace HomeTheater
                         }
                     }
 
-                    DB.Instance.SeasonClearOld(IDs);
+                    DB.Instance.SeasonClearOld(new List<int>(Serials.Keys));
 
                     #endregion
 
@@ -346,14 +360,16 @@ namespace HomeTheater
                     {
                         string title = item.Value.TitleFull;
                         Invoke(new Action(() => MainParent.StatusMessageSet("Обработка видео: " + title)));
-                        try
+                        if (all || ("watched" != item.Value.Type && "notwatch" != item.Value.Type))
                         {
-                            item.Value.syncPlaylists(
-                                videos && "watched" != item.Value.Type && "notwatch" != item.Value.Type || all);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Instance.Error(ex);
+                            try
+                            {
+                                item.Value.syncPlaylists(videos || all);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Instance.Error(ex);
+                            }
                         }
 
                         Invoke(new Action(() =>
@@ -381,20 +397,25 @@ namespace HomeTheater
                     Logger.Instance.Error(ex);
                 }
             }, token);
-
+            DB.Instance.OptionSetAsync("firstLaunch", "");
             timer.Restart();
             await LoadTableSerialsAsync();
             _ = SyncUpdateList();
+            firstRun = false;
+            toolStripSyncTimer.Visible = true;
             остановитьToolStripMenuItem.Visible = false;
+            обновитьToolStripMenuItem.Enabled = true;
+            toolStripUpdate.Enabled = true;
+            MainParent.авторизацияToolStripMenuItem.Enabled = true;
         }
 
         public async Task SyncSilent()
         {
             timer.Stop();
             выполнитьСейчасToolStripMenuItem.Visible = false;
-            toolStripMenuItem4.Enabled = false;
-            toolStripMenuItem4.Text = "--:--";
-            toolStripMenuItem4.ToolTipText = "";
+            toolStripSyncTimer.Enabled = false;
+            toolStripSyncTimer.Text = "--:--";
+            toolStripSyncTimer.ToolTipText = "";
             await Task.Run(() =>
             {
                 try
@@ -413,6 +434,7 @@ namespace HomeTheater
                                 try
                                 {
                                     item.Value.syncPage(first);
+                                    item.Value.SaveAsync();
                                 }
                                 catch (Exception ex)
                                 {
@@ -460,7 +482,7 @@ namespace HomeTheater
                             ind++;
                             double estD = (maxind - ind) * silentTimer.ElapsedMilliseconds / ind;
                             string est = TimeSpan.FromMilliseconds(estD).ToString(@"\-mm\:ss");
-                            Invoke(new Action(() => toolStripMenuItem4.Text = est));
+                            Invoke(new Action(() => toolStripSyncTimer.Text = est));
                         }
                     }
 
@@ -474,8 +496,8 @@ namespace HomeTheater
 
             timer.Restart();
             выполнитьСейчасToolStripMenuItem.Visible = true;
-            toolStripMenuItem4.Enabled = true;
-            toolStripMenuItem4.ToolTipText = "";
+            toolStripSyncTimer.Enabled = true;
+            toolStripSyncTimer.ToolTipText = "";
             await LoadTableSerialsAsync();
         }
 
@@ -583,7 +605,6 @@ namespace HomeTheater
                     {
                         MainParent.StatusProgressReset(Serials.Count);
                         MainParent.StatusMessageSet("Обновление таблицы...");
-                        listSerials.BeginUpdate();
                     }));
                     foreach (KeyValuePair<int, Season> item in Serials)
                     {
@@ -603,7 +624,6 @@ namespace HomeTheater
 
                     Invoke(new Action(() =>
                     {
-                        listSerials.EndUpdate();
                         MainParent.StatusProgressEnd();
                         MainParent.StatusMessageSet(Serials.Count + " сериалов");
                         listSerials_ClientSizeChanged(null, null);
@@ -631,6 +651,7 @@ namespace HomeTheater
 
                 listSerials.Sort();
                 listSerials.EndUpdate();
+                panelOverlay.Visible = false;
                 await Task.Delay(10);
                 listSerials.Enabled = true;
                 listSerials_ClientSizeChanged(null, null);
@@ -1150,6 +1171,8 @@ namespace HomeTheater
             }, token);
             await LoadTableSerialsAsync(true);
             остановитьToolStripMenuItem.Visible = false;
+            остановитьToolStripMenuItem.Enabled = true;
+            toolStripUpdate.Enabled = true;
         }
 
         private void открытьToolStripMenuItem_Click(object sender, EventArgs e)

@@ -131,9 +131,9 @@ namespace HomeTheater.API.Serial
 #endif
         }
 
-        public async void SaveAsync()
+        public void SaveAsync()
         {
-            await Task.Run(() =>
+            Task.Run(() =>
             {
                 try
                 {
@@ -605,7 +605,6 @@ namespace HomeTheater.API.Serial
             MarkLast = Match(html, "<div class=\"pgs-marks-current\">[^<>]*<strong>(.*?)</strong>[^<>]*</div>",
                 REGEX_ICS, 1).Replace("Только трейлер", "");
             SiteUpdated = DateVal(Match(html, "<div class=\"pgs-marks-mess\">(.*?)</div>", REGEX_ICS, 1), "dd.MM.yyyy");
-            SaveAsync();
         }
 
         private void parsePage(string html)

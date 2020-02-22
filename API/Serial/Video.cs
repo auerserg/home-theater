@@ -49,7 +49,7 @@ namespace HomeTheater.API.Serial
                 return DB.Instance.VideoSet(ID, data);
             });
 #if DEBUG
-            Console.WriteLine("\tSave Video\t\t{0}\t{1}\t{2}({3})\t{4}:\t{5}", SerialID, SeasonID, TranslateID,
+            Console.WriteLine("\tSave Video\t\t{0}\t{1}({2})\t{3}:\t{4}", SeasonID, TranslateID,
                 TranslateName, ID, DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
         }
@@ -68,36 +68,33 @@ namespace HomeTheater.API.Serial
 
         #region Конструктор
 
-        public Video(int id, int seasonId, int serialId, Response.Video data,
+        public Video(int id, int seasonId, Response.Video data,
             Translate translate = null)
         {
             ID = id;
             Load();
             SeasonID = seasonId;
-            SerialID = serialId;
             if (null != translate && null == Translate)
                 Translate = translate;
             parseVideo(data);
         }
 
-        public Video(int id, int seasonId, int serialId, Response.Video data, int translateKey = -1)
+        public Video(int id, int seasonId, Response.Video data, int translateKey = -1)
         {
             ID = id;
             Load();
             SeasonID = seasonId;
-            SerialID = serialId;
             if (0 <= translateKey && null != Translate)
                 Translate = new Translate(translateKey);
             parseVideo(data);
         }
 
-        public Video(int id, int seasonId, int serialId, Response.Video data,
+        public Video(int id, int seasonId, Response.Video data,
             string translateName = "")
         {
             ID = id;
             Load();
             SeasonID = seasonId;
-            SerialID = serialId;
             if (!string.IsNullOrWhiteSpace(translateName) && null != Translate)
                 Translate = new Translate(translateName);
             parseVideo(data);
@@ -114,12 +111,6 @@ namespace HomeTheater.API.Serial
         #endregion
 
         #region Атрибуты
-
-        public int SerialID
-        {
-            get => GetValueInt("serial_id");
-            set => SetValue("serial_id", value);
-        }
 
         public int SeasonID
         {
@@ -200,6 +191,7 @@ namespace HomeTheater.API.Serial
         public DateTime CreatedDate => GetValueDate("created_date");
 
         public DateTime UpdatedDate => GetValueDate("updated_date");
+        public DateTime RemovedDate => GetValueDate("removed_date");
 
         #endregion
     }

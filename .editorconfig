@@ -46,3 +46,6 @@ dotnet_diagnostic.CA1822.severity = silent
 
 # CA2213: "FormList" содержит поле "timer", которое имеет тип IDisposable "CountDownTimer", но никогда не удаляется. Измените метод Dispose для "FormList" на вызов Close или Dispose для этого поля.
 dotnet_diagnostic.CA2213.severity = silent
+
+# AD0001: Сбой анализатора
+dotnet_diagnostic.AD0001.severity = silent

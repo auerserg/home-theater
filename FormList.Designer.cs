@@ -68,7 +68,7 @@
             this.ToolStripMenuItemSerialMarkLast = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemSerialMark = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemSerialSiteUpdated = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSyncTimer = new System.Windows.Forms.ToolStripMenuItem();
             this.выполнитьСейчасToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
             this.splitContainerMainList = new System.Windows.Forms.SplitContainer();
@@ -97,7 +97,7 @@
             this.columnSerialSiteUpdated = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.contextMenuStripSerials = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.открытьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripUpdate = new System.Windows.Forms.ToolStripMenuItem();
             this.страницуToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.плеерToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.видеоToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -143,6 +143,8 @@
             this.toolStripOpenFolder = new System.Windows.Forms.ToolStripButton();
             this.toolStripResumeAll = new System.Windows.Forms.ToolStripButton();
             this.toolStripPauseAll = new System.Windows.Forms.ToolStripButton();
+            this.panelOverlay = new System.Windows.Forms.Panel();
+            this.labelOverlay = new System.Windows.Forms.Label();
             this.menuMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
@@ -157,6 +159,7 @@
             this.panelTexts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureSeasonImage)).BeginInit();
             this.toolDownload.SuspendLayout();
+            this.panelOverlay.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuMain
@@ -164,7 +167,7 @@
             this.menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.обновитьToolStripMenuItem,
             this.видToolStripMenuItem,
-            this.toolStripMenuItem4});
+            this.toolStripSyncTimer});
             this.menuMain.Location = new System.Drawing.Point(6, 6);
             this.menuMain.Name = "menuMain";
             this.menuMain.Size = new System.Drawing.Size(982, 24);
@@ -182,6 +185,7 @@
             this.toolStripMenuItem1,
             this.всеToolStripMenuItem,
             this.остановитьToolStripMenuItem});
+            this.обновитьToolStripMenuItem.Enabled = false;
             this.обновитьToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Replace;
             this.обновитьToolStripMenuItem.MergeIndex = 30;
             this.обновитьToolStripMenuItem.Name = "обновитьToolStripMenuItem";
@@ -421,29 +425,30 @@
             this.ToolStripMenuItemSerialSiteUpdated.Text = "Последнее обновление";
             this.ToolStripMenuItemSerialSiteUpdated.Click += new System.EventHandler(this.ToolStripMenuItemSerialSiteUpdated_Click);
             // 
-            // toolStripMenuItem4
+            // toolStripSyncTimer
             // 
-            this.toolStripMenuItem4.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripMenuItem4.AutoToolTip = true;
-            this.toolStripMenuItem4.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripSyncTimer.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSyncTimer.AutoToolTip = true;
+            this.toolStripSyncTimer.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.выполнитьСейчасToolStripMenuItem});
-            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(42, 20);
-            this.toolStripMenuItem4.Text = "--:--";
+            this.toolStripSyncTimer.Name = "toolStripSyncTimer";
+            this.toolStripSyncTimer.Size = new System.Drawing.Size(42, 20);
+            this.toolStripSyncTimer.Text = "--:--";
+            this.toolStripSyncTimer.Visible = false;
             // 
             // выполнитьСейчасToolStripMenuItem
             // 
             this.выполнитьСейчасToolStripMenuItem.AutoToolTip = true;
             this.выполнитьСейчасToolStripMenuItem.Image = global::HomeTheater.Properties.Resources.control;
             this.выполнитьСейчасToolStripMenuItem.Name = "выполнитьСейчасToolStripMenuItem";
-            this.выполнитьСейчасToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.выполнитьСейчасToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
             this.выполнитьСейчасToolStripMenuItem.Text = "Выполнить сейчас";
             this.выполнитьСейчасToolStripMenuItem.Click += new System.EventHandler(this.выполнитьСейчасToolStripMenuItem_Click);
             // 
             // splitContainerMain
             // 
             this.splitContainerMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainerMain.Location = new System.Drawing.Point(6, 6);
+            this.splitContainerMain.Location = new System.Drawing.Point(6, 30);
             this.splitContainerMain.Name = "splitContainerMain";
             this.splitContainerMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -455,8 +460,8 @@
             // 
             this.splitContainerMain.Panel2.Controls.Add(this.listDownload);
             this.splitContainerMain.Panel2.Controls.Add(this.toolDownload);
-            this.splitContainerMain.Size = new System.Drawing.Size(982, 656);
-            this.splitContainerMain.SplitterDistance = 424;
+            this.splitContainerMain.Size = new System.Drawing.Size(982, 632);
+            this.splitContainerMain.SplitterDistance = 408;
             this.splitContainerMain.TabIndex = 0;
             // 
             // splitContainerMainList
@@ -477,7 +482,7 @@
             this.splitContainerMainList.Panel2.Controls.Add(this.pictureSeasonImage);
             this.splitContainerMainList.Panel2.ClientSizeChanged += new System.EventHandler(this.splitContainerMainList_Panel2_ClientSizeChanged);
             this.splitContainerMainList.Panel2MinSize = 211;
-            this.splitContainerMainList.Size = new System.Drawing.Size(982, 424);
+            this.splitContainerMainList.Size = new System.Drawing.Size(982, 408);
             this.splitContainerMainList.SplitterDistance = 760;
             this.splitContainerMainList.TabIndex = 0;
             // 
@@ -534,7 +539,7 @@
             this.listSerials.HideSelection = false;
             this.listSerials.Location = new System.Drawing.Point(0, 26);
             this.listSerials.Name = "listSerials";
-            this.listSerials.Size = new System.Drawing.Size(760, 398);
+            this.listSerials.Size = new System.Drawing.Size(760, 382);
             this.listSerials.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.listSerials.TabIndex = 4;
             this.listSerials.UseCompatibleStateImageBehavior = false;
@@ -692,7 +697,7 @@
             // 
             this.contextMenuStripSerials.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.открытьToolStripMenuItem,
-            this.toolStripMenuItem2,
+            this.toolStripUpdate,
             this.toolStripSeparator1,
             this.отметитьНаПоследнейСерииToolStripMenuItem,
             this.хочуПосмотретьToolStripMenuItem,
@@ -710,35 +715,36 @@
             this.открытьToolStripMenuItem.Text = "Открыть";
             this.открытьToolStripMenuItem.Click += new System.EventHandler(this.открытьToolStripMenuItem_Click);
             // 
-            // toolStripMenuItem2
+            // toolStripUpdate
             // 
-            this.toolStripMenuItem2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripUpdate.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.страницуToolStripMenuItem,
             this.плеерToolStripMenuItem,
             this.видеоToolStripMenuItem});
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(240, 22);
-            this.toolStripMenuItem2.Text = "Обновить";
-            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
+            this.toolStripUpdate.Enabled = false;
+            this.toolStripUpdate.Name = "toolStripUpdate";
+            this.toolStripUpdate.Size = new System.Drawing.Size(240, 22);
+            this.toolStripUpdate.Text = "Обновить";
+            this.toolStripUpdate.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
             // страницуToolStripMenuItem
             // 
             this.страницуToolStripMenuItem.Name = "страницуToolStripMenuItem";
-            this.страницуToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
+            this.страницуToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.страницуToolStripMenuItem.Text = "Страницу";
             this.страницуToolStripMenuItem.Click += new System.EventHandler(this.страницуToolStripMenuItem_Click);
             // 
             // плеерToolStripMenuItem
             // 
             this.плеерToolStripMenuItem.Name = "плеерToolStripMenuItem";
-            this.плеерToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
+            this.плеерToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.плеерToolStripMenuItem.Text = "Плеер";
             this.плеерToolStripMenuItem.Click += new System.EventHandler(this.плеерToolStripMenuItem_Click);
             // 
             // видеоToolStripMenuItem
             // 
             this.видеоToolStripMenuItem.Name = "видеоToolStripMenuItem";
-            this.видеоToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
+            this.видеоToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.видеоToolStripMenuItem.Text = "Видео";
             this.видеоToolStripMenuItem.Click += new System.EventHandler(this.видеоToolStripMenuItem_Click);
             // 
@@ -992,7 +998,7 @@
             // labelDescription
             // 
             this.labelDescription.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.labelDescription.Location = new System.Drawing.Point(0, 379);
+            this.labelDescription.Location = new System.Drawing.Point(0, 363);
             this.labelDescription.Name = "labelDescription";
             this.labelDescription.Size = new System.Drawing.Size(218, 45);
             this.labelDescription.TabIndex = 2;
@@ -1023,7 +1029,7 @@
             this.listDownload.HideSelection = false;
             this.listDownload.Location = new System.Drawing.Point(0, 25);
             this.listDownload.Name = "listDownload";
-            this.listDownload.Size = new System.Drawing.Size(982, 203);
+            this.listDownload.Size = new System.Drawing.Size(982, 195);
             this.listDownload.TabIndex = 100;
             this.listDownload.UseCompatibleStateImageBehavior = false;
             this.listDownload.View = System.Windows.Forms.View.Details;
@@ -1126,11 +1132,33 @@
             this.toolStripPauseAll.Size = new System.Drawing.Size(134, 22);
             this.toolStripPauseAll.Text = "Приостановить Все";
             // 
+            // panelOverlay
+            // 
+            this.panelOverlay.Controls.Add(this.labelOverlay);
+            this.panelOverlay.Location = new System.Drawing.Point(905, 10);
+            this.panelOverlay.Name = "panelOverlay";
+            this.panelOverlay.Size = new System.Drawing.Size(79, 181);
+            this.panelOverlay.TabIndex = 1;
+            this.panelOverlay.Visible = false;
+            // 
+            // labelOverlay
+            // 
+            this.labelOverlay.BackColor = System.Drawing.SystemColors.Control;
+            this.labelOverlay.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.labelOverlay.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelOverlay.Location = new System.Drawing.Point(0, 0);
+            this.labelOverlay.Name = "labelOverlay";
+            this.labelOverlay.Size = new System.Drawing.Size(79, 181);
+            this.labelOverlay.TabIndex = 0;
+            this.labelOverlay.Text = "Дождитесь загрузки";
+            this.labelOverlay.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // FormList
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(994, 668);
+            this.Controls.Add(this.panelOverlay);
             this.Controls.Add(this.splitContainerMain);
             this.Controls.Add(this.menuMain);
             this.MainMenuStrip = this.menuMain;
@@ -1160,6 +1188,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureSeasonImage)).EndInit();
             this.toolDownload.ResumeLayout(false);
             this.toolDownload.PerformLayout();
+            this.panelOverlay.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1260,7 +1289,7 @@
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemSerialSiteUpdated;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripSerials;
         private System.Windows.Forms.ToolStripMenuItem открытьToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem toolStripUpdate;
         private System.Windows.Forms.ToolStripMenuItem страницуToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem плеерToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem видеоToolStripMenuItem;
@@ -1272,7 +1301,9 @@
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem удалитьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem остановитьToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
+        private System.Windows.Forms.ToolStripMenuItem toolStripSyncTimer;
         private System.Windows.Forms.ToolStripMenuItem выполнитьСейчасToolStripMenuItem;
+        private System.Windows.Forms.Panel panelOverlay;
+        private System.Windows.Forms.Label labelOverlay;
     }
 }

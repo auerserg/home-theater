@@ -235,6 +235,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             }
             catch (SQLiteException ex)
             {
+                Logger.Instance.Error("{0}\n{1}", sql, SimpleJson.SimpleJson.SerializeObject(data));
                 Logger.Instance.Error(ex);
             }
 
@@ -267,22 +268,25 @@ CREATE TABLE IF NOT EXISTS [video] (
 
                 foreach (var item in data)
                     command.Parameters.AddWithValue("@" + item.Key, item.Value);
-                var reader = command.ExecuteReader();
-                while (reader.Read())
+                using (var reader = command.ExecuteReader())
                 {
-                    var _result = new Dictionary<string, string>();
-                    for (var i = 0; i < reader.FieldCount; i++)
+                    while (reader.Read())
                     {
-                        var field = reader.GetName(i);
-                        var value = reader[field].ToString();
-                        _result.Add(field, value);
-                    }
+                        var _result = new Dictionary<string, string>();
+                        for (var i = 0; i < reader.FieldCount; i++)
+                        {
+                            var field = reader.GetName(i);
+                            var value = reader[field].ToString();
+                            _result.Add(field, value);
+                        }
 
-                    result.Add(_result);
+                        result.Add(_result);
+                    }
                 }
             }
             catch (SQLiteException ex)
             {
+                Logger.Instance.Error("{0}\n{1}", sql, SimpleJson.SimpleJson.SerializeObject(data));
                 Logger.Instance.Error(ex);
             }
 
@@ -702,10 +706,14 @@ CREATE TABLE IF NOT EXISTS [video] (
             var sql =
                 @"UPDATE playlist SET removed_date=@removed_date WHERE season_id = @season_id";
             if (null != translateIDs && 0 < translateIDs.Count)
+            {
+                var ids = string.Join(", ", translateIDs.ToArray());
                 sql +=
-                    @" AND translate_id NOT IN (" +
-                    string.Join(", ", translateIDs.ToArray()) +
-                    ")";
+                    @" AND translate_id NOT IN (" + ids +
+                    "); UPDATE playlist SET removed_date='' WHERE season_id = @season_id AND translate_id NOT IN (" +
+                    ids + ");";
+            }
+
             return 0 < _ExecuteNonQuery(sql,
                        new Dictionary<string, string>
                        {
@@ -819,19 +827,25 @@ CREATE TABLE IF NOT EXISTS [video] (
                 new Dictionary<string, string> {{"id", SeasonID.ToString()}});
         }
 
-        public bool VideoSetOld(int seasonID, List<int> videoIDs)
+        public bool VideoSetOld(int seasonID, int translateID, List<int> videoIDs)
         {
             var sql =
-                @"UPDATE video SET removed_date=@removed_date WHERE season_id = @season_id";
+                @"UPDATE video SET removed_date=@removed_date WHERE season_id = @season_id AND translate_id = @translate_id";
             if (null != videoIDs && 0 < videoIDs.Count)
+            {
+                var ids = string.Join(", ", videoIDs.ToArray());
                 sql +=
-                    @" AND id NOT IN (" +
-                    string.Join(", ", videoIDs.ToArray()) +
-                    ")";
+                    @" AND id NOT IN (" + ids +
+                    "); UPDATE video SET removed_date='' WHERE season_id = @season_id AND translate_id = @translate_id AND id IN (" +
+                    ids + ")";
+            }
+
             return 0 < _ExecuteNonQuery(sql,
                        new Dictionary<string, string>
                        {
-                           {"removed_date", DateTime.UtcNow.ToString(TIME_FORMAT)}, {"season_id", seasonID.ToString()}
+                           {"removed_date", DateTime.UtcNow.ToString(TIME_FORMAT)},
+                           {"season_id", seasonID.ToString()},
+                           {"translate_id", translateID.ToString()}
                        });
         }
 

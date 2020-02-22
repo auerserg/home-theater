@@ -81,21 +81,21 @@
             // авторизацияToolStripMenuItem
             // 
             this.авторизацияToolStripMenuItem.Name = "авторизацияToolStripMenuItem";
-            this.авторизацияToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.авторизацияToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.авторизацияToolStripMenuItem.Text = "&Авторизация";
             this.авторизацияToolStripMenuItem.Click += new System.EventHandler(this.авторизацияToolStripMenuItem_Click);
             // 
             // настройкиToolStripMenuItem
             // 
             this.настройкиToolStripMenuItem.Name = "настройкиToolStripMenuItem";
-            this.настройкиToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.настройкиToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.настройкиToolStripMenuItem.Text = "&Настройки";
             this.настройкиToolStripMenuItem.Click += new System.EventHandler(this.настройкиToolStripMenuItem_Click);
             // 
             // выходToolStripMenuItem
             // 
             this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
-            this.выходToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.выходToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.выходToolStripMenuItem.Text = "&Выход";
             this.выходToolStripMenuItem.Click += new System.EventHandler(this.выходToolStripMenuItem_Click);
             // 
@@ -178,8 +178,8 @@
             // statusTimer
             // 
             this.statusTimer.Name = "statusTimer";
-            this.statusTimer.Size = new System.Drawing.Size(49, 17);
-            this.statusTimer.Text = "00:00:00";
+            this.statusTimer.Size = new System.Drawing.Size(70, 17);
+            this.statusTimer.Text = "00:00:00.000";
             this.statusTimer.Visible = false;
             // 
             // notifyTray
@@ -223,7 +223,6 @@
 
         private System.Windows.Forms.MenuStrip menuMain;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem авторизацияToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem действияToolStripMenuItem;
@@ -238,6 +237,7 @@
         private System.Windows.Forms.ToolStripStatusLabel statusTimer;
         public System.Windows.Forms.NotifyIcon notifyTray;
         public System.Windows.Forms.ContextMenuStrip contextMenuTray;
+        public System.Windows.Forms.ToolStripMenuItem авторизацияToolStripMenuItem;
     }
 }
 

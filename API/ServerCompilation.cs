@@ -125,7 +125,10 @@ namespace HomeTheater.API
                 if (_do(new NameValueCollection
                     {{"serial_id", serialId.ToString()}, {"compilationSet", compilationId.ToString()}}))
                 {
-                    relation.Add(serialId, compilationId);
+                    if (relation.ContainsKey(serialId))
+                        relation[serialId] = compilationId;
+                    else
+                        relation.Add(serialId, compilationId);
                     DB.Instance.CompilationRelationSet(serialId, compilationId);
                 }
 
