@@ -69,10 +69,7 @@ namespace HomeTheater.API.Serial
                     foreach (var video in videoData)
                     {
                         var id = IntVal(video["id"]);
-                        if (__videos.ContainsKey(id))
-                            __videos[id] = new Video(id, video);
-                        else
-                            __videos.Add(id, new Video(id, video));
+                        __videos[id] = new Video(id, video);
                     }
                 }
 
@@ -177,20 +174,14 @@ namespace HomeTheater.API.Serial
             {
                 var n = item.Value.ContainsKey("n") ? item.Value["n"] : "";
                 var next = item.Value.ContainsKey("next") ? item.Value["next"] : "";
-                if (result.ContainsKey(n))
-                    result[n] = next;
-                else
-                    result.Add(n, next);
+                result[n] = next;
             }
 
             var data = new Dictionary<string, string>();
             var key = "";
             while (result.ContainsKey(key))
             {
-                if (data.ContainsKey(key))
-                    data[key] = result[key];
-                else
-                    data.Add(key, result[key]);
+                data[key] = result[key];
                 key = !string.IsNullOrEmpty(result[key]) && key != result[key] ? result[key] : "+_+";
             }
 

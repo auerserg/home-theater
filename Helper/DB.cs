@@ -308,10 +308,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             var date = DateTime.UtcNow.ToString(TIME_FORMAT);
             data.Add("created_date", date);
             data.Add("updated_date", date);
-            if (cachedOptions.ContainsKey(name))
-                cachedOptions[name] = value;
-            else
-                cachedOptions.Add(name, value);
+            cachedOptions[name] = value;
             return _ExecuteNonQuery(
                 @"INSERT OR REPLACE INTO options (name,value,created_date,updated_date) VALUES (@name,@value,@created_date,@updated_date)",
                 data);
@@ -320,10 +317,7 @@ CREATE TABLE IF NOT EXISTS [video] (
         public async void OptionSetAsync(string name, string value = null)
         {
             await Task.Run(() => OptionSet(name, value));
-            if (cachedOptions.ContainsKey(name))
-                cachedOptions[name] = value;
-            else
-                cachedOptions.Add(name, value);
+            cachedOptions[name] = value;
         }
 
         public string OptionGet(string name)

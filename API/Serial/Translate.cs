@@ -26,10 +26,7 @@ namespace HomeTheater.API.Serial
             var value_old = GetValueInt(name, _default);
             if (value_old == value)
                 return;
-            if (__data_int.ContainsKey(name))
-                __data_int[name] = value;
-            else
-                __data_int.Add(name, value);
+            __data_int[name] = value;
             SetValue(name, value.ToString());
         }
 

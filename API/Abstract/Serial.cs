@@ -60,10 +60,7 @@ namespace HomeTheater.API.Abstract
             if (!result)
                 return;
             foreach (var item in data)
-                if (__data_old.ContainsKey(item.Key))
-                    __data_old[item.Key] = item.Value;
-                else
-                    __data_old.Add(item.Key, item.Value);
+                __data_old[item.Key] = item.Value;
             __data_date = new Dictionary<string, DateTime>();
             __data_float = new Dictionary<string, float>();
             __data_int = new Dictionary<string, int>();
@@ -92,10 +89,7 @@ namespace HomeTheater.API.Abstract
             if (__data_int.ContainsKey(name) && __data_int[name] != 0)
                 return __data_int[name];
             var value = IntVal(GetValue(name, _default.ToString()));
-            if (__data_int.ContainsKey(name))
-                __data_int[name] = value;
-            else
-                __data_int.Add(name, value);
+            __data_int[name] = value;
             return __data_int[name];
         }
 
@@ -104,10 +98,7 @@ namespace HomeTheater.API.Abstract
             if (__data_float.ContainsKey(name) && __data_float[name] != 0)
                 return __data_float[name];
             var value = floatVal(GetValue(name, _default.ToString()));
-            if (__data_float.ContainsKey(name))
-                __data_float[name] = value;
-            else
-                __data_float.Add(name, value);
+            __data_float[name] = value;
             return __data_float[name];
         }
 
@@ -126,10 +117,7 @@ namespace HomeTheater.API.Abstract
             if (__data_date.ContainsKey(name) && __data_date[name] != new DateTime())
                 return __data_date[name];
             var value = DateVal(GetValue(name, _default.ToString(format)), format);
-            if (__data_date.ContainsKey(name))
-                __data_date[name] = value;
-            else
-                __data_date.Add(name, value);
+            __data_date[name] = value;
             return __data_date[name];
         }
 
@@ -144,10 +132,7 @@ namespace HomeTheater.API.Abstract
             var value_old = GetValue(name, _default);
             if (value_old == value)
                 return;
-            if (__data_new.ContainsKey(name))
-                __data_new[name] = value;
-            else
-                __data_new.Add(name, value);
+            __data_new[name] = value;
             CallValue(name, value, value_old);
         }
 
@@ -156,10 +141,7 @@ namespace HomeTheater.API.Abstract
             var value_old = GetValue(name);
             if (value_old == value)
                 return;
-            if (__data_new.ContainsKey(name))
-                __data_new[name] = value;
-            else
-                __data_new.Add(name, value);
+            __data_new[name] = value;
             CallValue(name, value, value_old);
         }
 
@@ -170,10 +152,7 @@ namespace HomeTheater.API.Abstract
             var value_old = GetValueInt(name, _default);
             if (value_old == value)
                 return;
-            if (__data_int.ContainsKey(name))
-                __data_int[name] = value;
-            else
-                __data_int.Add(name, value);
+            __data_int[name] = value;
             SetValue(name, value.ToString());
         }
 
@@ -184,10 +163,7 @@ namespace HomeTheater.API.Abstract
             var value_old = GetValueFloat(name, _default);
             if (value_old == value)
                 return;
-            if (__data_float.ContainsKey(name))
-                __data_float[name] = value;
-            else
-                __data_float.Add(name, value);
+            __data_float[name] = value;
             SetValue(name, value.ToString());
         }
 
@@ -198,10 +174,7 @@ namespace HomeTheater.API.Abstract
             var value_old = GetValueDate(name, format);
             if (value_old == value)
                 return;
-            if (__data_date.ContainsKey(name))
-                __data_date[name] = value;
-            else
-                __data_date.Add(name, value);
+            __data_date[name] = value;
             SetValue(name, value.ToString(format));
         }
 
