@@ -133,7 +133,7 @@ namespace HomeTheater
 
         public void StatusTimerSet(double est)
         {
-            var time = TimeSpan.FromMilliseconds(est).ToString(@"hh\:mm\:ss");
+            var time = TimeSpan.FromMilliseconds(est).ToString(@"hh\:mm\:ss\.fff");
 
             statusTimer.Text = time;
         }
