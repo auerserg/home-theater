@@ -143,8 +143,6 @@
             this.toolStripOpenFolder = new System.Windows.Forms.ToolStripButton();
             this.toolStripResumeAll = new System.Windows.Forms.ToolStripButton();
             this.toolStripPauseAll = new System.Windows.Forms.ToolStripButton();
-            this.panelOverlay = new System.Windows.Forms.Panel();
-            this.labelOverlay = new System.Windows.Forms.Label();
             this.menuMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
@@ -159,7 +157,6 @@
             this.panelTexts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureSeasonImage)).BeginInit();
             this.toolDownload.SuspendLayout();
-            this.panelOverlay.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuMain
@@ -448,7 +445,8 @@
             // splitContainerMain
             // 
             this.splitContainerMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainerMain.Location = new System.Drawing.Point(6, 30);
+            this.splitContainerMain.Enabled = false;
+            this.splitContainerMain.Location = new System.Drawing.Point(6, 6);
             this.splitContainerMain.Name = "splitContainerMain";
             this.splitContainerMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -460,8 +458,8 @@
             // 
             this.splitContainerMain.Panel2.Controls.Add(this.listDownload);
             this.splitContainerMain.Panel2.Controls.Add(this.toolDownload);
-            this.splitContainerMain.Size = new System.Drawing.Size(982, 632);
-            this.splitContainerMain.SplitterDistance = 408;
+            this.splitContainerMain.Size = new System.Drawing.Size(982, 656);
+            this.splitContainerMain.SplitterDistance = 423;
             this.splitContainerMain.TabIndex = 0;
             // 
             // splitContainerMainList
@@ -482,7 +480,7 @@
             this.splitContainerMainList.Panel2.Controls.Add(this.pictureSeasonImage);
             this.splitContainerMainList.Panel2.ClientSizeChanged += new System.EventHandler(this.splitContainerMainList_Panel2_ClientSizeChanged);
             this.splitContainerMainList.Panel2MinSize = 211;
-            this.splitContainerMainList.Size = new System.Drawing.Size(982, 408);
+            this.splitContainerMainList.Size = new System.Drawing.Size(982, 423);
             this.splitContainerMainList.SplitterDistance = 760;
             this.splitContainerMainList.TabIndex = 0;
             // 
@@ -539,7 +537,7 @@
             this.listSerials.HideSelection = false;
             this.listSerials.Location = new System.Drawing.Point(0, 26);
             this.listSerials.Name = "listSerials";
-            this.listSerials.Size = new System.Drawing.Size(760, 382);
+            this.listSerials.Size = new System.Drawing.Size(760, 397);
             this.listSerials.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.listSerials.TabIndex = 4;
             this.listSerials.UseCompatibleStateImageBehavior = false;
@@ -730,21 +728,21 @@
             // страницуToolStripMenuItem
             // 
             this.страницуToolStripMenuItem.Name = "страницуToolStripMenuItem";
-            this.страницуToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.страницуToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
             this.страницуToolStripMenuItem.Text = "Страницу";
             this.страницуToolStripMenuItem.Click += new System.EventHandler(this.страницуToolStripMenuItem_Click);
             // 
             // плеерToolStripMenuItem
             // 
             this.плеерToolStripMenuItem.Name = "плеерToolStripMenuItem";
-            this.плеерToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.плеерToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
             this.плеерToolStripMenuItem.Text = "Плеер";
             this.плеерToolStripMenuItem.Click += new System.EventHandler(this.плеерToolStripMenuItem_Click);
             // 
             // видеоToolStripMenuItem
             // 
             this.видеоToolStripMenuItem.Name = "видеоToolStripMenuItem";
-            this.видеоToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.видеоToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
             this.видеоToolStripMenuItem.Text = "Видео";
             this.видеоToolStripMenuItem.Click += new System.EventHandler(this.видеоToolStripMenuItem_Click);
             // 
@@ -998,7 +996,7 @@
             // labelDescription
             // 
             this.labelDescription.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.labelDescription.Location = new System.Drawing.Point(0, 363);
+            this.labelDescription.Location = new System.Drawing.Point(0, 378);
             this.labelDescription.Name = "labelDescription";
             this.labelDescription.Size = new System.Drawing.Size(218, 45);
             this.labelDescription.TabIndex = 2;
@@ -1029,7 +1027,7 @@
             this.listDownload.HideSelection = false;
             this.listDownload.Location = new System.Drawing.Point(0, 25);
             this.listDownload.Name = "listDownload";
-            this.listDownload.Size = new System.Drawing.Size(982, 195);
+            this.listDownload.Size = new System.Drawing.Size(982, 204);
             this.listDownload.TabIndex = 100;
             this.listDownload.UseCompatibleStateImageBehavior = false;
             this.listDownload.View = System.Windows.Forms.View.Details;
@@ -1132,33 +1130,11 @@
             this.toolStripPauseAll.Size = new System.Drawing.Size(134, 22);
             this.toolStripPauseAll.Text = "Приостановить Все";
             // 
-            // panelOverlay
-            // 
-            this.panelOverlay.Controls.Add(this.labelOverlay);
-            this.panelOverlay.Location = new System.Drawing.Point(905, 10);
-            this.panelOverlay.Name = "panelOverlay";
-            this.panelOverlay.Size = new System.Drawing.Size(79, 181);
-            this.panelOverlay.TabIndex = 1;
-            this.panelOverlay.Visible = false;
-            // 
-            // labelOverlay
-            // 
-            this.labelOverlay.BackColor = System.Drawing.SystemColors.Control;
-            this.labelOverlay.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.labelOverlay.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelOverlay.Location = new System.Drawing.Point(0, 0);
-            this.labelOverlay.Name = "labelOverlay";
-            this.labelOverlay.Size = new System.Drawing.Size(79, 181);
-            this.labelOverlay.TabIndex = 0;
-            this.labelOverlay.Text = "Дождитесь загрузки";
-            this.labelOverlay.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // FormList
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(994, 668);
-            this.Controls.Add(this.panelOverlay);
             this.Controls.Add(this.splitContainerMain);
             this.Controls.Add(this.menuMain);
             this.MainMenuStrip = this.menuMain;
@@ -1188,7 +1164,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureSeasonImage)).EndInit();
             this.toolDownload.ResumeLayout(false);
             this.toolDownload.PerformLayout();
-            this.panelOverlay.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1303,7 +1278,5 @@
         private System.Windows.Forms.ToolStripMenuItem остановитьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripSyncTimer;
         private System.Windows.Forms.ToolStripMenuItem выполнитьСейчасToolStripMenuItem;
-        private System.Windows.Forms.Panel panelOverlay;
-        private System.Windows.Forms.Label labelOverlay;
     }
 }

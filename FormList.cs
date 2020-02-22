@@ -106,13 +106,6 @@ namespace HomeTheater
             timer.CountDownFinished += () => SyncSilent();
 #pragma warning restore CS4014 // Так как этот вызов не ожидается, выполнение существующего метода продолжается до тех пор, пока вызов не будет завершен
             LoadTimer();
-            CreateOverlay();
-        }
-
-        private void CreateOverlay()
-        {
-            panelOverlay.Dock = DockStyle.Fill;
-            panelOverlay.Visible = true;
         }
 
         private void FormList_Shown(object sender, System.EventArgs e)
@@ -405,6 +398,7 @@ namespace HomeTheater
             toolStripSyncTimer.Visible = true;
             остановитьToolStripMenuItem.Visible = false;
             обновитьToolStripMenuItem.Enabled = true;
+            splitContainerMain.Enabled = true;
             toolStripUpdate.Enabled = true;
             MainParent.авторизацияToolStripMenuItem.Enabled = true;
         }
@@ -651,7 +645,6 @@ namespace HomeTheater
 
                 listSerials.Sort();
                 listSerials.EndUpdate();
-                panelOverlay.Visible = false;
                 await Task.Delay(10);
                 listSerials.Enabled = true;
                 listSerials_ClientSizeChanged(null, null);
