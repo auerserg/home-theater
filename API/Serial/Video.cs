@@ -36,9 +36,6 @@ namespace HomeTheater.API.Serial
         {
             if (0 == __data_new.Count || 0 == ID)
                 return;
-#if DEBUG
-            var start = DateTime.UtcNow;
-#endif
             if (!__data_new.ContainsKey("translate_id"))
                 __data_new.Add("translate_id", TranslateID.ToString());
 
@@ -48,10 +45,6 @@ namespace HomeTheater.API.Serial
                     return false;
                 return DB.Instance.VideoSet(ID, data);
             });
-#if DEBUG
-            Console.WriteLine("\tSave Video\t\t{0}\t{1}({2})\t{3}:\t{4}", SeasonID, TranslateID,
-                TranslateName, ID, DateTime.UtcNow.Subtract(start).TotalSeconds);
-#endif
         }
 
         public void parseVideo(Response.Video data)

@@ -105,9 +105,6 @@ namespace HomeTheater.API.Serial
             setVideosOrder();
             if (0 == __data_new.Count || 0 == SeasonID || 0 > TranslateID)
                 return;
-#if DEBUG
-            var start = DateTime.UtcNow;
-#endif
             if (!__data_new.ContainsKey("translate_id"))
                 __data_new.Add("translate_id", TranslateID.ToString());
             SaveValues(data =>
@@ -116,10 +113,6 @@ namespace HomeTheater.API.Serial
                     return false;
                 return DB.Instance.PlaylistSet(SeasonID, TranslateID, data);
             });
-#if DEBUG
-            Console.WriteLine("\tSave Playlist\t{0}\t{1}({2}):\t{3}", SeasonID, TranslateID,
-                TranslateName, DateTime.UtcNow.Subtract(start).TotalSeconds);
-#endif
         }
 
         public async void SaveAsync()
