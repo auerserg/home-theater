@@ -179,7 +179,7 @@
             // 
             this.statusTimer.Name = "statusTimer";
             this.statusTimer.Size = new System.Drawing.Size(70, 17);
-            this.statusTimer.Text = "00:00:00.000";
+            this.statusTimer.Text = "00:00:00";
             this.statusTimer.Visible = false;
             // 
             // notifyTray
