@@ -782,7 +782,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             var _sql = "";
             if (data.ContainsKey("season_id") && data.ContainsKey("translate_id") && data.ContainsKey("video_id"))
                 _sql =
-                    @"UPDATE video SET removed_date=@updated_date WHERE season_id = @season_id AND translate_id = @translate_id AND video_id <> @video_id;";
+                    @"UPDATE video SET removed_date=@updated_date WHERE season_id = @season_id AND translate_id = @translate_id AND video_id = @video_id AND id <> @id;";
             return 0 < _ExecuteNonQuery(_sql +
                                         @"INSERT OR IGNORE INTO video (" + string.Join(", ", fields.ToArray()) +
                                         ") VALUES (@" +
