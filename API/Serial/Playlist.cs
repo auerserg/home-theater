@@ -281,8 +281,6 @@ namespace HomeTheater.API.Serial
                 item.Value.VideoNextID = getNextVideoID(item.Value.VideoID);
                 item.Value.SaveAsync();
             }
-
-            DB.Instance.VideoSetOld(SeasonID, TranslateID, new List<int>(Videos.Keys));
         }
 
         private Dictionary<int, Video> parseVideo(List<Response.Video> data, Dictionary<int, Video> _videos = null)

@@ -821,27 +821,27 @@ CREATE TABLE IF NOT EXISTS [video] (
                 new Dictionary<string, string> {{"id", SeasonID.ToString()}});
         }
 
-        public bool VideoSetOld(int seasonID, int translateID, List<int> videoIDs)
-        {
-            var sql =
-                @"UPDATE video SET removed_date=@removed_date WHERE season_id = @season_id AND translate_id = @translate_id";
-            if (null != videoIDs && 0 < videoIDs.Count)
-            {
-                var ids = string.Join(", ", videoIDs.ToArray());
-                sql +=
-                    @" AND id NOT IN (" + ids +
-                    "); UPDATE video SET removed_date='' WHERE season_id = @season_id AND translate_id = @translate_id AND id IN (" +
-                    ids + ")";
-            }
+        //public bool VideoSetOld(int seasonID, int translateID, List<int> videoIDs)
+        //{
+        //    var sql =
+        //        @"UPDATE video SET removed_date=@removed_date WHERE season_id = @season_id AND translate_id = @translate_id";
+        //    if (null != videoIDs && 0 < videoIDs.Count)
+        //    {
+        //        var ids = string.Join(", ", videoIDs.ToArray());
+        //        sql +=
+        //            @" AND id NOT IN (" + ids +
+        //            "); UPDATE video SET removed_date='' WHERE season_id = @season_id AND translate_id = @translate_id AND id IN (" +
+        //            ids + ")";
+        //    }
 
-            return 0 < _ExecuteNonQuery(sql,
-                       new Dictionary<string, string>
-                       {
-                           {"removed_date", DateTime.UtcNow.ToString(TIME_FORMAT)},
-                           {"season_id", seasonID.ToString()},
-                           {"translate_id", translateID.ToString()}
-                       });
-        }
+        //    return 0 < _ExecuteNonQuery(sql,
+        //               new Dictionary<string, string>
+        //               {
+        //                   {"removed_date", DateTime.UtcNow.ToString(TIME_FORMAT)},
+        //                   {"season_id", seasonID.ToString()},
+        //                   {"translate_id", translateID.ToString()}
+        //               });
+        //}
 
         #endregion
     }
