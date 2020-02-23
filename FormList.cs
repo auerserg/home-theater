@@ -398,7 +398,6 @@ namespace HomeTheater
             toolStripSyncTimer.Visible = true;
             остановитьToolStripMenuItem.Visible = false;
             обновитьToolStripMenuItem.Enabled = true;
-            splitContainerMain.Enabled = true;
             toolStripUpdate.Enabled = true;
             MainParent.авторизацияToolStripMenuItem.Enabled = true;
         }
@@ -645,8 +644,9 @@ namespace HomeTheater
 
                 listSerials.Sort();
                 listSerials.EndUpdate();
-                await Task.Delay(10);
                 listSerials.Enabled = true;
+                splitContainerMain.Enabled = true;
+                await Task.Delay(10);
                 listSerials_ClientSizeChanged(null, null);
             }
             catch (Exception ex)
