@@ -117,12 +117,10 @@ namespace HomeTheater.UI
         /// <param name="dock">Location and resize behavior of embedded control</param>
         public void AddEmbeddedControl(Control c, int col, int row, DockStyle dock)
         {
+#pragma warning disable CA2208 // Правильно создавайте экземпляры исключений аргументов
             if (c == null)
-#pragma warning disable CA2208 // Правильно создавайте экземпляры исключений аргументов
                 throw new ArgumentNullException();
-#pragma warning restore CA2208 // Правильно создавайте экземпляры исключений аргументов
             if (col >= Columns.Count || row >= Items.Count)
-#pragma warning disable CA2208 // Правильно создавайте экземпляры исключений аргументов
                 throw new ArgumentOutOfRangeException();
 #pragma warning restore CA2208 // Правильно создавайте экземпляры исключений аргументов
 
