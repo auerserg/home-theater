@@ -86,7 +86,12 @@ namespace HomeTheater.Helper
         {
             var H = Convert.ToInt32(Math.Floor((double) (min / 60)));
             var M = min % 60;
-            SetTime(new DateTime(1, 1, 1, H, M, sec));
+            SetTime(H, M, sec);
+        }
+
+        public void SetTime(int hour, int min, int sec = 0)
+        {
+            SetTime(new DateTime(1, 1, 1, hour, min, sec));
         }
 
         public void Start()

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using HomeTheater.API;
+using HomeTheater.API.Response;
 using HomeTheater.API.Serial;
 using HomeTheater.Helper;
 using HomeTheater.UI;
@@ -91,11 +92,11 @@ namespace HomeTheater
             menuMain.Visible = false;
         }
 
-        public void LoadTimer(int time = 0)
+        public void LoadTimer(DateTime time = new DateTime())
         {
-            if (0 == time)
-                time = Convert.ToInt32(DB.Instance.OptionGet("Timer"));
-            timer.SetTime(time);
+            if (new DateTime() == time)
+                time = DateTime.Parse("01.01.1753 " + DB.Instance.OptionGet("Timer"));
+            timer.SetTime(time.Hour, time.Minute, time.Second);
             timer.Reset();
         }
 
@@ -253,6 +254,7 @@ namespace HomeTheater
                             item.Value.SaveAsync();
                     });
 
+                    var checkUpdate = new updateCheck(DB.Instance.OptionGet("checkUpdate"));
 
                     #region Синхронизация Страниц
 
@@ -262,40 +264,43 @@ namespace HomeTheater
                         return;
                     }
 
-                    Invoke(new Action(() => MainParent.StatusProgressReset(Serials.Count)));
-                    bool first = true;
-                    foreach (KeyValuePair<int, Season> item in Serials)
+                    if (checkUpdate.Page)
                     {
-                        string title = item.Value.TitleFull;
-                        if (string.IsNullOrEmpty(title))
-                            title = string.Format(0 < item.Value.SeasonNum ? "{0} {1} сезон" : "{0}",
-                                item.Value.TitleRU, item.Value.SeasonNum);
-                        Invoke(new Action(() => MainParent.StatusMessageSet("Обработка страницы: " + title)));
-                        try
+                        Invoke(new Action(() => MainParent.StatusProgressReset(Serials.Count)));
+                        bool first = true;
+                        foreach (KeyValuePair<int, Season> item in Serials)
                         {
-                            bool forsed = first || serials && "notwatch" != item.Value.Type || all;
-                            item.Value.syncPage(forsed);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Instance.Error(ex);
-                        }
+                            string title = item.Value.TitleFull;
+                            if (string.IsNullOrEmpty(title))
+                                title = string.Format(0 < item.Value.SeasonNum ? "{0} {1} сезон" : "{0}",
+                                    item.Value.TitleRU, item.Value.SeasonNum);
+                            Invoke(new Action(() => MainParent.StatusMessageSet("Обработка страницы: " + title)));
+                            try
+                            {
+                                bool forsed = first || serials && checkUpdate[item.Value.Type, "page"] || all;
+                                item.Value.syncPage(forsed);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Instance.Error(ex);
+                            }
 
-                        if (first)
-                        {
-                            Invoke(new Action(() => Server.Instance.Secure = item.Value.Secure));
-                            first = false;
-                        }
+                            if (first)
+                            {
+                                Invoke(new Action(() => Server.Instance.Secure = item.Value.Secure));
+                                first = false;
+                            }
 
-                        Invoke(new Action(() =>
-                        {
-                            item.Value.ToListViewItem();
-                            MainParent.StatusProgressStep();
-                        }));
-                        if (token.IsCancellationRequested)
-                        {
-                            Invoke(new Action(() => CancelSync()));
-                            return;
+                            Invoke(new Action(() =>
+                            {
+                                item.Value.ToListViewItem();
+                                MainParent.StatusProgressStep();
+                            }));
+                            if (token.IsCancellationRequested)
+                            {
+                                Invoke(new Action(() => CancelSync()));
+                                return;
+                            }
                         }
                     }
 
@@ -311,30 +316,33 @@ namespace HomeTheater
 
                     #region Синхронизация Плейлистов
 
-                    Invoke(new Action(() => MainParent.StatusProgressReset()));
-                    foreach (KeyValuePair<int, Season> item in Serials)
+                    if (checkUpdate.Player)
                     {
-                        string title = item.Value.TitleFull;
-                        Invoke(new Action(() => MainParent.StatusMessageSet("Обработка плейлистов: " + title)));
-                        try
+                        Invoke(new Action(() => MainParent.StatusProgressReset(Serials.Count)));
+                        foreach (KeyValuePair<int, Season> item in Serials)
                         {
-                            item.Value.syncPlayer(
-                                playlists && "watched" != item.Value.Type && "notwatch" != item.Value.Type || all);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Instance.Error(ex);
-                        }
+                            string title = item.Value.TitleFull;
+                            Invoke(new Action(() => MainParent.StatusMessageSet("Обработка плейлистов: " + title)));
+                            try
+                            {
+                                bool forsed = playlists && checkUpdate[item.Value.Type, "player"] || all;
+                                item.Value.syncPlayer(forsed);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Instance.Error(ex);
+                            }
 
-                        Invoke(new Action(() =>
-                        {
-                            //item.Value.ToListViewItem();
-                            MainParent.StatusProgressStep();
-                        }));
-                        if (token.IsCancellationRequested)
-                        {
-                            Invoke(new Action(() => CancelSync()));
-                            return;
+                            Invoke(new Action(() =>
+                            {
+                                //item.Value.ToListViewItem();
+                                MainParent.StatusProgressStep();
+                            }));
+                            if (token.IsCancellationRequested)
+                            {
+                                Invoke(new Action(() => CancelSync()));
+                                return;
+                            }
                         }
                     }
 
@@ -348,52 +356,50 @@ namespace HomeTheater
 
                     #region Синхронизация Видео
 
-                    Invoke(new Action(() => MainParent.StatusProgressReset()));
-                    foreach (KeyValuePair<int, Season> item in Serials)
+                    if (checkUpdate.Playlist)
                     {
-                        string title = item.Value.TitleFull;
-                        Invoke(new Action(() => MainParent.StatusMessageSet("Обработка видео: " + title)));
-                        if (all || ("watched" != item.Value.Type && "notwatch" != item.Value.Type))
+                        Invoke(new Action(() => MainParent.StatusProgressReset(Serials.Count)));
+                        foreach (KeyValuePair<int, Season> item in Serials)
                         {
+                            string title = item.Value.TitleFull;
+                            Invoke(new Action(() => MainParent.StatusMessageSet("Обработка видео: " + title)));
                             try
                             {
-                                item.Value.syncPlaylists(videos || all);
+                                bool forsed = playlists && checkUpdate[item.Value.Type, "playlist"] || all;
+                                item.Value.syncPlaylists(forsed);
                             }
                             catch (Exception ex)
                             {
                                 Logger.Instance.Error(ex);
                             }
-                        }
 
-                        Invoke(new Action(() =>
-                        {
-                            //item.value.tolistviewitem();
-                            MainParent.StatusProgressStep();
-                        }));
-                        if (token.IsCancellationRequested)
-                        {
-                            Invoke(new Action(() => CancelSync()));
-                            return;
+                            Invoke(new Action(() =>
+                            {
+                                //item.value.tolistviewitem();
+                                MainParent.StatusProgressStep();
+                            }));
+                            if (token.IsCancellationRequested)
+                            {
+                                Invoke(new Action(() => CancelSync()));
+                                return;
+                            }
                         }
                     }
 
-                    Invoke(new Action(() =>
-                    {
-                        MainParent.StatusProgressEnd();
-                        остановитьToolStripMenuItem.Visible = false;
-                    }));
-
                     #endregion
+
+                    Invoke(new Action(() => MainParent.StatusProgressEnd()));
                 }
                 catch (Exception ex)
                 {
                     Logger.Instance.Error(ex);
                 }
             }, token);
-            DB.Instance.OptionSetAsync("firstLaunch", "");
             timer.Restart();
             await LoadTableSerialsAsync();
             _ = SyncUpdateList();
+
+            DB.Instance.OptionSetAsync("firstLaunch", "");
             firstRun = false;
             toolStripSyncTimer.Visible = true;
             остановитьToolStripMenuItem.Visible = false;
@@ -418,16 +424,26 @@ namespace HomeTheater
                     Invoke(new Action(() => { _ = RefreshSerials(); }));
                     Task.Run(() =>
                     {
+                        foreach (KeyValuePair<int, Season> item in Serials)
+                            item.Value.SaveAsync();
+                    });
+                    Task.Run(() =>
+                    {
                         try
                         {
                             List<int> IDs = new List<int>();
                             bool first = true;
+                            var checkUpdate = new updateCheck(DB.Instance.OptionGet("checkSilentUpdateCache"));
                             foreach (KeyValuePair<int, Season> item in Serials)
                             {
                                 try
                                 {
-                                    item.Value.syncPage(first);
-                                    item.Value.SaveAsync();
+                                    if (checkUpdate[item.Value.Type, "page"] || first)
+                                        item.Value.syncPage(first);
+                                    if (checkUpdate[item.Value.Type, "player"])
+                                        item.Value.syncPlayer();
+                                    if (checkUpdate[item.Value.Type, "playlist"])
+                                        item.Value.syncPlaylists();
                                 }
                                 catch (Exception ex)
                                 {
@@ -450,22 +466,27 @@ namespace HomeTheater
                             Logger.Instance.Error(ex);
                         }
                     });
+                    var checkSilentUpdate = new updateCheck(DB.Instance.OptionGet("checkSilentUpdate"));
                     var incList = DB.Instance.VideoGetTemp();
                     int maxind = 0;
                     foreach (KeyValuePair<int, Season> item in Serials)
-                        if ("new" == item.Value.Type || "want" == item.Value.Type || incList.Contains(item.Key))
+                        if (checkSilentUpdate[item.Value.Type] || incList.Contains(item.Key))
                             maxind++;
                     var silentTimer = new Stopwatch();
                     int ind = 0;
                     silentTimer.Start();
                     foreach (KeyValuePair<int, Season> item in Serials)
                     {
-                        if ("new" == item.Value.Type || "want" == item.Value.Type || incList.Contains(item.Key))
+                        if (checkSilentUpdate[item.Value.Type] || incList.Contains(item.Key))
                         {
                             try
                             {
-                                item.Value.syncPlayer(true);
-                                item.Value.syncPlaylists(true);
+                                if (checkSilentUpdate[item.Value.Type, "page"])
+                                    item.Value.syncPage(true);
+                                if (checkSilentUpdate[item.Value.Type, "player"])
+                                    item.Value.syncPlayer(true);
+                                if (checkSilentUpdate[item.Value.Type, "playlist"])
+                                    item.Value.syncPlaylists(true);
                             }
                             catch (Exception ex)
                             {
@@ -517,63 +538,70 @@ namespace HomeTheater
                     var OldSeasons = new List<int>();
                     var OldestSeasons = new List<int>();
                     var OldInterval = Convert.ToInt32(DB.Instance.OptionGet("OldesDaysSeason"));
-
-                    foreach (var item in Serials)
+                    bool oldestAllow = "1" == DB.Instance.OptionGet("oldestAllow");
+                    bool oldAllow = "1" == DB.Instance.OptionGet("oldAllow");
+                    bool newAllow = "1" == DB.Instance.OptionGet("newAllow");
+                    if (oldestAllow || oldAllow || newAllow)
                     {
-                        if (0 < item.Value.Seasons.Count)
+                        foreach (var item in Serials)
                         {
-                            var seeason = item.Value.SeasonNum;
-                            foreach (var _item in item.Value.Seasons)
+                            if (0 < item.Value.Seasons.Count)
                             {
-                                if (seeason < _item.Key)
+                                var seeason = item.Value.SeasonNum;
+                                foreach (var _item in item.Value.Seasons)
                                 {
-                                    if (Serials.ContainsKey(_item.Value))
+                                    if (seeason < _item.Key)
                                     {
-                                        if (
-                                            (
+                                        if (Serials.ContainsKey(_item.Value))
+                                        {
+                                            if (
                                                 (
-                                                    "new" != item.Value.Type &&
-                                                    "want" != item.Value.Type
-                                                ) ||
-                                                (
-                                                    "new" == item.Value.Type &&
-                                                    item.Value.MarkLast == item.Value.MarkCurrent
-                                                )
-                                            ) &&
-                                            !oldIgnore.Contains(item.Key) &&
-                                            !OldSeasons.Contains(item.Key) &&
+                                                    (
+                                                        "new" != item.Value.Type &&
+                                                        "want" != item.Value.Type
+                                                    ) ||
+                                                    (
+                                                        "new" == item.Value.Type &&
+                                                        item.Value.MarkLast == item.Value.MarkCurrent
+                                                    )
+                                                ) &&
+                                                oldAllow &&
+                                                !oldIgnore.Contains(item.Key) &&
+                                                !OldSeasons.Contains(item.Key) &&
 #pragma warning disable CA1820 // Проверяйте наличие пустых строк, используя длину строки
-                                            "" != Serials[_item.Value].MarkLast
+                                                "" != Serials[_item.Value].MarkLast
 #pragma warning restore CA1820 // Проверяйте наличие пустых строк, используя длину строки
-                                        )
-                                            OldSeasons.Add(item.Key);
+                                            )
+                                                OldSeasons.Add(item.Key);
+                                        }
+                                        else if (newAllow && !newIgnore.Contains(_item.Value) &&
+                                                 !NewSeasons.Contains(_item.Value))
+                                            NewSeasons.Add(_item.Value);
                                     }
-                                    else if (!newIgnore.Contains(_item.Value) &&
-                                             !NewSeasons.Contains(_item.Value))
-                                        NewSeasons.Add(_item.Value);
                                 }
                             }
+
+                            if (oldestAllow &&
+                                "nonew" == item.Value.Type &&
+                                !oldestIgnore.Contains(item.Key) &&
+                                !OldestSeasons.Contains(item.Key) &&
+                                OldInterval < DateTime.UtcNow.Subtract(item.Value.SiteUpdated).TotalDays)
+                                OldestSeasons.Add(item.Key);
                         }
 
-                        if ("nonew" == item.Value.Type &&
-                            !oldestIgnore.Contains(item.Key) &&
-                            !OldestSeasons.Contains(item.Key) &&
-                            OldInterval < DateTime.UtcNow.Subtract(item.Value.SiteUpdated).TotalDays)
-                            OldestSeasons.Add(item.Key);
+                        if (0 < NewSeasons.Count || 0 < OldSeasons.Count || 0 < OldestSeasons.Count)
+                            Invoke(new Action(() =>
+                            {
+                                try
+                                {
+                                    MainParent.FormMain_ShowDiffUpdate(NewSeasons, OldSeasons, OldestSeasons);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.Instance.Error(ex);
+                                }
+                            }));
                     }
-
-                    if (0 < NewSeasons.Count || 0 < OldSeasons.Count || 0 < OldestSeasons.Count)
-                        Invoke(new Action(() =>
-                        {
-                            try
-                            {
-                                MainParent.FormMain_ShowDiffUpdate(NewSeasons, OldSeasons, OldestSeasons);
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.Instance.Error(ex);
-                            }
-                        }));
                 }
                 catch (Exception ex)
                 {

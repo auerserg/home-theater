@@ -107,12 +107,13 @@ namespace HomeTheater.API.Abstract
             return GetValueDate(name, new DateTime());
         }
 
-        protected DateTime GetValueDate(string name, string format = DB.TIME_FORMAT)
+        protected DateTime GetValueDate(string name, string format = DB.DATETIME_FORMAT)
         {
             return GetValueDate(name, new DateTime(), format);
         }
 
-        protected DateTime GetValueDate(string name, DateTime _default = new DateTime(), string format = DB.TIME_FORMAT)
+        protected DateTime GetValueDate(string name, DateTime _default = new DateTime(),
+            string format = DB.DATETIME_FORMAT)
         {
             if (__data_date.ContainsKey(name) && __data_date[name] != new DateTime())
                 return __data_date[name];
@@ -167,7 +168,7 @@ namespace HomeTheater.API.Abstract
             SetValue(name, value.ToString());
         }
 
-        protected void SetValue(string name, DateTime value, string format = DB.TIME_FORMAT)
+        protected void SetValue(string name, DateTime value, string format = DB.DATETIME_FORMAT)
         {
             if (new DateTime() == value)
                 return;

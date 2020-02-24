@@ -104,6 +104,7 @@
     <Compile Include="API\Abstract\Base.cs" />
     <Compile Include="API\Abstract\Serial.cs" />
     <Compile Include="API\Abstract\Server.cs" />
+    <Compile Include="API\Response\updateCheck.cs" />
     <Compile Include="API\Response\data4play.cs" />
     <Compile Include="API\Response\header.cs" />
     <Compile Include="API\Response\mark.cs" />

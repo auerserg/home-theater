@@ -11,8 +11,9 @@ namespace HomeTheater.Helper
 {
     public class DB
     {
-        public const string TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+        public const string DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
         public const string DATE_FORMAT = "yyyy-MM-dd";
+        public const string TIME_FORMAT = "HH:mm:ss";
         private static DB _i;
         private readonly string baseName = AppDomain.CurrentDomain.FriendlyName.Replace(".exe", ".sqlite");
 
@@ -162,15 +163,21 @@ CREATE TABLE IF NOT EXISTS [video] (
             OptionSet("cacheTimeSerial_none", (20 * 24 * 60 * 60).ToString());
             OptionSet("OldesDaysSeason", (365 * 1).ToString());
             OptionSet("SimultaneousDownloads", 3.ToString());
-            OptionSet("Timer", 60.ToString());
+            OptionSet("Timer", "01:00:00");
             OptionSet("NameFiles",
                 "{Collection}\\{SerialName} {Season}\\{SerialName} S{Season}E{Episode} {Translate} {OriginalName}.{Format}");
             OptionSet("listSerialsDisplayIndex", "[0,16,1,2,3,4,5,6,17,18,7,8,9,10,11,12,13,14,15,20,19,21]");
             OptionSet("listSerialsWidth", "[0,377,0,0,0,0,0,0,25,100,0,0,0,0,0,0,0,0,0,84,56,66]");
             OptionSet("listSerialsAutoSize", "[0,0,0,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1]");
             OptionSet("listDownloadWidth", "[556,100,100,200]");
+            OptionSet("checkUpdate", "1,1,1,1,1,1,1,1,1,1,1,0");
+            OptionSet("checkSilentUpdateCache", "1,0,0,1,1,1,1,0,0,1,1,0");
+            OptionSet("checkSilentUpdate", "0,1,1,0,0,0,0,1,1,0,0,0");
             OptionSet("listSerialsView", "");
             OptionSet("firstLaunch", "1");
+            OptionSet("oldestAllow", "1");
+            OptionSet("oldAllow", "1");
+            OptionSet("newAllow", "1");
         }
 
         private void _checkConnectDataBase()
@@ -299,19 +306,49 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         #region Option
 
+        public int OptionSet(string name, float value = 0)
+        {
+            return OptionSet(name, value.ToString());
+        }
+
+        public int OptionSet(string name, int value = 0)
+        {
+            return OptionSet(name, value.ToString());
+        }
+
+        public int OptionSet(string name, bool value)
+        {
+            return OptionSet(name, value ? 1 : 0);
+        }
+
         public int OptionSet(string name, string value = null)
         {
             if (string.IsNullOrEmpty(value))
                 value = "";
 
             var data = new Dictionary<string, string> {{"name", name}, {"value", value}};
-            var date = DateTime.UtcNow.ToString(TIME_FORMAT);
+            var date = DateTime.UtcNow.ToString(DATETIME_FORMAT);
             data.Add("created_date", date);
             data.Add("updated_date", date);
             cachedOptions[name] = value;
             return _ExecuteNonQuery(
                 @"INSERT OR REPLACE INTO options (name,value,created_date,updated_date) VALUES (@name,@value,@created_date,@updated_date)",
                 data);
+        }
+
+        public void OptionSetAsync(string name, float value = 0)
+        {
+            OptionSetAsync(name, value.ToString());
+        }
+
+        public void OptionSetAsync(string name, int value = 0)
+        {
+            OptionSetAsync(name, value.ToString());
+        }
+
+        public void OptionSetAsync(string name, bool value)
+        {
+            OptionSetAsync(name, value ? 1 : 0);
         }
 
         public async void OptionSetAsync(string name, string value = null)
@@ -355,7 +392,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             return _ExecuteNonQuery(
                 @"INSERT OR REPLACE INTO http_cache (url,content,create_date) VALUES (@url,@content,@create_date)",
                 new Dictionary<string, string>
-                    {{"url", url}, {"content", content}, {"create_date", DateTime.UtcNow.ToString(TIME_FORMAT)}});
+                    {{"url", url}, {"content", content}, {"create_date", DateTime.UtcNow.ToString(DATETIME_FORMAT)}});
         }
 
         public async Task<int> CacheSetAsync(string url, string content = null)
@@ -375,7 +412,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             var item = new DBCache(url, period);
             if (0 < result.Count)
                 item.setURL(result[0]["url"]).setContent(result[0]["content"])
-                    .setDate(result[0]["create_date"], TIME_FORMAT);
+                    .setDate(result[0]["create_date"], DATETIME_FORMAT);
 
             return item;
         }
@@ -395,7 +432,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             foreach (var item in data)
                 fieldsUpdate.Add(item.Key + " = @" + item.Key);
             data.Add("id", id.ToString());
-            var date = DateTime.UtcNow.ToString(TIME_FORMAT);
+            var date = DateTime.UtcNow.ToString(DATETIME_FORMAT);
             data.Add("created_date", date);
             data.Add("updated_date", date);
             var fieldsInsert = new List<string>(data.Keys);
@@ -646,7 +683,7 @@ CREATE TABLE IF NOT EXISTS [video] (
 #endif
                     dataDiff.Add("season_id", seasonID.ToString());
                     dataDiff.Add("translate_id", translateID.ToString());
-                    dataDiff.Add("updated_date", DateTime.UtcNow.ToString(TIME_FORMAT));
+                    dataDiff.Add("updated_date", DateTime.UtcNow.ToString(DATETIME_FORMAT));
                     return 0 < _ExecuteNonQuery(
                                @"UPDATE playlist SET " + string.Join(", ", fieldsUpdate.ToArray()) +
                                ", updated_date = @updated_date WHERE season_id=@season_id AND translate_id=@translate_id",
@@ -660,7 +697,7 @@ CREATE TABLE IF NOT EXISTS [video] (
                 data.Add("season_id", seasonID.ToString());
             if (!data.ContainsKey("translate_id"))
                 data.Add("translate_id", translateID.ToString());
-            var date = DateTime.UtcNow.ToString(TIME_FORMAT);
+            var date = DateTime.UtcNow.ToString(DATETIME_FORMAT);
             data.Add("created_date", date);
             data.Add("updated_date", date);
             data.Add("removed_date", "");
@@ -711,7 +748,8 @@ CREATE TABLE IF NOT EXISTS [video] (
             return 0 < _ExecuteNonQuery(sql,
                        new Dictionary<string, string>
                        {
-                           {"removed_date", DateTime.UtcNow.ToString(TIME_FORMAT)}, {"season_id", seasonID.ToString()}
+                           {"removed_date", DateTime.UtcNow.ToString(DATETIME_FORMAT)},
+                           {"season_id", seasonID.ToString()}
                        });
         }
 
@@ -774,7 +812,7 @@ CREATE TABLE IF NOT EXISTS [video] (
                 SimpleJson.SimpleJson.SerializeObject(data));
 #endif
             data.Add("id", ID.ToString());
-            var date = DateTime.UtcNow.ToString(TIME_FORMAT);
+            var date = DateTime.UtcNow.ToString(DATETIME_FORMAT);
             data.Add("created_date", date);
             data.Add("updated_date", date);
             data.Add("removed_date", "");
