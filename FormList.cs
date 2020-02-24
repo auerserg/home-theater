@@ -207,8 +207,8 @@ namespace HomeTheater
             _ = LoadTableSerialsAsync();
         }
 
-        public async Task SyncAsync(bool list = false, bool serials = false, bool playlists = false,
-            bool videos = false, bool all = false)
+        public async Task SyncAsync(bool list = false, bool page = false, bool player = false,
+            bool playlist = false, bool all = false)
         {
             timer.Stop();
             tokenSource.Cancel();
@@ -277,7 +277,7 @@ namespace HomeTheater
                             Invoke(new Action(() => MainParent.StatusMessageSet("Обработка страницы: " + title)));
                             try
                             {
-                                bool forsed = first || serials && checkUpdate[item.Value.Type, "page"] || all;
+                                bool forsed = page && checkUpdate[item.Value.Type, "page"] || all || first;
                                 item.Value.syncPage(forsed);
                             }
                             catch (Exception ex)
@@ -325,7 +325,7 @@ namespace HomeTheater
                             Invoke(new Action(() => MainParent.StatusMessageSet("Обработка плейлистов: " + title)));
                             try
                             {
-                                bool forsed = playlists && checkUpdate[item.Value.Type, "player"] || all;
+                                bool forsed = player && checkUpdate[item.Value.Type, "player"] || all;
                                 item.Value.syncPlayer(forsed);
                             }
                             catch (Exception ex)
@@ -365,7 +365,7 @@ namespace HomeTheater
                             Invoke(new Action(() => MainParent.StatusMessageSet("Обработка видео: " + title)));
                             try
                             {
-                                bool forsed = playlists && checkUpdate[item.Value.Type, "playlist"] || all;
+                                bool forsed = playlist && checkUpdate[item.Value.Type, "playlist"] || all;
                                 item.Value.syncPlaylists(forsed);
                             }
                             catch (Exception ex)
