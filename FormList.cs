@@ -21,6 +21,7 @@ namespace HomeTheater
         private bool currentOrderInverted;
         public bool firstRun = true;
         private Dictionary<int, Season> Serials;
+        private int STEP_EPISODES = 20;
         public CountDownTimer timer = new CountDownTimer();
 
         private FormMain MainParent
@@ -1334,28 +1335,77 @@ namespace HomeTheater
                 SetSerieToolStripMenuItem.Visible = false;
                 return;
             }
+
             var season = listSerials.SelectedItems[0].Tag as Season;
-            if (null != SetSerieToolStripMenuItem.Tag && season.ID == (int)SetSerieToolStripMenuItem.Tag)
+            if (null != SetSerieToolStripMenuItem.Tag && season.ID == (int) SetSerieToolStripMenuItem.Tag)
             {
                 SetSerieToolStripMenuItem.Visible = true;
                 return;
             }
+
             var dd = season.OrderVideos;
             if (0 == dd.Count)
             {
                 SetSerieToolStripMenuItem.Visible = false;
                 return;
             }
+
             SetSerieToolStripMenuItem.DropDownItems.Clear();
-            foreach (var item in dd)
+            if (dd.Count > STEP_EPISODES)
             {
-                ToolStripMenuItem newItem = new ToolStripMenuItem(item, null);
-                newItem.Checked = item == season.MarkCurrent;
-                SetSerieToolStripMenuItem.DropDownItems.Add(newItem);
+                ToolStripMenuItem parentItem = new ToolStripMenuItem();
+                foreach (var item in dd)
+                {
+                    ToolStripMenuItem newItem = new ToolStripMenuItem(item, null);
+                    newItem.Checked = item == season.MarkCurrent;
+                    newItem.TextAlign = ContentAlignment.MiddleRight;
+                    newItem.Tag = season;
+                    newItem.Click += new System.EventHandler(this.EpisodeSelectToolStripMenuItem_Click);
+                    parentItem.DropDownItems.Add(newItem);
+                    if (STEP_EPISODES <= parentItem.DropDownItems.Count)
+                    {
+                        parentItem.TextAlign = ContentAlignment.MiddleRight;
+                        parentItem.Text = string.Format("{0} - {1}",
+                            parentItem.DropDownItems[0].Text,
+                            parentItem.DropDownItems[parentItem.DropDownItems.Count - 1].Text);
+                        SetSerieToolStripMenuItem.DropDownItems.Add(parentItem);
+                        parentItem = new ToolStripMenuItem();
+                    }
+                }
+
+                if (0 < parentItem.DropDownItems.Count)
+                {
+                    parentItem.Text = string.Format("{0} - {1}",
+                        parentItem.DropDownItems[0].Text,
+                        parentItem.DropDownItems[parentItem.DropDownItems.Count - 1].Text);
+                    SetSerieToolStripMenuItem.DropDownItems.Add(parentItem);
+                }
             }
-            // UNDONE добавлять саб меню с количеством серий, если их много разбивать еще на под меню
+            else
+            {
+                foreach (var item in dd)
+                {
+                    ToolStripMenuItem newItem = new ToolStripMenuItem(item, null);
+                    newItem.Checked = item == season.MarkCurrent;
+                    newItem.TextAlign = ContentAlignment.MiddleRight;
+                    newItem.Tag = season;
+                    newItem.Click += new System.EventHandler(this.EpisodeSelectToolStripMenuItem_Click);
+                    SetSerieToolStripMenuItem.DropDownItems.Add(newItem);
+                }
+            }
+
             SetSerieToolStripMenuItem.Tag = season.ID;
             SetSerieToolStripMenuItem.Visible = true;
+        }
+
+        private void EpisodeSelectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var menuitem = sender as ToolStripMenuItem;
+            var season = menuitem.Tag as Season;
+            season.MarkSetPause(menuitem.Text);
+            SetSerieToolStripMenuItem.Tag = null;
+            LoadTableSerialsAsync();
+            //RefreshSerials(true);
         }
 
         #endregion
