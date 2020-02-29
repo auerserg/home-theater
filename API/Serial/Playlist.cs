@@ -178,7 +178,7 @@ namespace HomeTheater.API.Serial
         public void setOrderVideos()
         {
             if (null == __order_videos)
-                __order_videos = new Dictionary<string, string>();
+                return;
             var str = SimpleJson.SimpleJson.SerializeObject(__order_videos);
             SetValue("order_videos", str);
         }
