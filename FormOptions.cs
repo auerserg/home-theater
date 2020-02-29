@@ -329,6 +329,11 @@ namespace HomeTheater
 
         private void buttonRefreh_Click(object sender, EventArgs e)
         {
+            var closeMsg = MessageBox.Show(
+                "Список и порадок переводов будет сброшен. Порядок будет определен автоматически.\nВаш порядок будет утерян. Вы уверены?",
+                "Предупреждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button1);
+            if (closeMsg == DialogResult.No) return;
             var List = DB.Instance.TranslateGetRate();
             listTranslate.BeginUpdate();
             listTranslate.Items.Clear();
