@@ -60,11 +60,11 @@ namespace HomeTheater.API.Serial
                 {
                     __videos = new Dictionary<int, Video>();
                     var videoData = DB.Instance.VideoGets(SeasonID);
-                    Parallel.ForEach(videoData, item =>
+                    foreach (var item in videoData)
                     {
                         var id = IntVal(item["id"]);
                         __videos[id] = new Video(id, item);
-                    });
+                    }
                 }
 
                 return __videos;
