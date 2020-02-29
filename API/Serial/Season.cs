@@ -534,6 +534,45 @@ namespace HomeTheater.API.Serial
                         if (data.Contains(""))
                             data.Remove("");
                     }
+                    else
+                    {
+                        var _orders = new List<Dictionary<string, string>>();
+                        foreach (var itemPlaylist in Playlists)
+                            _orders.Add(itemPlaylist.Value.OrderVideos);
+                        var _data = new Dictionary<string, List<string>>();
+                        var indexLists = new List<string> {""};
+                        var nextIndexLists = new List<string>();
+                        var _indexListAll = new List<string> {""};
+                        do
+                        {
+                            nextIndexLists = new List<string>();
+                            foreach (var index in indexLists)
+                            {
+                                if (!_data.ContainsKey(index))
+                                    _data[index] = new List<string>();
+                                foreach (var item in _orders)
+                                    if (item.ContainsKey(index) &&
+                                        !_indexListAll.Contains(item[index]))
+                                    {
+                                        _indexListAll.Add(item[index]);
+                                        if (!nextIndexLists.Contains(item[index]))
+                                            nextIndexLists.Add(item[index]);
+                                        if (!_data[index].Contains(item[index]))
+                                            _data[index].Add(item[index]);
+                                    }
+
+                                _data[index].Sort();
+                            }
+
+                            nextIndexLists.Sort();
+                            indexLists = nextIndexLists;
+                        } while (0 < nextIndexLists.Count);
+
+                        foreach (var item in _data)
+                        foreach (var _item in item.Value)
+                            if (!data.Contains(_item))
+                                data.Add(_item);
+                    }
 
                 return data;
             }
