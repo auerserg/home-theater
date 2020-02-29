@@ -439,13 +439,10 @@ namespace HomeTheater.API.Serial
             }
             set
             {
-                if (TypeOLD != value)
-                {
-                    if ("none" != value)
-                        SetValue("type", value);
-                    else
-                        SetValueEmpty("type");
-                }
+                if ("none" != value)
+                    SetValue("type", value);
+                else
+                    SetValueEmpty("type");
             }
         }
 
