@@ -411,9 +411,21 @@ namespace HomeTheater
         public async Task SyncSilent()
         {
             timer.Stop();
-            tokenSilentSource.Cancel();
-            tokenSilentSource = new CancellationTokenSource();
-            var token = tokenSilentSource.Token;
+            CancellationToken token;
+            if ("1" == DB.Instance.OptionGet("StopTimer"))
+            {
+                tokenSource.Cancel();
+                tokenSource = new CancellationTokenSource();
+                token = tokenSource.Token;
+            }
+            else
+            {
+                tokenSilentSource.Cancel();
+                tokenSilentSource = new CancellationTokenSource();
+                token = tokenSilentSource.Token;
+            }
+
+
             выполнитьСейчасToolStripMenuItem.Visible = false;
             toolStripSyncTimer.Enabled = false;
             toolStripSyncTimer.Text = "--:--";

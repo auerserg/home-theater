@@ -101,6 +101,7 @@ namespace HomeTheater
             checkoldestAllow.Checked = "1" == DB.Instance.OptionGet("oldestAllow");
             checkoldAllow.Checked = "1" == DB.Instance.OptionGet("oldAllow");
             checknewAllow.Checked = "1" == DB.Instance.OptionGet("newAllow");
+            checkStopTimer.Checked = "1" == DB.Instance.OptionGet("StopTimer");
 
             var checkUpdate = new updateCheck(DB.Instance.OptionGet("checkUpdate"));
             checkUpdate00.Checked = checkUpdate[0, 0];
@@ -181,6 +182,7 @@ namespace HomeTheater
             DB.Instance.OptionSetAsync("oldestAllow", checkoldestAllow.Checked);
             DB.Instance.OptionSetAsync("oldAllow", checkoldAllow.Checked);
             DB.Instance.OptionSetAsync("newAllow", checknewAllow.Checked);
+            DB.Instance.OptionSetAsync("StopTimer", checkStopTimer.Checked);
             DB.Instance.OptionSetAsync("OldesDaysSeason", (int) numericOldesDaysSeason.Value);
 
             var checkUpdate = new updateCheck();
