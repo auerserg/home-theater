@@ -20,6 +20,8 @@ namespace HomeTheater
         {
             using (var fbd = new FolderBrowserDialog())
             {
+                if (!string.IsNullOrWhiteSpace(textDownloadDir.Text))
+                    fbd.SelectedPath = textDownloadDir.Text;
                 var result = fbd.ShowDialog();
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                     textDownloadDir.Text = fbd.SelectedPath;
