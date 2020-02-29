@@ -500,7 +500,7 @@
             this.checkUpdate00.Location = new System.Drawing.Point(108, 23);
             this.checkUpdate00.Name = "checkUpdate00";
             this.checkUpdate00.Size = new System.Drawing.Size(59, 14);
-            this.checkUpdate00.TabIndex = 12;
+            this.checkUpdate00.TabIndex = 11;
             this.checkUpdate00.UseVisualStyleBackColor = true;
             // 
             // checkUpdate01
@@ -511,7 +511,7 @@
             this.checkUpdate01.Location = new System.Drawing.Point(173, 23);
             this.checkUpdate01.Name = "checkUpdate01";
             this.checkUpdate01.Size = new System.Drawing.Size(59, 14);
-            this.checkUpdate01.TabIndex = 13;
+            this.checkUpdate01.TabIndex = 15;
             this.checkUpdate01.UseVisualStyleBackColor = true;
             // 
             // checkUpdate02
@@ -522,7 +522,7 @@
             this.checkUpdate02.Location = new System.Drawing.Point(238, 23);
             this.checkUpdate02.Name = "checkUpdate02";
             this.checkUpdate02.Size = new System.Drawing.Size(59, 14);
-            this.checkUpdate02.TabIndex = 14;
+            this.checkUpdate02.TabIndex = 19;
             this.checkUpdate02.UseVisualStyleBackColor = true;
             // 
             // checkUpdate10
@@ -533,7 +533,7 @@
             this.checkUpdate10.Location = new System.Drawing.Point(108, 43);
             this.checkUpdate10.Name = "checkUpdate10";
             this.checkUpdate10.Size = new System.Drawing.Size(59, 14);
-            this.checkUpdate10.TabIndex = 15;
+            this.checkUpdate10.TabIndex = 12;
             this.checkUpdate10.UseVisualStyleBackColor = true;
             // 
             // checkUpdate11
@@ -555,7 +555,7 @@
             this.checkUpdate12.Location = new System.Drawing.Point(238, 43);
             this.checkUpdate12.Name = "checkUpdate12";
             this.checkUpdate12.Size = new System.Drawing.Size(59, 14);
-            this.checkUpdate12.TabIndex = 17;
+            this.checkUpdate12.TabIndex = 20;
             this.checkUpdate12.UseVisualStyleBackColor = true;
             // 
             // checkUpdate20
@@ -566,7 +566,7 @@
             this.checkUpdate20.Location = new System.Drawing.Point(108, 63);
             this.checkUpdate20.Name = "checkUpdate20";
             this.checkUpdate20.Size = new System.Drawing.Size(59, 14);
-            this.checkUpdate20.TabIndex = 18;
+            this.checkUpdate20.TabIndex = 13;
             this.checkUpdate20.UseVisualStyleBackColor = true;
             // 
             // checkUpdate21
@@ -576,7 +576,7 @@
             this.checkUpdate21.Location = new System.Drawing.Point(173, 63);
             this.checkUpdate21.Name = "checkUpdate21";
             this.checkUpdate21.Size = new System.Drawing.Size(59, 14);
-            this.checkUpdate21.TabIndex = 19;
+            this.checkUpdate21.TabIndex = 17;
             this.checkUpdate21.UseVisualStyleBackColor = true;
             // 
             // checkUpdate22
@@ -587,7 +587,7 @@
             this.checkUpdate22.Location = new System.Drawing.Point(238, 63);
             this.checkUpdate22.Name = "checkUpdate22";
             this.checkUpdate22.Size = new System.Drawing.Size(59, 14);
-            this.checkUpdate22.TabIndex = 20;
+            this.checkUpdate22.TabIndex = 21;
             this.checkUpdate22.UseVisualStyleBackColor = true;
             // 
             // checkUpdate30
@@ -598,7 +598,7 @@
             this.checkUpdate30.Location = new System.Drawing.Point(108, 83);
             this.checkUpdate30.Name = "checkUpdate30";
             this.checkUpdate30.Size = new System.Drawing.Size(59, 14);
-            this.checkUpdate30.TabIndex = 21;
+            this.checkUpdate30.TabIndex = 14;
             this.checkUpdate30.UseVisualStyleBackColor = true;
             // 
             // checkUpdate31
@@ -609,7 +609,7 @@
             this.checkUpdate31.Location = new System.Drawing.Point(173, 83);
             this.checkUpdate31.Name = "checkUpdate31";
             this.checkUpdate31.Size = new System.Drawing.Size(59, 14);
-            this.checkUpdate31.TabIndex = 22;
+            this.checkUpdate31.TabIndex = 18;
             this.checkUpdate31.UseVisualStyleBackColor = true;
             // 
             // checkUpdate32
@@ -620,7 +620,7 @@
             this.checkUpdate32.Location = new System.Drawing.Point(238, 83);
             this.checkUpdate32.Name = "checkUpdate32";
             this.checkUpdate32.Size = new System.Drawing.Size(59, 14);
-            this.checkUpdate32.TabIndex = 23;
+            this.checkUpdate32.TabIndex = 22;
             this.checkUpdate32.UseVisualStyleBackColor = true;
             // 
             // numericOldesDaysSeason
@@ -839,7 +839,7 @@
             this.groupProxy.Location = new System.Drawing.Point(12, 61);
             this.groupProxy.Name = "groupProxy";
             this.groupProxy.Size = new System.Drawing.Size(1044, 78);
-            this.groupProxy.TabIndex = 1;
+            this.groupProxy.TabIndex = 2;
             this.groupProxy.TabStop = false;
             this.groupProxy.Text = "Настройка прокси";
             // 
@@ -968,7 +968,7 @@
             this.checkoldAllow.Location = new System.Drawing.Point(6, 42);
             this.checkoldAllow.Name = "checkoldAllow";
             this.checkoldAllow.Size = new System.Drawing.Size(509, 17);
-            this.checkoldAllow.TabIndex = 45;
+            this.checkoldAllow.TabIndex = 20;
             this.checkoldAllow.Text = "Искать старые сезоны, которые возможно закончились, из-за нового сезона. Будут уд" +
     "алены.";
             this.checkoldAllow.UseVisualStyleBackColor = true;
@@ -979,7 +979,7 @@
             this.checkoldestAllow.Location = new System.Drawing.Point(6, 65);
             this.checkoldestAllow.Name = "checkoldestAllow";
             this.checkoldestAllow.Size = new System.Drawing.Size(491, 17);
-            this.checkoldestAllow.TabIndex = 44;
+            this.checkoldestAllow.TabIndex = 30;
             this.checkoldestAllow.Text = "Искать старые сезоны, которые давно не обновлялись. Будут отмечены как \"Посмотрел" +
     "\".";
             this.checkoldestAllow.UseVisualStyleBackColor = true;
@@ -991,7 +991,7 @@
             this.checknewAllow.Location = new System.Drawing.Point(6, 19);
             this.checknewAllow.Name = "checknewAllow";
             this.checknewAllow.Size = new System.Drawing.Size(479, 17);
-            this.checknewAllow.TabIndex = 43;
+            this.checknewAllow.TabIndex = 10;
             this.checknewAllow.Text = "Искать новые сезоны, которые стоит добавить. Будут отмечены как \"Хочу посмотреть\"" +
     ".";
             this.checknewAllow.UseVisualStyleBackColor = true;
@@ -1011,7 +1011,7 @@
             this.buttonResetIgnore.Location = new System.Drawing.Point(900, 14);
             this.buttonResetIgnore.Name = "buttonResetIgnore";
             this.buttonResetIgnore.Size = new System.Drawing.Size(150, 50);
-            this.buttonResetIgnore.TabIndex = 41;
+            this.buttonResetIgnore.TabIndex = 50;
             this.buttonResetIgnore.Text = "Сбросить Список игнорируемых сериалов авторедактором";
             this.buttonResetIgnore.UseVisualStyleBackColor = true;
             this.buttonResetIgnore.Click += new System.EventHandler(this.buttonResetIgnore_Click);
@@ -1167,7 +1167,7 @@
             this.checkSilentUpdateCache00.Location = new System.Drawing.Point(108, 23);
             this.checkSilentUpdateCache00.Name = "checkSilentUpdateCache00";
             this.checkSilentUpdateCache00.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache00.TabIndex = 70;
+            this.checkSilentUpdateCache00.TabIndex = 30;
             this.checkSilentUpdateCache00.UseVisualStyleBackColor = true;
             // 
             // checkSilentUpdateCache01
@@ -1178,7 +1178,7 @@
             this.checkSilentUpdateCache01.Location = new System.Drawing.Point(173, 23);
             this.checkSilentUpdateCache01.Name = "checkSilentUpdateCache01";
             this.checkSilentUpdateCache01.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache01.TabIndex = 71;
+            this.checkSilentUpdateCache01.TabIndex = 34;
             this.checkSilentUpdateCache01.UseVisualStyleBackColor = true;
             // 
             // checkSilentUpdateCache02
@@ -1189,7 +1189,7 @@
             this.checkSilentUpdateCache02.Location = new System.Drawing.Point(238, 23);
             this.checkSilentUpdateCache02.Name = "checkSilentUpdateCache02";
             this.checkSilentUpdateCache02.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache02.TabIndex = 72;
+            this.checkSilentUpdateCache02.TabIndex = 38;
             this.checkSilentUpdateCache02.UseVisualStyleBackColor = true;
             // 
             // checkSilentUpdateCache10
@@ -1200,7 +1200,7 @@
             this.checkSilentUpdateCache10.Location = new System.Drawing.Point(108, 43);
             this.checkSilentUpdateCache10.Name = "checkSilentUpdateCache10";
             this.checkSilentUpdateCache10.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache10.TabIndex = 73;
+            this.checkSilentUpdateCache10.TabIndex = 31;
             this.checkSilentUpdateCache10.UseVisualStyleBackColor = true;
             // 
             // checkSilentUpdateCache11
@@ -1211,7 +1211,7 @@
             this.checkSilentUpdateCache11.Location = new System.Drawing.Point(173, 43);
             this.checkSilentUpdateCache11.Name = "checkSilentUpdateCache11";
             this.checkSilentUpdateCache11.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache11.TabIndex = 74;
+            this.checkSilentUpdateCache11.TabIndex = 35;
             this.checkSilentUpdateCache11.UseVisualStyleBackColor = true;
             // 
             // checkSilentUpdateCache12
@@ -1222,7 +1222,7 @@
             this.checkSilentUpdateCache12.Location = new System.Drawing.Point(238, 43);
             this.checkSilentUpdateCache12.Name = "checkSilentUpdateCache12";
             this.checkSilentUpdateCache12.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache12.TabIndex = 75;
+            this.checkSilentUpdateCache12.TabIndex = 39;
             this.checkSilentUpdateCache12.UseVisualStyleBackColor = true;
             // 
             // checkSilentUpdateCache20
@@ -1233,7 +1233,7 @@
             this.checkSilentUpdateCache20.Location = new System.Drawing.Point(108, 63);
             this.checkSilentUpdateCache20.Name = "checkSilentUpdateCache20";
             this.checkSilentUpdateCache20.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache20.TabIndex = 76;
+            this.checkSilentUpdateCache20.TabIndex = 32;
             this.checkSilentUpdateCache20.UseVisualStyleBackColor = true;
             // 
             // checkSilentUpdateCache21
@@ -1243,7 +1243,7 @@
             this.checkSilentUpdateCache21.Location = new System.Drawing.Point(173, 63);
             this.checkSilentUpdateCache21.Name = "checkSilentUpdateCache21";
             this.checkSilentUpdateCache21.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache21.TabIndex = 77;
+            this.checkSilentUpdateCache21.TabIndex = 36;
             this.checkSilentUpdateCache21.UseVisualStyleBackColor = true;
             // 
             // checkSilentUpdateCache22
@@ -1253,7 +1253,7 @@
             this.checkSilentUpdateCache22.Location = new System.Drawing.Point(238, 63);
             this.checkSilentUpdateCache22.Name = "checkSilentUpdateCache22";
             this.checkSilentUpdateCache22.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache22.TabIndex = 78;
+            this.checkSilentUpdateCache22.TabIndex = 40;
             this.checkSilentUpdateCache22.UseVisualStyleBackColor = true;
             // 
             // checkSilentUpdateCache30
@@ -1264,7 +1264,7 @@
             this.checkSilentUpdateCache30.Location = new System.Drawing.Point(108, 83);
             this.checkSilentUpdateCache30.Name = "checkSilentUpdateCache30";
             this.checkSilentUpdateCache30.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache30.TabIndex = 79;
+            this.checkSilentUpdateCache30.TabIndex = 33;
             this.checkSilentUpdateCache30.UseVisualStyleBackColor = true;
             // 
             // checkSilentUpdateCache31
@@ -1275,7 +1275,7 @@
             this.checkSilentUpdateCache31.Location = new System.Drawing.Point(173, 83);
             this.checkSilentUpdateCache31.Name = "checkSilentUpdateCache31";
             this.checkSilentUpdateCache31.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache31.TabIndex = 80;
+            this.checkSilentUpdateCache31.TabIndex = 37;
             this.checkSilentUpdateCache31.UseVisualStyleBackColor = true;
             // 
             // checkSilentUpdateCache32
@@ -1286,7 +1286,7 @@
             this.checkSilentUpdateCache32.Location = new System.Drawing.Point(238, 83);
             this.checkSilentUpdateCache32.Name = "checkSilentUpdateCache32";
             this.checkSilentUpdateCache32.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdateCache32.TabIndex = 81;
+            this.checkSilentUpdateCache32.TabIndex = 41;
             this.checkSilentUpdateCache32.UseVisualStyleBackColor = true;
             // 
             // label9
@@ -1432,7 +1432,7 @@
             this.checkSilentUpdate00.Location = new System.Drawing.Point(108, 23);
             this.checkSilentUpdate00.Name = "checkSilentUpdate00";
             this.checkSilentUpdate00.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdate00.TabIndex = 50;
+            this.checkSilentUpdate00.TabIndex = 11;
             this.checkSilentUpdate00.UseVisualStyleBackColor = true;
             this.checkSilentUpdate00.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1444,7 +1444,7 @@
             this.checkSilentUpdate01.Location = new System.Drawing.Point(173, 23);
             this.checkSilentUpdate01.Name = "checkSilentUpdate01";
             this.checkSilentUpdate01.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdate01.TabIndex = 51;
+            this.checkSilentUpdate01.TabIndex = 15;
             this.checkSilentUpdate01.UseVisualStyleBackColor = true;
             this.checkSilentUpdate01.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1456,7 +1456,7 @@
             this.checkSilentUpdate02.Location = new System.Drawing.Point(238, 23);
             this.checkSilentUpdate02.Name = "checkSilentUpdate02";
             this.checkSilentUpdate02.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdate02.TabIndex = 52;
+            this.checkSilentUpdate02.TabIndex = 19;
             this.checkSilentUpdate02.UseVisualStyleBackColor = true;
             this.checkSilentUpdate02.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1468,7 +1468,7 @@
             this.checkSilentUpdate10.Location = new System.Drawing.Point(108, 43);
             this.checkSilentUpdate10.Name = "checkSilentUpdate10";
             this.checkSilentUpdate10.Size = new System.Drawing.Size(59, 15);
-            this.checkSilentUpdate10.TabIndex = 53;
+            this.checkSilentUpdate10.TabIndex = 12;
             this.checkSilentUpdate10.UseVisualStyleBackColor = true;
             this.checkSilentUpdate10.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1480,7 +1480,7 @@
             this.checkSilentUpdate11.Location = new System.Drawing.Point(173, 43);
             this.checkSilentUpdate11.Name = "checkSilentUpdate11";
             this.checkSilentUpdate11.Size = new System.Drawing.Size(59, 15);
-            this.checkSilentUpdate11.TabIndex = 54;
+            this.checkSilentUpdate11.TabIndex = 16;
             this.checkSilentUpdate11.UseVisualStyleBackColor = true;
             this.checkSilentUpdate11.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1492,7 +1492,7 @@
             this.checkSilentUpdate12.Location = new System.Drawing.Point(238, 43);
             this.checkSilentUpdate12.Name = "checkSilentUpdate12";
             this.checkSilentUpdate12.Size = new System.Drawing.Size(59, 15);
-            this.checkSilentUpdate12.TabIndex = 55;
+            this.checkSilentUpdate12.TabIndex = 20;
             this.checkSilentUpdate12.UseVisualStyleBackColor = true;
             this.checkSilentUpdate12.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1504,7 +1504,7 @@
             this.checkSilentUpdate20.Location = new System.Drawing.Point(108, 64);
             this.checkSilentUpdate20.Name = "checkSilentUpdate20";
             this.checkSilentUpdate20.Size = new System.Drawing.Size(59, 13);
-            this.checkSilentUpdate20.TabIndex = 56;
+            this.checkSilentUpdate20.TabIndex = 13;
             this.checkSilentUpdate20.UseVisualStyleBackColor = true;
             this.checkSilentUpdate20.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1515,7 +1515,7 @@
             this.checkSilentUpdate21.Location = new System.Drawing.Point(173, 64);
             this.checkSilentUpdate21.Name = "checkSilentUpdate21";
             this.checkSilentUpdate21.Size = new System.Drawing.Size(59, 13);
-            this.checkSilentUpdate21.TabIndex = 57;
+            this.checkSilentUpdate21.TabIndex = 17;
             this.checkSilentUpdate21.UseVisualStyleBackColor = true;
             this.checkSilentUpdate21.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1527,7 +1527,7 @@
             this.checkSilentUpdate22.Location = new System.Drawing.Point(238, 64);
             this.checkSilentUpdate22.Name = "checkSilentUpdate22";
             this.checkSilentUpdate22.Size = new System.Drawing.Size(59, 13);
-            this.checkSilentUpdate22.TabIndex = 58;
+            this.checkSilentUpdate22.TabIndex = 21;
             this.checkSilentUpdate22.UseVisualStyleBackColor = true;
             this.checkSilentUpdate22.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1539,7 +1539,7 @@
             this.checkSilentUpdate30.Location = new System.Drawing.Point(108, 83);
             this.checkSilentUpdate30.Name = "checkSilentUpdate30";
             this.checkSilentUpdate30.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdate30.TabIndex = 59;
+            this.checkSilentUpdate30.TabIndex = 14;
             this.checkSilentUpdate30.UseVisualStyleBackColor = true;
             this.checkSilentUpdate30.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1551,7 +1551,7 @@
             this.checkSilentUpdate31.Location = new System.Drawing.Point(173, 83);
             this.checkSilentUpdate31.Name = "checkSilentUpdate31";
             this.checkSilentUpdate31.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdate31.TabIndex = 60;
+            this.checkSilentUpdate31.TabIndex = 18;
             this.checkSilentUpdate31.UseVisualStyleBackColor = true;
             this.checkSilentUpdate31.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1563,7 +1563,7 @@
             this.checkSilentUpdate32.Location = new System.Drawing.Point(238, 83);
             this.checkSilentUpdate32.Name = "checkSilentUpdate32";
             this.checkSilentUpdate32.Size = new System.Drawing.Size(59, 14);
-            this.checkSilentUpdate32.TabIndex = 61;
+            this.checkSilentUpdate32.TabIndex = 22;
             this.checkSilentUpdate32.UseVisualStyleBackColor = true;
             this.checkSilentUpdate32.CheckedChanged += new System.EventHandler(this.checkSilentUpdate_CheckedChanged);
             // 
@@ -1600,7 +1600,7 @@
             this.splitTranslateMain.Panel2.Controls.Add(this.buttonFromBlackList);
             this.splitTranslateMain.Size = new System.Drawing.Size(1056, 557);
             this.splitTranslateMain.SplitterDistance = 554;
-            this.splitTranslateMain.TabIndex = 11;
+            this.splitTranslateMain.TabIndex = 0;
             // 
             // label28
             // 
@@ -1620,7 +1620,7 @@
             this.buttonDown.Location = new System.Drawing.Point(511, 241);
             this.buttonDown.Name = "buttonDown";
             this.buttonDown.Size = new System.Drawing.Size(40, 40);
-            this.buttonDown.TabIndex = 3;
+            this.buttonDown.TabIndex = 31;
             this.buttonDown.UseVisualStyleBackColor = true;
             this.buttonDown.Click += new System.EventHandler(this.buttonDown_Click);
             // 
@@ -1641,7 +1641,7 @@
             this.buttonUp.Location = new System.Drawing.Point(511, 195);
             this.buttonUp.Name = "buttonUp";
             this.buttonUp.Size = new System.Drawing.Size(40, 40);
-            this.buttonUp.TabIndex = 1;
+            this.buttonUp.TabIndex = 30;
             this.buttonUp.UseVisualStyleBackColor = true;
             this.buttonUp.Click += new System.EventHandler(this.buttonUp_Click);
             // 
@@ -1658,7 +1658,7 @@
             this.listTranslate.Name = "listTranslate";
             this.listTranslate.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.listTranslate.Size = new System.Drawing.Size(502, 484);
-            this.listTranslate.TabIndex = 8;
+            this.listTranslate.TabIndex = 20;
             // 
             // contextMenuTranslate
             // 
@@ -1713,7 +1713,7 @@
             this.buttonToBlackList.Location = new System.Drawing.Point(430, 3);
             this.buttonToBlackList.Name = "buttonToBlackList";
             this.buttonToBlackList.Size = new System.Drawing.Size(75, 40);
-            this.buttonToBlackList.TabIndex = 9;
+            this.buttonToBlackList.TabIndex = 40;
             this.buttonToBlackList.UseVisualStyleBackColor = true;
             this.buttonToBlackList.Click += new System.EventHandler(this.buttonToBlackList_Click);
             // 
@@ -1730,7 +1730,7 @@
             this.listTranslateBlackList.Name = "listTranslateBlackList";
             this.listTranslateBlackList.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.listTranslateBlackList.Size = new System.Drawing.Size(492, 484);
-            this.listTranslateBlackList.TabIndex = 10;
+            this.listTranslateBlackList.TabIndex = 50;
             // 
             // contextMenuTranslateBlackList
             // 
@@ -1763,7 +1763,7 @@
             this.buttonFromBlackList.Location = new System.Drawing.Point(3, 3);
             this.buttonFromBlackList.Name = "buttonFromBlackList";
             this.buttonFromBlackList.Size = new System.Drawing.Size(75, 40);
-            this.buttonFromBlackList.TabIndex = 8;
+            this.buttonFromBlackList.TabIndex = 60;
             this.buttonFromBlackList.UseVisualStyleBackColor = true;
             this.buttonFromBlackList.Click += new System.EventHandler(this.buttonFromBlackList_Click);
             // 
@@ -1785,7 +1785,7 @@
             this.checkStopTimer.Location = new System.Drawing.Point(15, 45);
             this.checkStopTimer.Name = "checkStopTimer";
             this.checkStopTimer.Size = new System.Drawing.Size(467, 17);
-            this.checkStopTimer.TabIndex = 44;
+            this.checkStopTimer.TabIndex = 1;
             this.checkStopTimer.Text = "Останавливать фоновое обновление когда выполняется действие в основном экране";
             this.checkStopTimer.UseVisualStyleBackColor = true;
             // 

@@ -53,6 +53,7 @@
             this.linkTitle = new System.Windows.Forms.LinkLabel();
             this.labelDescription = new System.Windows.Forms.Label();
             this.pictureSeasonImage = new System.Windows.Forms.PictureBox();
+            this.checkedCompilation = new System.Windows.Forms.CheckedListBox();
             this.panelMain.SuspendLayout();
             this.tabsMain.SuspendLayout();
             this.panelInfo.SuspendLayout();
@@ -68,7 +69,7 @@
             this.panelMain.Location = new System.Drawing.Point(6, 6);
             this.panelMain.Name = "panelMain";
             this.panelMain.Size = new System.Drawing.Size(996, 717);
-            this.panelMain.TabIndex = 2;
+            this.panelMain.TabIndex = 0;
             // 
             // tabsMain
             // 
@@ -79,7 +80,7 @@
             this.tabsMain.Name = "tabsMain";
             this.tabsMain.SelectedIndex = 0;
             this.tabsMain.Size = new System.Drawing.Size(996, 417);
-            this.tabsMain.TabIndex = 3;
+            this.tabsMain.TabIndex = 80;
             // 
             // tabPage1
             // 
@@ -103,6 +104,7 @@
             // 
             // panelInfo
             // 
+            this.panelInfo.Controls.Add(this.checkedCompilation);
             this.panelInfo.Controls.Add(this.panelTexts);
             this.panelInfo.Controls.Add(this.linkTitle);
             this.panelInfo.Controls.Add(this.labelDescription);
@@ -111,12 +113,10 @@
             this.panelInfo.Location = new System.Drawing.Point(0, 0);
             this.panelInfo.Name = "panelInfo";
             this.panelInfo.Size = new System.Drawing.Size(996, 300);
-            this.panelInfo.TabIndex = 2;
+            this.panelInfo.TabIndex = 10;
             // 
             // panelTexts
             // 
-            this.panelTexts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.panelTexts.Controls.Add(this.labelLOriginal);
             this.panelTexts.Controls.Add(this.labelLLimitation);
             this.panelTexts.Controls.Add(this.labelLGenre);
@@ -136,8 +136,8 @@
             this.panelTexts.Location = new System.Drawing.Point(210, 137);
             this.panelTexts.Name = "panelTexts";
             this.panelTexts.Padding = new System.Windows.Forms.Padding(6);
-            this.panelTexts.Size = new System.Drawing.Size(218, 134);
-            this.panelTexts.TabIndex = 4;
+            this.panelTexts.Size = new System.Drawing.Size(218, 163);
+            this.panelTexts.TabIndex = 20;
             // 
             // labelLOriginal
             // 
@@ -297,7 +297,7 @@
             this.linkTitle.Location = new System.Drawing.Point(206, 0);
             this.linkTitle.Name = "linkTitle";
             this.linkTitle.Size = new System.Drawing.Size(0, 24);
-            this.linkTitle.TabIndex = 3;
+            this.linkTitle.TabIndex = 10;
             this.linkTitle.Click += new System.EventHandler(this.linkTitle_Click);
             // 
             // labelDescription
@@ -307,7 +307,7 @@
             this.labelDescription.Location = new System.Drawing.Point(207, 34);
             this.labelDescription.Name = "labelDescription";
             this.labelDescription.Size = new System.Drawing.Size(786, 100);
-            this.labelDescription.TabIndex = 2;
+            this.labelDescription.TabIndex = 11;
             // 
             // pictureSeasonImage
             // 
@@ -322,6 +322,15 @@
             this.pictureSeasonImage.TabIndex = 1;
             this.pictureSeasonImage.TabStop = false;
             this.pictureSeasonImage.Click += new System.EventHandler(this.pictureSeasonImage_Click);
+            // 
+            // checkedCompilation
+            // 
+            this.checkedCompilation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkedCompilation.FormattingEnabled = true;
+            this.checkedCompilation.Location = new System.Drawing.Point(794, 146);
+            this.checkedCompilation.Name = "checkedCompilation";
+            this.checkedCompilation.Size = new System.Drawing.Size(202, 154);
+            this.checkedCompilation.TabIndex = 30;
             // 
             // FormSeason
             // 
@@ -369,5 +378,6 @@
         private System.Windows.Forms.TabControl tabsMain;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.CheckedListBox checkedCompilation;
     }
 }
