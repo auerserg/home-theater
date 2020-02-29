@@ -11,7 +11,7 @@ namespace HomeTheater.API.Serial
         private DateTime __cached_date;
         private bool __forsed_update_playlist;
 
-        private Dictionary<string, string> __oreder_videos;
+        private Dictionary<string, string> __order_videos;
         private Dictionary<int, Video> __videos;
         public int SeasonID, timeout;
         public Translate Translate;
@@ -177,9 +177,9 @@ namespace HomeTheater.API.Serial
 
         public void setOrderVideos()
         {
-            if (null == __oreder_videos)
-                __oreder_videos = new Dictionary<string, string>();
-            var str = SimpleJson.SimpleJson.SerializeObject(__oreder_videos);
+            if (null == __order_videos)
+                __order_videos = new Dictionary<string, string>();
+            var str = SimpleJson.SimpleJson.SerializeObject(__order_videos);
             SetValue("order_videos", str);
         }
 
@@ -238,21 +238,21 @@ namespace HomeTheater.API.Serial
         {
             get
             {
-                if (null == __oreder_videos)
+                if (null == __order_videos)
                 {
                     var ___order_videos = GetValue("order_videos");
                     if (!string.IsNullOrEmpty(___order_videos))
-                        __oreder_videos =
+                        __order_videos =
                             SimpleJson.SimpleJson.DeserializeObject<Dictionary<string, string>>(___order_videos);
                     else
-                        __oreder_videos = new Dictionary<string, string>();
+                        __order_videos = new Dictionary<string, string>();
                 }
 
-                return __oreder_videos;
+                return __order_videos;
             }
             set
             {
-                __oreder_videos = value;
+                __order_videos = value;
                 setOrderVideos();
             }
         }
