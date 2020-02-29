@@ -57,7 +57,7 @@ namespace HomeTheater
             foreach (var item in newSeason)
             {
                 item.Value.ListViewItem.Group = listNew.Groups["listViewGroup" + item.Value.Type];
-                listNew.Items.Add(item.Value.ToListViewItem());
+                listNew.Items.Add(item.Value.ToListViewItem(this));
             }
 
             listNew.Sort();
@@ -148,13 +148,13 @@ namespace HomeTheater
             var oldestIgnore = new List<int>();
             foreach (ListViewItem item in listNew.Items)
                 if (!item.Checked)
-                    newIgnore.Add((int) item.Tag);
+                    newIgnore.Add((item.Tag as Season).ID);
             foreach (ListViewItem item in listOld.Items)
                 if (!item.Checked)
-                    oldIgnore.Add((int) item.Tag);
+                    oldIgnore.Add((item.Tag as Season).ID);
             foreach (ListViewItem item in listOldest.Items)
                 if (!item.Checked)
-                    oldestIgnore.Add((int) item.Tag);
+                    oldestIgnore.Add((item.Tag as Season).ID);
             if (0 < newIgnore.Count || 0 < oldIgnore.Count || 0 < oldestIgnore.Count)
             {
                 var closeMsg = MessageBox.Show("У вас есть не отмеченные сезоны!\nВы уверены что хотите их оставить?",

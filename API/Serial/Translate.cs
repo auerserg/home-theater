@@ -5,7 +5,7 @@ using HomeTheater.Helper;
 
 namespace HomeTheater.API.Serial
 {
-    internal class Translate : Abstract.Serial
+    public class Translate : Abstract.Serial
     {
         public Translate(int ID)
         {

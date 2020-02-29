@@ -90,7 +90,9 @@ CREATE TABLE IF NOT EXISTS [season] (
     [marks_last] text,
     [type] text,
     [site_updated] text,
-    [secure] text,
+    [secure] text DEFAULT '',
+    [error] text DEFAULT '',
+    [blocked] integer DEFAULT 0,
     [created_date] text,
     [updated_date] text
 );
@@ -110,7 +112,7 @@ CREATE TABLE IF NOT EXISTS [season_compilation] (
 );
 CREATE TABLE IF NOT EXISTS [translate] (
     [id] integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-    [slug] text,
+    [slug] text DEFAULT '',
     [name] text
 );
 CREATE TABLE IF NOT EXISTS [playlist] (
@@ -118,9 +120,9 @@ CREATE TABLE IF NOT EXISTS [playlist] (
 	[season_id] INTEGER NOT NULL,
 	[translate_id] INTEGER NOT NULL DEFAULT 0,
 	[url] TEXT,
-	[percent] TEXT,
+	[percent] TEXT DEFAULT '0',
 	[secure] TEXT,
-	[order_videos] TEXT,
+	[order_videos] TEXT DEFAULT '',
 	[created_date] TEXT,
 	[updated_date] TEXT,
 	[removed_date] TEXT DEFAULT ''
@@ -129,9 +131,8 @@ CREATE TABLE IF NOT EXISTS [video] (
 	[id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	[season_id] INTEGER NOT NULL,
 	[translate_id] INTEGER NOT NULL DEFAULT -1,
-	[translate_name] TEXT,
-	[video_id] TEXT,
-	[video_next_id] TEXT,
+	[translate_name] TEXT DEFAULT '',
+	[video_id] TEXT DEFAULT '',
     [url] TEXT,
 	[subtitle] TEXT,
 	[secure] TEXT,
@@ -734,6 +735,7 @@ CREATE TABLE IF NOT EXISTS [video] (
 
         public bool PlaylistSetOld(int seasonID, List<int> translateIDs)
         {
+            // TODO Не работает
             var sql =
                 @"UPDATE playlist SET removed_date=@removed_date WHERE season_id = @season_id";
             if (null != translateIDs && 0 < translateIDs.Count)
@@ -793,6 +795,47 @@ CREATE TABLE IF NOT EXISTS [video] (
         public List<Dictionary<string, string>> TranslateGetAll()
         {
             return _ExecuteReader(@"SELECT * FROM translate ORDER BY id ASC;");
+        }
+
+        public List<string> TranslateGetRate()
+        {
+            var data = new List<string>();
+            var result =
+                _ExecuteReader(@"SELECT 
+    name_translate,
+    SUM(percent) AS percent,
+    SUM(items) AS items
+FROM (
+    SELECT 
+        CASE WHEN video.translate_name <> ''
+            THEN video.translate_name
+            ELSE translate.name
+        END name_translate,
+        COUNT(video.id)*AVG(playlist.percent)/100 AS percent,
+        COUNT(video.id) AS items
+    FROM video
+    LEFT JOIN translate
+    ON video.translate_id = translate.id
+    LEFT JOIN playlist
+    ON video.season_id = playlist.season_id AND video.translate_id = playlist.translate_id
+    WHERE
+        name_translate NOT IN ('Стандартный', 'Трейлеры')
+    GROUP BY name_translate
+    UNION
+    SELECT
+        name AS name_translate,
+        null AS percent,
+        NULL AS items
+    FROM translate
+    WHERE name_translate NOT IN ('Стандартный', 'Трейлеры')
+)
+GROUP BY name_translate
+ORDER BY percent DESC, items DESC;");
+            if (0 < result.Count)
+                foreach (var item in result)
+                    data.Add(item["name_translate"]);
+
+            return data;
         }
 
         #endregion

@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.groupSync = new System.Windows.Forms.GroupBox();
-            this.numericOldesDaysSeason = new System.Windows.Forms.NumericUpDown();
-            this.label24 = new System.Windows.Forms.Label();
+            this.label26 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
@@ -64,6 +64,8 @@
             this.checkUpdate30 = new System.Windows.Forms.CheckBox();
             this.checkUpdate31 = new System.Windows.Forms.CheckBox();
             this.checkUpdate32 = new System.Windows.Forms.CheckBox();
+            this.numericOldesDaysSeason = new System.Windows.Forms.NumericUpDown();
+            this.label24 = new System.Windows.Forms.Label();
             this.labelTimer = new System.Windows.Forms.Label();
             this.labelTagFormat = new System.Windows.Forms.Label();
             this.labelTagOriginalName = new System.Windows.Forms.Label();
@@ -89,6 +91,12 @@
             this.tabsMain = new System.Windows.Forms.TabControl();
             this.tabMain = new System.Windows.Forms.TabPage();
             this.tabSync = new System.Windows.Forms.TabPage();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.checkoldAllow = new System.Windows.Forms.CheckBox();
+            this.checkoldestAllow = new System.Windows.Forms.CheckBox();
+            this.checknewAllow = new System.Windows.Forms.CheckBox();
+            this.label25 = new System.Windows.Forms.Label();
+            this.buttonResetIgnore = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label5 = new System.Windows.Forms.Label();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
@@ -134,16 +142,26 @@
             this.checkSilentUpdate31 = new System.Windows.Forms.CheckBox();
             this.checkSilentUpdate32 = new System.Windows.Forms.CheckBox();
             this.tabTranslate = new System.Windows.Forms.TabPage();
+            this.splitTranslateMain = new System.Windows.Forms.SplitContainer();
+            this.label28 = new System.Windows.Forms.Label();
+            this.buttonDown = new System.Windows.Forms.Button();
+            this.buttonRefreh = new System.Windows.Forms.Button();
+            this.buttonUp = new System.Windows.Forms.Button();
+            this.listTranslate = new System.Windows.Forms.ListBox();
+            this.contextMenuTranslate = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.удалитьToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.обновитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.вверхToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.внизToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.buttonToBlackList = new System.Windows.Forms.Button();
+            this.listTranslateBlackList = new System.Windows.Forms.ListBox();
+            this.contextMenuTranslateBlackList = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.удалитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.label27 = new System.Windows.Forms.Label();
+            this.buttonFromBlackList = new System.Windows.Forms.Button();
             this.tabNetwork = new System.Windows.Forms.TabPage();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.buttonResetIgnore = new System.Windows.Forms.Button();
-            this.label25 = new System.Windows.Forms.Label();
-            this.label26 = new System.Windows.Forms.Label();
-            this.checknewAllow = new System.Windows.Forms.CheckBox();
-            this.checkoldestAllow = new System.Windows.Forms.CheckBox();
-            this.checkoldAllow = new System.Windows.Forms.CheckBox();
+            this.checkStopTimer = new System.Windows.Forms.CheckBox();
             this.groupSync.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericOldesDaysSeason)).BeginInit();
             this.tableLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericCachenew)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericCachewant)).BeginInit();
@@ -151,17 +169,25 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericCachewatched)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericCachenone)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericOldesDaysSeason)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSimultaneousDownloads)).BeginInit();
             this.groupProxy.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericProxyPort)).BeginInit();
             this.tabsMain.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabSync.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
+            this.tabTranslate.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitTranslateMain)).BeginInit();
+            this.splitTranslateMain.Panel1.SuspendLayout();
+            this.splitTranslateMain.Panel2.SuspendLayout();
+            this.splitTranslateMain.SuspendLayout();
+            this.contextMenuTranslate.SuspendLayout();
+            this.contextMenuTranslateBlackList.SuspendLayout();
             this.tabNetwork.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupSync
@@ -181,33 +207,13 @@
             this.groupSync.TabStop = false;
             this.groupSync.Text = "Обычная синхронизация";
             // 
-            // numericOldesDaysSeason
+            // label26
             // 
-            this.numericOldesDaysSeason.Location = new System.Drawing.Point(271, 88);
-            this.numericOldesDaysSeason.Maximum = new decimal(new int[] {
-            3650,
-            0,
-            0,
-            0});
-            this.numericOldesDaysSeason.Name = "numericOldesDaysSeason";
-            this.numericOldesDaysSeason.Size = new System.Drawing.Size(93, 20);
-            this.numericOldesDaysSeason.TabIndex = 40;
-            this.numericOldesDaysSeason.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.numericOldesDaysSeason.Value = new decimal(new int[] {
-            365,
-            0,
-            0,
-            0});
-            // 
-            // label24
-            // 
-            this.label24.AutoSize = true;
-            this.label24.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label24.Location = new System.Drawing.Point(24, 90);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(241, 13);
-            this.label24.TabIndex = 22;
-            this.label24.Text = "Просмотренными сезоны становяться через:";
+            this.label26.Location = new System.Drawing.Point(355, 160);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(175, 26);
+            this.label26.TabIndex = 22;
+            this.label26.Text = "Изменнения будут приняты после перезапуска приложения";
             // 
             // label8
             // 
@@ -617,13 +623,41 @@
             this.checkUpdate32.TabIndex = 23;
             this.checkUpdate32.UseVisualStyleBackColor = true;
             // 
+            // numericOldesDaysSeason
+            // 
+            this.numericOldesDaysSeason.Location = new System.Drawing.Point(271, 88);
+            this.numericOldesDaysSeason.Maximum = new decimal(new int[] {
+            3650,
+            0,
+            0,
+            0});
+            this.numericOldesDaysSeason.Name = "numericOldesDaysSeason";
+            this.numericOldesDaysSeason.Size = new System.Drawing.Size(93, 20);
+            this.numericOldesDaysSeason.TabIndex = 40;
+            this.numericOldesDaysSeason.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numericOldesDaysSeason.Value = new decimal(new int[] {
+            365,
+            0,
+            0,
+            0});
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label24.Location = new System.Drawing.Point(24, 90);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(241, 13);
+            this.label24.TabIndex = 22;
+            this.label24.Text = "Просмотренными сезоны становяться через:";
+            // 
             // labelTimer
             // 
             this.labelTimer.AutoSize = true;
-            this.labelTimer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelTimer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelTimer.Location = new System.Drawing.Point(12, 21);
             this.labelTimer.Name = "labelTimer";
-            this.labelTimer.Size = new System.Drawing.Size(119, 13);
+            this.labelTimer.Size = new System.Drawing.Size(103, 13);
             this.labelTimer.TabIndex = 14;
             this.labelTimer.Text = "Время обновления";
             this.labelTimer.Click += new System.EventHandler(this.labelTimer_Click);
@@ -737,10 +771,10 @@
             // labelSimultaneousDownloads
             // 
             this.labelSimultaneousDownloads.AutoSize = true;
-            this.labelSimultaneousDownloads.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelSimultaneousDownloads.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelSimultaneousDownloads.Location = new System.Drawing.Point(9, 9);
             this.labelSimultaneousDownloads.Name = "labelSimultaneousDownloads";
-            this.labelSimultaneousDownloads.Size = new System.Drawing.Size(161, 13);
+            this.labelSimultaneousDownloads.Size = new System.Drawing.Size(139, 13);
             this.labelSimultaneousDownloads.TabIndex = 5;
             this.labelSimultaneousDownloads.Text = "Одновременных загрузок";
             // 
@@ -776,20 +810,20 @@
             // labelDownloadDir
             // 
             this.labelDownloadDir.AutoSize = true;
-            this.labelDownloadDir.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelDownloadDir.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelDownloadDir.Location = new System.Drawing.Point(9, 9);
             this.labelDownloadDir.Name = "labelDownloadDir";
-            this.labelDownloadDir.Size = new System.Drawing.Size(127, 13);
+            this.labelDownloadDir.Size = new System.Drawing.Size(109, 13);
             this.labelDownloadDir.TabIndex = 1;
             this.labelDownloadDir.Text = "Папка для загрузки";
             // 
             // labelNameFiles
             // 
             this.labelNameFiles.AutoSize = true;
-            this.labelNameFiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelNameFiles.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelNameFiles.Location = new System.Drawing.Point(9, 58);
             this.labelNameFiles.Name = "labelNameFiles";
-            this.labelNameFiles.Size = new System.Drawing.Size(143, 13);
+            this.labelNameFiles.Size = new System.Drawing.Size(124, 13);
             this.labelNameFiles.TabIndex = 0;
             this.labelNameFiles.Text = "Наименование файлов";
             // 
@@ -910,10 +944,83 @@
             this.tabSync.Text = "Синхронизация";
             this.tabSync.UseVisualStyleBackColor = true;
             // 
+            // groupBox2
+            // 
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.checkoldAllow);
+            this.groupBox2.Controls.Add(this.checkoldestAllow);
+            this.groupBox2.Controls.Add(this.checknewAllow);
+            this.groupBox2.Controls.Add(this.label25);
+            this.groupBox2.Controls.Add(this.buttonResetIgnore);
+            this.groupBox2.Controls.Add(this.numericOldesDaysSeason);
+            this.groupBox2.Controls.Add(this.label24);
+            this.groupBox2.Location = new System.Drawing.Point(3, 398);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(1056, 164);
+            this.groupBox2.TabIndex = 2;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Авторедактор";
+            // 
+            // checkoldAllow
+            // 
+            this.checkoldAllow.AutoSize = true;
+            this.checkoldAllow.Location = new System.Drawing.Point(6, 42);
+            this.checkoldAllow.Name = "checkoldAllow";
+            this.checkoldAllow.Size = new System.Drawing.Size(509, 17);
+            this.checkoldAllow.TabIndex = 45;
+            this.checkoldAllow.Text = "Искать старые сезоны, которые возможно закончились, из-за нового сезона. Будут уд" +
+    "алены.";
+            this.checkoldAllow.UseVisualStyleBackColor = true;
+            // 
+            // checkoldestAllow
+            // 
+            this.checkoldestAllow.AutoSize = true;
+            this.checkoldestAllow.Location = new System.Drawing.Point(6, 65);
+            this.checkoldestAllow.Name = "checkoldestAllow";
+            this.checkoldestAllow.Size = new System.Drawing.Size(491, 17);
+            this.checkoldestAllow.TabIndex = 44;
+            this.checkoldestAllow.Text = "Искать старые сезоны, которые давно не обновлялись. Будут отмечены как \"Посмотрел" +
+    "\".";
+            this.checkoldestAllow.UseVisualStyleBackColor = true;
+            this.checkoldestAllow.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
+            // 
+            // checknewAllow
+            // 
+            this.checknewAllow.AutoSize = true;
+            this.checknewAllow.Location = new System.Drawing.Point(6, 19);
+            this.checknewAllow.Name = "checknewAllow";
+            this.checknewAllow.Size = new System.Drawing.Size(479, 17);
+            this.checknewAllow.TabIndex = 43;
+            this.checknewAllow.Text = "Искать новые сезоны, которые стоит добавить. Будут отмечены как \"Хочу посмотреть\"" +
+    ".";
+            this.checknewAllow.UseVisualStyleBackColor = true;
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(24, 111);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(403, 13);
+            this.label25.TabIndex = 42;
+            this.label25.Text = "Сезоны отмеченные \"Просмотренными\" ранее, остануться просмотренными";
+            // 
+            // buttonResetIgnore
+            // 
+            this.buttonResetIgnore.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonResetIgnore.Location = new System.Drawing.Point(900, 14);
+            this.buttonResetIgnore.Name = "buttonResetIgnore";
+            this.buttonResetIgnore.Size = new System.Drawing.Size(150, 50);
+            this.buttonResetIgnore.TabIndex = 41;
+            this.buttonResetIgnore.Text = "Сбросить Список игнорируемых сериалов авторедактором";
+            this.buttonResetIgnore.UseVisualStyleBackColor = true;
+            this.buttonResetIgnore.Click += new System.EventHandler(this.buttonResetIgnore_Click);
+            // 
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.checkStopTimer);
             this.groupBox1.Controls.Add(this.label5);
             this.groupBox1.Controls.Add(this.tableLayoutPanel4);
             this.groupBox1.Controls.Add(this.label9);
@@ -922,7 +1029,7 @@
             this.groupBox1.Controls.Add(this.labelTimer);
             this.groupBox1.Location = new System.Drawing.Point(6, 203);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(1056, 170);
+            this.groupBox1.Size = new System.Drawing.Size(1056, 189);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Фоновая Синхронизация";
@@ -931,7 +1038,7 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label5.Location = new System.Drawing.Point(355, 42);
+            this.label5.Location = new System.Drawing.Point(355, 65);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(301, 13);
             this.label5.TabIndex = 32;
@@ -964,7 +1071,7 @@
             this.tableLayoutPanel4.Controls.Add(this.checkSilentUpdateCache31, 2, 4);
             this.tableLayoutPanel4.Controls.Add(this.checkSilentUpdateCache32, 3, 4);
             this.tableLayoutPanel4.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.tableLayoutPanel4.Location = new System.Drawing.Point(358, 58);
+            this.tableLayoutPanel4.Location = new System.Drawing.Point(358, 81);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             this.tableLayoutPanel4.RowCount = 5;
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
@@ -1186,7 +1293,7 @@
             // 
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label9.Location = new System.Drawing.Point(12, 42);
+            this.label9.Location = new System.Drawing.Point(12, 65);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(207, 13);
             this.label9.TabIndex = 23;
@@ -1229,7 +1336,7 @@
             this.tableLayoutPanel3.Controls.Add(this.checkSilentUpdate30, 1, 4);
             this.tableLayoutPanel3.Controls.Add(this.checkSilentUpdate31, 2, 4);
             this.tableLayoutPanel3.Controls.Add(this.checkSilentUpdate32, 3, 4);
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(15, 58);
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(15, 81);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 5;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
@@ -1462,12 +1569,203 @@
             // 
             // tabTranslate
             // 
+            this.tabTranslate.Controls.Add(this.splitTranslateMain);
             this.tabTranslate.Location = new System.Drawing.Point(4, 25);
             this.tabTranslate.Name = "tabTranslate";
+            this.tabTranslate.Padding = new System.Windows.Forms.Padding(6);
             this.tabTranslate.Size = new System.Drawing.Size(1068, 569);
             this.tabTranslate.TabIndex = 2;
             this.tabTranslate.Text = "Переводы";
             this.tabTranslate.UseVisualStyleBackColor = true;
+            // 
+            // splitTranslateMain
+            // 
+            this.splitTranslateMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitTranslateMain.Location = new System.Drawing.Point(6, 6);
+            this.splitTranslateMain.Name = "splitTranslateMain";
+            // 
+            // splitTranslateMain.Panel1
+            // 
+            this.splitTranslateMain.Panel1.Controls.Add(this.label28);
+            this.splitTranslateMain.Panel1.Controls.Add(this.buttonDown);
+            this.splitTranslateMain.Panel1.Controls.Add(this.buttonRefreh);
+            this.splitTranslateMain.Panel1.Controls.Add(this.buttonUp);
+            this.splitTranslateMain.Panel1.Controls.Add(this.listTranslate);
+            this.splitTranslateMain.Panel1.Controls.Add(this.buttonToBlackList);
+            // 
+            // splitTranslateMain.Panel2
+            // 
+            this.splitTranslateMain.Panel2.Controls.Add(this.listTranslateBlackList);
+            this.splitTranslateMain.Panel2.Controls.Add(this.label27);
+            this.splitTranslateMain.Panel2.Controls.Add(this.buttonFromBlackList);
+            this.splitTranslateMain.Size = new System.Drawing.Size(1056, 557);
+            this.splitTranslateMain.SplitterDistance = 554;
+            this.splitTranslateMain.TabIndex = 11;
+            // 
+            // label28
+            // 
+            this.label28.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label28.Location = new System.Drawing.Point(49, 3);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(375, 40);
+            this.label28.TabIndex = 11;
+            this.label28.Text = "Порядок предпочитаемых переводов";
+            this.label28.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // buttonDown
+            // 
+            this.buttonDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonDown.Image = global::HomeTheater.Properties.Resources.arrow_270;
+            this.buttonDown.Location = new System.Drawing.Point(511, 241);
+            this.buttonDown.Name = "buttonDown";
+            this.buttonDown.Size = new System.Drawing.Size(40, 40);
+            this.buttonDown.TabIndex = 3;
+            this.buttonDown.UseVisualStyleBackColor = true;
+            this.buttonDown.Click += new System.EventHandler(this.buttonDown_Click);
+            // 
+            // buttonRefreh
+            // 
+            this.buttonRefreh.Image = global::HomeTheater.Properties.Resources.arrow_circle_double;
+            this.buttonRefreh.Location = new System.Drawing.Point(3, 3);
+            this.buttonRefreh.Name = "buttonRefreh";
+            this.buttonRefreh.Size = new System.Drawing.Size(40, 40);
+            this.buttonRefreh.TabIndex = 10;
+            this.buttonRefreh.UseVisualStyleBackColor = true;
+            this.buttonRefreh.Click += new System.EventHandler(this.buttonRefreh_Click);
+            // 
+            // buttonUp
+            // 
+            this.buttonUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonUp.Image = global::HomeTheater.Properties.Resources.arrow_090;
+            this.buttonUp.Location = new System.Drawing.Point(511, 195);
+            this.buttonUp.Name = "buttonUp";
+            this.buttonUp.Size = new System.Drawing.Size(40, 40);
+            this.buttonUp.TabIndex = 1;
+            this.buttonUp.UseVisualStyleBackColor = true;
+            this.buttonUp.Click += new System.EventHandler(this.buttonUp_Click);
+            // 
+            // listTranslate
+            // 
+            this.listTranslate.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.listTranslate.ContextMenuStrip = this.contextMenuTranslate;
+            this.listTranslate.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.listTranslate.FormattingEnabled = true;
+            this.listTranslate.ItemHeight = 16;
+            this.listTranslate.Location = new System.Drawing.Point(3, 49);
+            this.listTranslate.Name = "listTranslate";
+            this.listTranslate.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
+            this.listTranslate.Size = new System.Drawing.Size(502, 484);
+            this.listTranslate.TabIndex = 8;
+            // 
+            // contextMenuTranslate
+            // 
+            this.contextMenuTranslate.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.удалитьToolStripMenuItem1,
+            this.обновитьToolStripMenuItem,
+            this.вверхToolStripMenuItem,
+            this.внизToolStripMenuItem});
+            this.contextMenuTranslate.Name = "contextMenuTranslate";
+            this.contextMenuTranslate.Size = new System.Drawing.Size(175, 92);
+            // 
+            // удалитьToolStripMenuItem1
+            // 
+            this.удалитьToolStripMenuItem1.Name = "удалитьToolStripMenuItem1";
+            this.удалитьToolStripMenuItem1.ShortcutKeys = System.Windows.Forms.Keys.Delete;
+            this.удалитьToolStripMenuItem1.Size = new System.Drawing.Size(174, 22);
+            this.удалитьToolStripMenuItem1.Text = "Удалить";
+            this.удалитьToolStripMenuItem1.Visible = false;
+            this.удалитьToolStripMenuItem1.Click += new System.EventHandler(this.buttonToBlackList_Click);
+            // 
+            // обновитьToolStripMenuItem
+            // 
+            this.обновитьToolStripMenuItem.Name = "обновитьToolStripMenuItem";
+            this.обновитьToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F5)));
+            this.обновитьToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+            this.обновитьToolStripMenuItem.Text = "Обновить";
+            this.обновитьToolStripMenuItem.Visible = false;
+            this.обновитьToolStripMenuItem.Click += new System.EventHandler(this.buttonRefreh_Click);
+            // 
+            // вверхToolStripMenuItem
+            // 
+            this.вверхToolStripMenuItem.Name = "вверхToolStripMenuItem";
+            this.вверхToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Up)));
+            this.вверхToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+            this.вверхToolStripMenuItem.Text = "Вверх";
+            this.вверхToolStripMenuItem.Visible = false;
+            this.вверхToolStripMenuItem.Click += new System.EventHandler(this.buttonUp_Click);
+            // 
+            // внизToolStripMenuItem
+            // 
+            this.внизToolStripMenuItem.Name = "внизToolStripMenuItem";
+            this.внизToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Down)));
+            this.внизToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+            this.внизToolStripMenuItem.Text = "Вниз";
+            this.внизToolStripMenuItem.Visible = false;
+            this.внизToolStripMenuItem.Click += new System.EventHandler(this.buttonDown_Click);
+            // 
+            // buttonToBlackList
+            // 
+            this.buttonToBlackList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonToBlackList.Image = global::HomeTheater.Properties.Resources.arrow;
+            this.buttonToBlackList.Location = new System.Drawing.Point(430, 3);
+            this.buttonToBlackList.Name = "buttonToBlackList";
+            this.buttonToBlackList.Size = new System.Drawing.Size(75, 40);
+            this.buttonToBlackList.TabIndex = 9;
+            this.buttonToBlackList.UseVisualStyleBackColor = true;
+            this.buttonToBlackList.Click += new System.EventHandler(this.buttonToBlackList_Click);
+            // 
+            // listTranslateBlackList
+            // 
+            this.listTranslateBlackList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.listTranslateBlackList.ContextMenuStrip = this.contextMenuTranslateBlackList;
+            this.listTranslateBlackList.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.listTranslateBlackList.FormattingEnabled = true;
+            this.listTranslateBlackList.ItemHeight = 16;
+            this.listTranslateBlackList.Location = new System.Drawing.Point(3, 49);
+            this.listTranslateBlackList.Name = "listTranslateBlackList";
+            this.listTranslateBlackList.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
+            this.listTranslateBlackList.Size = new System.Drawing.Size(492, 484);
+            this.listTranslateBlackList.TabIndex = 10;
+            // 
+            // contextMenuTranslateBlackList
+            // 
+            this.contextMenuTranslateBlackList.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.удалитьToolStripMenuItem});
+            this.contextMenuTranslateBlackList.Name = "contextMenuTranslateBlackList";
+            this.contextMenuTranslateBlackList.Size = new System.Drawing.Size(143, 26);
+            // 
+            // удалитьToolStripMenuItem
+            // 
+            this.удалитьToolStripMenuItem.Name = "удалитьToolStripMenuItem";
+            this.удалитьToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.Delete;
+            this.удалитьToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.удалитьToolStripMenuItem.Text = "Удалить";
+            this.удалитьToolStripMenuItem.Click += new System.EventHandler(this.buttonFromBlackList_Click);
+            // 
+            // label27
+            // 
+            this.label27.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label27.Location = new System.Drawing.Point(84, 3);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(411, 40);
+            this.label27.TabIndex = 9;
+            this.label27.Text = "Черный список переводов. Будет скачиваться только в крайнем случае";
+            // 
+            // buttonFromBlackList
+            // 
+            this.buttonFromBlackList.Image = global::HomeTheater.Properties.Resources.arrow_180;
+            this.buttonFromBlackList.Location = new System.Drawing.Point(3, 3);
+            this.buttonFromBlackList.Name = "buttonFromBlackList";
+            this.buttonFromBlackList.Size = new System.Drawing.Size(75, 40);
+            this.buttonFromBlackList.TabIndex = 8;
+            this.buttonFromBlackList.UseVisualStyleBackColor = true;
+            this.buttonFromBlackList.Click += new System.EventHandler(this.buttonFromBlackList_Click);
             // 
             // tabNetwork
             // 
@@ -1481,85 +1779,15 @@
             this.tabNetwork.Text = "Сеть";
             this.tabNetwork.UseVisualStyleBackColor = true;
             // 
-            // groupBox2
+            // checkStopTimer
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.checkoldAllow);
-            this.groupBox2.Controls.Add(this.checkoldestAllow);
-            this.groupBox2.Controls.Add(this.checknewAllow);
-            this.groupBox2.Controls.Add(this.label25);
-            this.groupBox2.Controls.Add(this.buttonResetIgnore);
-            this.groupBox2.Controls.Add(this.numericOldesDaysSeason);
-            this.groupBox2.Controls.Add(this.label24);
-            this.groupBox2.Location = new System.Drawing.Point(6, 379);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(1056, 164);
-            this.groupBox2.TabIndex = 2;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Авторедактор";
-            // 
-            // buttonResetIgnore
-            // 
-            this.buttonResetIgnore.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonResetIgnore.Location = new System.Drawing.Point(900, 14);
-            this.buttonResetIgnore.Name = "buttonResetIgnore";
-            this.buttonResetIgnore.Size = new System.Drawing.Size(150, 50);
-            this.buttonResetIgnore.TabIndex = 41;
-            this.buttonResetIgnore.Text = "Сбросить Список игнорируемых сериалов авторедактором";
-            this.buttonResetIgnore.UseVisualStyleBackColor = true;
-            this.buttonResetIgnore.Click += new System.EventHandler(this.buttonResetIgnore_Click);
-            // 
-            // label25
-            // 
-            this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(24, 111);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(403, 13);
-            this.label25.TabIndex = 42;
-            this.label25.Text = "Сезоны отмеченные \"Просмотренными\" ранее, остануться просмотренными";
-            // 
-            // label26
-            // 
-            this.label26.Location = new System.Drawing.Point(355, 160);
-            this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(175, 26);
-            this.label26.TabIndex = 22;
-            this.label26.Text = "Изменнения будут приняты после перезапуска приложения";
-            // 
-            // checknewAllow
-            // 
-            this.checknewAllow.AutoSize = true;
-            this.checknewAllow.Location = new System.Drawing.Point(6, 19);
-            this.checknewAllow.Name = "checknewAllow";
-            this.checknewAllow.Size = new System.Drawing.Size(479, 17);
-            this.checknewAllow.TabIndex = 43;
-            this.checknewAllow.Text = "Искать новые сезоны, которые стоит добавить. Будут отмечены как \"Хочу посмотреть\"" +
-    ".";
-            this.checknewAllow.UseVisualStyleBackColor = true;
-            // 
-            // checkoldestAllow
-            // 
-            this.checkoldestAllow.AutoSize = true;
-            this.checkoldestAllow.Location = new System.Drawing.Point(6, 65);
-            this.checkoldestAllow.Name = "checkoldestAllow";
-            this.checkoldestAllow.Size = new System.Drawing.Size(491, 17);
-            this.checkoldestAllow.TabIndex = 44;
-            this.checkoldestAllow.Text = "Искать старые сезоны, которые давно не обновлялись. Будут отмечены как \"Посмотрел" +
-    "\".";
-            this.checkoldestAllow.UseVisualStyleBackColor = true;
-            this.checkoldestAllow.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
-            // 
-            // checkoldAllow
-            // 
-            this.checkoldAllow.AutoSize = true;
-            this.checkoldAllow.Location = new System.Drawing.Point(6, 42);
-            this.checkoldAllow.Name = "checkoldAllow";
-            this.checkoldAllow.Size = new System.Drawing.Size(509, 17);
-            this.checkoldAllow.TabIndex = 45;
-            this.checkoldAllow.Text = "Искать старые сезоны, которые возможно закончились, из-за нового сезона. Будут уд" +
-    "алены.";
-            this.checkoldAllow.UseVisualStyleBackColor = true;
+            this.checkStopTimer.AutoSize = true;
+            this.checkStopTimer.Location = new System.Drawing.Point(15, 45);
+            this.checkStopTimer.Name = "checkStopTimer";
+            this.checkStopTimer.Size = new System.Drawing.Size(467, 17);
+            this.checkStopTimer.TabIndex = 44;
+            this.checkStopTimer.Text = "Останавливать фоновое обновление когда выполняется действие в основном экране";
+            this.checkStopTimer.UseVisualStyleBackColor = true;
             // 
             // FormOptions
             // 
@@ -1575,7 +1803,6 @@
             this.Shown += new System.EventHandler(this.FormOptions_Shown);
             this.groupSync.ResumeLayout(false);
             this.groupSync.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericOldesDaysSeason)).EndInit();
             this.tableLayoutPanel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numericCachenew)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericCachewant)).EndInit();
@@ -1583,6 +1810,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericCachewatched)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericCachenone)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.numericOldesDaysSeason)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSimultaneousDownloads)).EndInit();
             this.groupProxy.ResumeLayout(false);
             this.groupProxy.PerformLayout();
@@ -1591,14 +1819,21 @@
             this.tabMain.ResumeLayout(false);
             this.tabMain.PerformLayout();
             this.tabSync.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tableLayoutPanel4.ResumeLayout(false);
             this.tableLayoutPanel3.ResumeLayout(false);
+            this.tabTranslate.ResumeLayout(false);
+            this.splitTranslateMain.Panel1.ResumeLayout(false);
+            this.splitTranslateMain.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitTranslateMain)).EndInit();
+            this.splitTranslateMain.ResumeLayout(false);
+            this.contextMenuTranslate.ResumeLayout(false);
+            this.contextMenuTranslateBlackList.ResumeLayout(false);
             this.tabNetwork.ResumeLayout(false);
             this.tabNetwork.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1719,5 +1954,23 @@
         private System.Windows.Forms.CheckBox checknewAllow;
         private System.Windows.Forms.CheckBox checkoldAllow;
         private System.Windows.Forms.CheckBox checkoldestAllow;
+        private System.Windows.Forms.Button buttonUp;
+        private System.Windows.Forms.Button buttonDown;
+        private System.Windows.Forms.SplitContainer splitTranslateMain;
+        private System.Windows.Forms.ListBox listTranslateBlackList;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.Button buttonFromBlackList;
+        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.Button buttonRefreh;
+        private System.Windows.Forms.ListBox listTranslate;
+        private System.Windows.Forms.Button buttonToBlackList;
+        private System.Windows.Forms.ContextMenuStrip contextMenuTranslate;
+        private System.Windows.Forms.ToolStripMenuItem удалитьToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem обновитьToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip contextMenuTranslateBlackList;
+        private System.Windows.Forms.ToolStripMenuItem удалитьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem вверхToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem внизToolStripMenuItem;
+        private System.Windows.Forms.CheckBox checkStopTimer;
     }
 }

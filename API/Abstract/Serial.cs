@@ -13,7 +13,7 @@ namespace HomeTheater.API.Abstract
 
     #endregion
 
-    internal abstract class Serial : Base
+    public abstract class Serial : Base
     {
         #region Словари
 

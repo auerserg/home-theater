@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using HomeTheater.API.Response;
 using HomeTheater.Helper;
@@ -141,7 +142,9 @@ namespace HomeTheater
             checkSilentUpdateCache31.Checked = checkUpdate[3, 1];
             checkSilentUpdateCache32.Checked = checkUpdate[3, 2];
             checkSilentUpdate_CheckedChanged(null, null);
-
+            //Перевод
+            listTranslateBlackList_Load();
+            listTranslate_Load();
             //Сеть
             numericSimultaneousDownloads.Value = Convert.ToInt32(DB.Instance.OptionGet("SimultaneousDownloads"));
             checkUseProxy.Checked = DB.Instance.OptionGet("proxy.Use") == "1";
@@ -222,7 +225,10 @@ namespace HomeTheater
             checkUpdate[3, 1] = checkSilentUpdateCache31.Checked;
             checkUpdate[3, 2] = checkSilentUpdateCache32.Checked;
             DB.Instance.OptionSetAsync("checkSilentUpdateCache", checkUpdate.ToString());
-
+            //Переводы
+            DB.Instance.OptionSetAsync("TranslateBlackList",
+                SimpleJson.SimpleJson.SerializeObject(listTranslateBlackList.Items));
+            DB.Instance.OptionSetAsync("TranslateOrder", SimpleJson.SimpleJson.SerializeObject(listTranslate.Items));
             //Сеть
             DB.Instance.OptionSetAsync("SimultaneousDownloads", numericSimultaneousDownloads.Value.ToString());
             DB.Instance.OptionSetAsync("proxy.Use", checkUseProxy.Checked ? "1" : "0");
@@ -283,6 +289,120 @@ namespace HomeTheater
         private void labelTagFormat_Click(object sender, EventArgs e)
         {
             textNameFiles_Insert("{Format}");
+        }
+
+        #endregion
+
+        #region Управление переводами
+
+        private void listTranslate_Load()
+        {
+            var List = new List<string>();
+            var str = DB.Instance.OptionGet("TranslateOrder");
+            if (!string.IsNullOrWhiteSpace(str))
+                List = SimpleJson.SimpleJson.DeserializeObject<List<string>>(str);
+            listTranslate.Items.Clear();
+            foreach (var item in List)
+                if (!listTranslateBlackList.Items.Contains(item) && !listTranslate.Items.Contains(item))
+                    listTranslate.Items.Add(item);
+            List = DB.Instance.TranslateGetRate();
+            foreach (var item in List)
+                if (!listTranslateBlackList.Items.Contains(item) && !listTranslate.Items.Contains(item))
+                    listTranslate.Items.Add(item);
+        }
+
+        private void listTranslateBlackList_Load()
+        {
+            var List = new List<string>();
+            var str = DB.Instance.OptionGet("TranslateBlackList");
+            if (!string.IsNullOrWhiteSpace(str))
+                List = SimpleJson.SimpleJson.DeserializeObject<List<string>>(str);
+            listTranslateBlackList.Items.Clear();
+            foreach (var item in List)
+                if (!listTranslateBlackList.Items.Contains(item))
+                    listTranslateBlackList.Items.Add(item);
+        }
+
+        private void buttonRefreh_Click(object sender, EventArgs e)
+        {
+            var List = DB.Instance.TranslateGetRate();
+            listTranslate.BeginUpdate();
+            listTranslate.Items.Clear();
+            foreach (var item in List)
+                if (!listTranslateBlackList.Items.Contains(item) && !listTranslate.Items.Contains(item))
+                    listTranslate.Items.Add(item);
+            listTranslate.EndUpdate();
+        }
+
+        private List<string> listTranslate_GetSelected()
+        {
+            var list = new List<string>();
+            if (null != listTranslate.SelectedItems && 0 < listTranslate.SelectedItems.Count)
+                foreach (string item in listTranslate.SelectedItems)
+                    if (!list.Contains(item))
+                        list.Add(item);
+            return list;
+        }
+
+        private void listTranslate_MoveSelected(int direction)
+        {
+            var list = listTranslate_GetSelected();
+            var minPositon = 0;
+            var maxPositon = listTranslate.Items.Count - 1;
+            var invert = 0 < direction;
+            for (var i = invert ? list.Count - 1 : 0; invert ? i >= 0 : i < list.Count; i -= direction)
+            {
+                var item = list[i];
+                var index = listTranslate.Items.IndexOf(item);
+                var indexNew = index + direction;
+                var need = invert ? maxPositon > index : minPositon < index;
+                if (need)
+                {
+                    listTranslate.Items.Remove(item);
+                    listTranslate.Items.Insert(indexNew, item);
+                    listTranslate.SetSelected(indexNew, true);
+                }
+
+                if (invert)
+                    maxPositon -= direction;
+                else
+                    minPositon -= direction;
+            }
+        }
+
+        private void buttonUp_Click(object sender, EventArgs e)
+        {
+            listTranslate_MoveSelected(-1);
+        }
+
+        private void buttonDown_Click(object sender, EventArgs e)
+        {
+            listTranslate_MoveSelected(1);
+        }
+
+        private void buttonToBlackList_Click(object sender, EventArgs e)
+        {
+            var list = listTranslate_GetSelected();
+            foreach (var item in list)
+            {
+                listTranslateBlackList.Items.Add(item);
+                listTranslate.Items.Remove(item);
+            }
+        }
+
+        private void buttonFromBlackList_Click(object sender, EventArgs e)
+        {
+            if (null == listTranslateBlackList.SelectedItems || 0 == listTranslateBlackList.SelectedItems.Count)
+                return;
+            var list = new List<string>();
+            foreach (string item in listTranslateBlackList.SelectedItems)
+                if (!list.Contains(item))
+                    list.Add(item);
+            foreach (var item in list)
+            {
+                listTranslateBlackList.Items.Remove(item);
+                listTranslate.Items.Add(item);
+            }
         }
 
         #endregion

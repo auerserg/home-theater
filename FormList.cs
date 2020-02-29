@@ -76,7 +76,7 @@ namespace HomeTheater
 
         private void pictureSeasonImage_Click(object sender, EventArgs e)
         {
-            Process.Start(pictureSeasonImage.Tag.ToString());
+            Process.Start(pictureSeasonImage.Tag as string);
         }
 
         private void выполнитьСейчасToolStripMenuItem_Click(object sender, EventArgs e)
@@ -138,6 +138,7 @@ namespace HomeTheater
             DB.Instance.OptionSet("listDownloadWidth",
                 SimpleJson.SimpleJson.SerializeObject(listViewDownloadWidth));
             tokenSource.Cancel();
+            tokenSilentSource.Cancel();
             timer.Dispose();
         }
 
@@ -193,6 +194,7 @@ namespace HomeTheater
         #region Синхронизация
 
         CancellationTokenSource tokenSource = new CancellationTokenSource();
+        CancellationTokenSource tokenSilentSource = new CancellationTokenSource();
 
         private void остановитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -210,6 +212,8 @@ namespace HomeTheater
         public async Task SyncAsync(bool list = false, bool page = false, bool player = false,
             bool playlist = false, bool all = false)
         {
+            //Console.WriteLine(Thread.CurrentThread.Name);
+            //Console.WriteLine(Thread.CurrentThread.ManagedThreadId);
             timer.Stop();
             tokenSource.Cancel();
             tokenSource = new CancellationTokenSource();
@@ -237,22 +241,20 @@ namespace HomeTheater
                     Invoke(new Action(() => MainParent.StatusMessageSet("Получение списка сериалов")));
                     Serials = Server.Instance.getPause(list);
 
-                    if (token.IsCancellationRequested)
-                    {
-                        Invoke(new Action(() => CancelSync()));
-                        return;
-                    }
-
                     Invoke(new Action(() =>
                     {
                         MainParent.StatusMessageSet("Обновление таблицы");
-                        _ = RefreshSerials();
+                        _ = RefreshSerials(true);
                     }));
-                    Task.Run(() =>
-                    {
-                        foreach (KeyValuePair<int, Season> item in Serials)
-                            item.Value.SaveAsync();
-                    });
+                    DB.Instance.SeasonClearOld(new List<int>(Serials.Keys));
+                    Parallel.ForEach(Serials, item => item.Value.SaveAsync());
+                    //Task.Run(() =>
+                    //{
+                    //    DB.Instance.SeasonClearOld(new List<int>(Serials.Keys));
+
+                    //    foreach (KeyValuePair<int, Season> item in Serials)
+                    //        item.Value.SaveAsync();
+                    //});
 
                     var checkUpdate = new updateCheck(DB.Instance.OptionGet("checkUpdate"));
 
@@ -303,8 +305,6 @@ namespace HomeTheater
                             }
                         }
                     }
-
-                    DB.Instance.SeasonClearOld(new List<int>(Serials.Keys));
 
                     #endregion
 
@@ -411,6 +411,9 @@ namespace HomeTheater
         public async Task SyncSilent()
         {
             timer.Stop();
+            tokenSilentSource.Cancel();
+            tokenSilentSource = new CancellationTokenSource();
+            var token = tokenSilentSource.Token;
             выполнитьСейчасToolStripMenuItem.Visible = false;
             toolStripSyncTimer.Enabled = false;
             toolStripSyncTimer.Text = "--:--";
@@ -420,18 +423,26 @@ namespace HomeTheater
                 try
                 {
                     Serials = Server.Instance.getPause(true);
-
-                    Invoke(new Action(() => { _ = RefreshSerials(); }));
-                    Task.Run(() =>
+                    Invoke(new Action(() =>
                     {
-                        foreach (KeyValuePair<int, Season> item in Serials)
-                            item.Value.SaveAsync();
-                    });
+                        isUpdated = true;
+                        _ = RefreshSerials(true);
+                    }));
+
+                    DB.Instance.SeasonClearOld(new List<int>(Serials.Keys));
+                    Parallel.ForEach(Serials, item => item.Value.SaveAsync());
+                    //Task.Run(() =>
+                    //{
+                    //    DB.Instance.SeasonClearOld(new List<int>(Serials.Keys));
+                    //    foreach (KeyValuePair<int, Season> item in Serials)
+                    //        item.Value.SaveAsync();
+                    //});
+                    if (token.IsCancellationRequested)
+                        return;
                     Task.Run(() =>
                     {
                         try
                         {
-                            List<int> IDs = new List<int>();
                             bool first = true;
                             var checkUpdate = new updateCheck(DB.Instance.OptionGet("checkSilentUpdateCache"));
                             foreach (KeyValuePair<int, Season> item in Serials)
@@ -456,16 +467,15 @@ namespace HomeTheater
                                     first = false;
                                 }
 
-                                IDs.Add(item.Key);
+                                if (token.IsCancellationRequested)
+                                    return;
                             }
-
-                            DB.Instance.SeasonClearOld(IDs);
                         }
                         catch (Exception ex)
                         {
                             Logger.Instance.Error(ex);
                         }
-                    });
+                    }, token);
                     var checkSilentUpdate = new updateCheck(DB.Instance.OptionGet("checkSilentUpdate"));
                     var incList = DB.Instance.VideoGetTemp();
                     int maxind = 0;
@@ -474,6 +484,8 @@ namespace HomeTheater
                             maxind++;
                     var silentTimer = new Stopwatch();
                     int ind = 0;
+                    if (token.IsCancellationRequested)
+                        return;
                     silentTimer.Start();
                     foreach (KeyValuePair<int, Season> item in Serials)
                     {
@@ -485,7 +497,7 @@ namespace HomeTheater
                                     item.Value.syncPage(true);
                                 if (checkSilentUpdate[item.Value.Type, "player"])
                                     item.Value.syncPlayer(true);
-                                if (checkSilentUpdate[item.Value.Type, "playlist"])
+                                if (checkSilentUpdate[item.Value.Type, "playlist"] || incList.Contains(item.Key))
                                     item.Value.syncPlaylists(true);
                             }
                             catch (Exception ex)
@@ -497,6 +509,8 @@ namespace HomeTheater
                             double estD = (maxind - ind) * silentTimer.ElapsedMilliseconds / ind;
                             string est = TimeSpan.FromMilliseconds(estD).ToString(@"\-mm\:ss");
                             Invoke(new Action(() => toolStripSyncTimer.Text = est));
+                            if (token.IsCancellationRequested)
+                                return;
                         }
                     }
 
@@ -506,7 +520,7 @@ namespace HomeTheater
                 {
                     Logger.Instance.Error(ex);
                 }
-            });
+            }, token);
 
             timer.Restart();
             выполнитьСейчасToolStripMenuItem.Visible = true;
@@ -667,7 +681,7 @@ namespace HomeTheater
                 foreach (KeyValuePair<int, Season> item in collection)
                 {
                     item.Value.ListViewItem.Group = listSerials.Groups["listViewGroup" + item.Value.Type];
-                    listSerials.Items.Add(item.Value.ToListViewItem());
+                    listSerials.Items.Add(item.Value.ToListViewItem(this));
                 }
 
                 listSerials.Sort();
@@ -1013,15 +1027,14 @@ namespace HomeTheater
 
         private void listSerials_SelectedIndexChanged(object sender, EventArgs e)
         {
-            int id = (0 < listSerials.SelectedItems.Count) ? Convert.ToInt32(listSerials.SelectedItems[0].Tag) : 0;
-            if (!Serials.ContainsKey(id))
+            if (0 == listSerials.SelectedItems.Count)
             {
                 //panelTexts.Visible = false;
                 //labelDescription.Visible = false;
                 return;
             }
 
-            var item = Serials[id];
+            var item = listSerials.SelectedItems[0].Tag as Season;
             if (item.URL == pictureSeasonImage.Tag as string)
                 return;
 
@@ -1042,6 +1055,7 @@ namespace HomeTheater
             labelDescription.Text = "    " + item.Description.Replace("\r\n", "\r\n    ");
             panelTexts.Visible = true;
             labelDescription.Visible = true;
+            labelBlocked.Visible = item.isBlocked;
         }
 
         private void listSerials_MouseClick(object sender, MouseEventArgs e)
@@ -1052,20 +1066,14 @@ namespace HomeTheater
             var types = new List<string>();
             for (var i = 0; i < listSerials.SelectedItems.Count; i++)
             {
-                int id = Convert.ToInt32(listSerials.SelectedItems[0].Tag);
-                if (!Serials.ContainsKey(id))
-                    continue;
-                var item = Serials[id];
+                var item = listSerials.SelectedItems[i].Tag as Season;
                 if (!types.Contains(item.Type)) types.Add(item.Type);
             }
 
             отметитьНаПоследнейСерииToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("nonew"));
             хочуПосмотретьToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("want"));
             ужеПосмотрелToolStripMenuItem.Enabled = !(1 == types.Count && types.Contains("watched"));
-
-            //#if DEBUG
-            //                    Console.WriteLine("MouseClick Right {0:S}", item.URL);
-            //#endif
+            SetSerieToolStripMenuItem.Enabled = 1 == listSerials.SelectedItems.Count;
             // UNDONE Фильтровать пункты контекстного меню
         }
 
@@ -1073,14 +1081,7 @@ namespace HomeTheater
         {
             if (listSerials.SelectedItems.Count > 0)
             {
-                int id = Convert.ToInt32(listSerials.SelectedItems[0].Tag);
-                if (!Serials.ContainsKey(id))
-                    return;
-                var item = Serials[id];
-#if DEBUG
-                Console.WriteLine("MouseDoubleClick {0:S}", item.URL);
-#endif
-                // UNDONE Открывать окно сериала
+                MainParent.FormMain_ShowSeason(listSerials.SelectedItems[0].Tag as Season);
             }
         }
 
@@ -1091,12 +1092,7 @@ namespace HomeTheater
             var collection = new List<int>();
             if (0 < listSerials.SelectedItems.Count)
                 for (var i = 0; i < listSerials.SelectedItems.Count; i++)
-                {
-                    int id = Convert.ToInt32(listSerials.SelectedItems[i].Tag);
-                    if (!Serials.ContainsKey(id))
-                        continue;
-                    collection.Add(id);
-                }
+                    collection.Add((listSerials.SelectedItems[i].Tag as Season).ID);
 
             return collection;
         }
@@ -1198,6 +1194,10 @@ namespace HomeTheater
 
         private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            listSerials_MouseDoubleClick(sender, null);
+            if (0 < listSerials.SelectedItems.Count)
+                for (var i = 0; i < listSerials.SelectedItems.Count; i++)
+                    MainParent.FormMain_ShowSeason(listSerials.SelectedItems[i].Tag as Season);
         }
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
@@ -1294,6 +1294,58 @@ namespace HomeTheater
             MassChangeMarkAsync("delete");
         }
 
+        private void выделитьВсеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listSerials.Items)
+            {
+                item.Selected = true;
+            }
+        }
+
+        private void выделитьГруппуToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var types = new List<string>();
+            for (var i = 0; i < listSerials.SelectedItems.Count; i++)
+            {
+                var item = listSerials.SelectedItems[0].Tag as Season;
+                if (!types.Contains(item.Type)) types.Add(item.Type);
+            }
+
+            foreach (ListViewItem item in listSerials.Items)
+                item.Selected = types.Contains((item.Tag as Season).Type);
+        }
+
+        private void contextMenuStripSerials_Opened(object sender, EventArgs e)
+        {
+            if (1 != listSerials.SelectedItems.Count)
+            {
+                SetSerieToolStripMenuItem.Visible = false;
+                return;
+            }
+            var season = listSerials.SelectedItems[0].Tag as Season;
+            if (null != SetSerieToolStripMenuItem.Tag && season.ID == (int)SetSerieToolStripMenuItem.Tag)
+            {
+                SetSerieToolStripMenuItem.Visible = true;
+                return;
+            }
+            var dd = season.OrderVideos;
+            if (0 == dd.Count)
+            {
+                SetSerieToolStripMenuItem.Visible = false;
+                return;
+            }
+            SetSerieToolStripMenuItem.DropDownItems.Clear();
+            foreach (var item in dd)
+            {
+                ToolStripMenuItem newItem = new ToolStripMenuItem(item, null);
+                newItem.Checked = item == season.MarkCurrent;
+                SetSerieToolStripMenuItem.DropDownItems.Add(newItem);
+            }
+            // UNDONE добавлять саб меню с количеством серий, если их много разбивать еще на под меню
+            SetSerieToolStripMenuItem.Tag = season.ID;
+            SetSerieToolStripMenuItem.Visible = true;
+        }
+
         #endregion
 
         #endregion
@@ -1306,9 +1358,9 @@ namespace HomeTheater
             _ = RefreshSerials();
         }
 
-        private bool isFiltred = true;
+        private bool isUpdated = true;
 
-        private async Task RefreshSerials()
+        private async Task RefreshSerials(bool forsed = false)
         {
             await Task.Delay(50);
             if (2 < textFilter.Text.Length)
@@ -1340,12 +1392,12 @@ namespace HomeTheater
                 }
 
                 await listSerials_updateAsync(data);
-                isFiltred = true;
+                isUpdated = true;
             }
-            else if (isFiltred)
+            else if (isUpdated || forsed)
             {
                 await listSerials_updateAsync(Serials);
-                isFiltred = false;
+                isUpdated = false;
             }
         }
 

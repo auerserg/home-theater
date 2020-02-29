@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Drawing;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using HomeTheater.API.Response;
@@ -10,7 +12,7 @@ using HomeTheater.Helper;
 
 namespace HomeTheater.API.Serial
 {
-    internal class Season : Abstract.Serial
+    public class Season : Abstract.Serial
     {
         private DateTime __cached_date;
         private string __compilation;
@@ -24,6 +26,8 @@ namespace HomeTheater.API.Serial
 
         public ListViewItem ListViewItem = new ListViewItem(new[]
             {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""});
+
+        private Form parentForm;
 
         public Dictionary<int, int> Seasons = new Dictionary<int, int>();
 
@@ -174,8 +178,17 @@ namespace HomeTheater.API.Serial
             return cacheItem.ToString();
         }
 
-        public ListViewItem ToListViewItem()
+        public ListViewItem ToListViewItem(Form parentForm = null)
         {
+            if (null != parentForm)
+                this.parentForm = parentForm;
+            if (1 != Thread.CurrentThread.ManagedThreadId)
+            {
+                if (null != parentForm)
+                    this.parentForm.Invoke(new Action(() => ToListViewItem()));
+                return ListViewItem;
+            }
+
             try
             {
                 string[] newData =
@@ -216,7 +229,8 @@ namespace HomeTheater.API.Serial
 
                 if (ListViewItem.Text != newData[0])
                     ListViewItem.Text = newData[0];
-                ListViewItem.Tag = ID;
+                ListViewItem.Tag = this;
+                ListViewItem.BackColor = isBlocked ? Color.IndianRed : SystemColors.Window;
             }
 #if DEBUG
             catch (Exception ex)
@@ -496,7 +510,36 @@ namespace HomeTheater.API.Serial
 
                 return items;
             }
-            set { }
+        }
+
+        public string ErrorMessage
+        {
+            get => GetValue("error");
+            private set => SetValue("error", value);
+        }
+
+        public bool isBlocked
+        {
+            get => 0 < GetValueInt("blocked");
+            private set => SetValue("blocked", value ? 1 : 0);
+        }
+
+        public List<string> OrderVideos
+        {
+            get
+            {
+                var data = new List<string>();
+                if (0 < Playlists.Count)
+                    if (1 == Playlists.Count)
+                    {
+                        var id = new List<int>(Playlists.Keys)[0];
+                        data = new List<string>(Playlists[id].OrderVideos.Values);
+                        if (data.Contains(""))
+                            data.Remove("");
+                    }
+
+                return data;
+            }
         }
 
         #endregion
@@ -628,6 +671,11 @@ namespace HomeTheater.API.Serial
             Secure = _parseData4Play(_html);
             _html = Match(html, "mark = ({.*?})", REGEX_ICS, 1);
             _parseMark(_html);
+            _html = Match(html, "<div[^<>]*class=\"[^\">]*pgs-player-block[^\">]*\"[^<>]*>(.*?)</div>", REGEX_ICS, 1);
+            _html = Regex.Replace(_html, "<[^<>]*>(.*?)<[^<>]*>", "", REGEX_ICS).Trim()
+                .Replace("Ошибка при загрузке плеера, попробуйте перезагрузить страницу", "");
+            ErrorMessage = _html;
+            isBlocked = "" != Match(ErrorMessage, "заблокирован", REGEX_ICS);
             _html = Match(html, "<meta itemprop=\"dateModified\" content=\"([^\"+]+)([^\"]+)\">", REGEX_ICS, 1);
             SiteUpdated = DateVal(_html, "yyyy-MM-ddTHH:mm:ss");
             _html = Match(html, "<meta itemprop=\"interactionCount\" content=\"UserComments:([0-9]+)\"/>",
@@ -778,10 +826,7 @@ namespace HomeTheater.API.Serial
                                 KinoPoisk = floatVal(value);
                                 break;
                             default:
-                                if (_MetaInfo.ContainsKey(name))
-                                    _MetaInfo[name] = value;
-                                else
-                                    _MetaInfo.Add(name, value);
+                                _MetaInfo[name] = value;
                                 break;
                         }
                 }
@@ -836,7 +881,7 @@ namespace HomeTheater.API.Serial
         //        if (!string.IsNullOrEmpty(__html) && !string.IsNullOrEmpty(_html))
         //        {
         //            var id = int.Parse(__html);
-        //            if (Tags.ContainsKey(id)) Tags.Add(id, _html);
+        //            Tags[id] = _html;
         //        }
         //    }
         //}
@@ -864,14 +909,12 @@ namespace HomeTheater.API.Serial
                 season.SaveAsync();
                 if (0 < season.SeasonNum)
                 {
-                    if (!Seasons.ContainsKey(season.SeasonNum))
-                        Seasons.Add(season.SeasonNum, season.ID);
+                    Seasons[season.SeasonNum] = season.ID;
                 }
                 else
                 {
                     i--;
-                    if (!Seasons.ContainsKey(i))
-                        Seasons.Add(i, season.ID);
+                    Seasons[i] = season.ID;
                 }
             }
         }
@@ -887,8 +930,7 @@ namespace HomeTheater.API.Serial
                 var _checked = "checked" == Match(_html, "checked", REGEX_IC);
                 var id = IntVal(Match(_html, "value=\"([0-9]+)\"", REGEX_IC, 1));
                 var name = Match(_html, "<span>(.*?)</span>", REGEX_IC, 1);
-                if (!data.ContainsKey(id))
-                    data.Add(id, name);
+                data[id] = name;
                 if (_checked)
                     ServerCompilation.Instance.RelationUpdate(SerialID, id);
             }

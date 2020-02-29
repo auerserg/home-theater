@@ -48,7 +48,7 @@ namespace HomeTheater.API.Abstract
                     content = Encoding.UTF8.GetString(responsebytes);
                 }
 #if DEBUG
-                Console.WriteLine("Live Request {1}: {0}", url,
+                Console.WriteLine("Live Request {1:f4}: {0}", url,
                     DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
                 if (0 < wc.CookieContainer.Count) SetCookies(wc.CookieContainer);
@@ -76,7 +76,7 @@ namespace HomeTheater.API.Abstract
             var resp = wc.GetResponse();
             var respStream = resp.GetResponseStream();
 #if DEBUG
-            Console.WriteLine("Live Request {1}: {0}", url,
+            Console.WriteLine("Live Request {1:f4}: {0}", url,
                 DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
             return respStream;
@@ -109,7 +109,7 @@ namespace HomeTheater.API.Abstract
             }
 
 #if DEBUG
-            Console.WriteLine("Live Request {1}: {0}", url,
+            Console.WriteLine("Live Request {1:f4}: {0}", url,
                 DateTime.UtcNow.Subtract(start).TotalSeconds);
 #endif
             return headerResponse;

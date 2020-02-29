@@ -3,7 +3,7 @@ using HomeTheater.Helper;
 
 namespace HomeTheater.API.Response
 {
-    internal class Video
+    public class Video
     {
         public string fileReal
         {

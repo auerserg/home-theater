@@ -5,7 +5,7 @@ using HomeTheater.Helper;
 
 namespace HomeTheater.API.Serial
 {
-    internal class Video : Abstract.Serial
+    public class Video : Abstract.Serial
     {
         private readonly Translate Translate;
         public int ID;
@@ -155,12 +155,6 @@ namespace HomeTheater.API.Serial
         {
             get => GetValue("video_id");
             set => SetValue("video_id", value);
-        }
-
-        public string VideoNextID
-        {
-            get => GetValue("video_next_id");
-            set => SetValue("video_next_id", value);
         }
 
         public int TranslateID => null != Translate ? Translate.ID : 0;

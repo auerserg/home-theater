@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace HomeTheater.API.Abstract
 {
-    internal abstract class Base
+    public abstract class Base
     {
         #region Базовые домены
 

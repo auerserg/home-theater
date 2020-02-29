@@ -165,7 +165,7 @@ namespace HomeTheater.Helper
             var prefix = string.Format("[{0: yyyy-MM-dd HH:mm:ss}] {1}: ", DateTime.UtcNow, type.ToUpper());
             streamWriter.WriteLine(prefix + value);
 #if DEBUG
-            Console.WriteLine(type.ToUpper() + value);
+            Console.WriteLine(type.ToUpper() + ": " + value);
 #endif
         }
 

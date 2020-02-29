@@ -6,16 +6,15 @@ using HomeTheater.Helper;
 
 namespace HomeTheater.API.Serial
 {
-    internal class Playlist : Abstract.Serial
+    public class Playlist : Abstract.Serial
     {
         private DateTime __cached_date;
         private bool __forsed_update_playlist;
+
+        private Dictionary<string, string> __oreder_videos;
         private Dictionary<int, Video> __videos;
         public int SeasonID, timeout;
         public Translate Translate;
-
-
-        public Dictionary<string, string> VideosOrder = new Dictionary<string, string>();
 
         public Playlist(int TranslateID, int SeasonID, string Secure = "",
             int timeout = 60 * 60 * 24 * 10)
@@ -36,7 +35,7 @@ namespace HomeTheater.API.Serial
 
             TranslateSlug = data[3];
             Secure = data[2];
-            URL = url.Replace(Secure, "{SECURE}");
+            URL = url;
             Load();
         }
 
@@ -45,14 +44,9 @@ namespace HomeTheater.API.Serial
         {
             Translate = new Translate(TranslateID);
             if (0 < data.Count)
-            {
                 LoadValues(() => { return data; });
-                getVideosOrder();
-            }
             else
-            {
                 Load();
-            }
 
             this.SeasonID = SeasonID;
             this.timeout = timeout;
@@ -66,11 +60,11 @@ namespace HomeTheater.API.Serial
                 {
                     __videos = new Dictionary<int, Video>();
                     var videoData = DB.Instance.VideoGets(SeasonID);
-                    foreach (var video in videoData)
+                    Parallel.ForEach(videoData, item =>
                     {
-                        var id = IntVal(video["id"]);
-                        __videos[id] = new Video(id, video);
-                    }
+                        var id = IntVal(item["id"]);
+                        __videos[id] = new Video(id, item);
+                    });
                 }
 
                 return __videos;
@@ -97,16 +91,15 @@ namespace HomeTheater.API.Serial
             if (0 == SeasonID || 0 > TranslateID)
                 return;
             LoadValues(() => { return DB.Instance.PlaylistGet(SeasonID, TranslateID); });
-            getVideosOrder();
         }
 
         private void Save()
         {
-            setVideosOrder();
+            setOrderVideos();
             if (0 == __data_new.Count || 0 == SeasonID || 0 > TranslateID)
                 return;
             if (!__data_new.ContainsKey("translate_id"))
-                __data_new.Add("translate_id", TranslateID.ToString());
+                __data_new["translate_id"] = TranslateID.ToString();
             SaveValues(data =>
             {
                 if (0 == SeasonID || 0 > TranslateID)
@@ -178,28 +171,29 @@ namespace HomeTheater.API.Serial
                 key = !string.IsNullOrEmpty(result[key]) && key != result[key] ? result[key] : "+_+";
             }
 
-            VideosOrder = data;
-            setVideosOrder();
+            OrderVideos = data;
+            setOrderVideos();
         }
 
-        public void setVideosOrder()
+        public void setOrderVideos()
         {
-            OrderVideos = SimpleJson.SimpleJson.SerializeObject(VideosOrder);
+            if (null == __oreder_videos)
+                __oreder_videos = new Dictionary<string, string>();
+            var str = SimpleJson.SimpleJson.SerializeObject(__oreder_videos);
+            SetValue("order_videos", str);
         }
-
-        public void getVideosOrder()
-        {
-            if (!string.IsNullOrEmpty(OrderVideos))
-                VideosOrder = SimpleJson.SimpleJson.DeserializeObject<Dictionary<string, string>>(OrderVideos);
-        }
-
 
         #region Атрибуты
 
         public string URL
         {
             get => GetValue("url");
-            set => SetValue("url", Regex.Replace(value, "[?]time=([0-9]+)$", "", REGEX_IC));
+            set
+            {
+                value = Regex.Replace(value, "[?]time=([0-9]+)$", "", REGEX_IC);
+                value = value.Replace(Secure, "{SECURE}");
+                SetValue("url", value);
+            }
         }
 
         public string newURL => Server.Instance.prepareSecureUrl(URL);
@@ -240,10 +234,63 @@ namespace HomeTheater.API.Serial
             set => SetValue("percent", value);
         }
 
-        protected string OrderVideos
+        public Dictionary<string, string> OrderVideos
         {
-            get => GetValue("order_videos");
-            set => SetValue("order_videos", value);
+            get
+            {
+                if (null == __oreder_videos)
+                {
+                    var ___order_videos = GetValue("order_videos");
+                    if (!string.IsNullOrEmpty(___order_videos))
+                        __oreder_videos =
+                            SimpleJson.SimpleJson.DeserializeObject<Dictionary<string, string>>(___order_videos);
+                    else
+                        __oreder_videos = new Dictionary<string, string>();
+                }
+
+                return __oreder_videos;
+            }
+            set
+            {
+                __oreder_videos = value;
+                setOrderVideos();
+            }
+        }
+
+        public Dictionary<string, Video> VideosOrdered
+        {
+            get
+            {
+                var _data = new Dictionary<string, int>();
+                Parallel.ForEach(Videos, item =>
+                {
+                    if (_data.ContainsKey(item.Value.VideoID) && _data[item.Value.VideoID] < item.Key)
+                        Logger.Instance.Notice("Присутствует устаревшее видео {0} в {1} для {2}", item.Key,
+                            item.Value.VideoID, SeasonID);
+                    else
+                        _data[item.Value.VideoID] = item.Key;
+                });
+                var data = new Dictionary<string, Video>();
+                var _order = new List<string>(OrderVideos.Values);
+                if (_order.Contains(""))
+                    _order.Remove("");
+
+                foreach (var item in _order)
+                    if (_data.ContainsKey(item) && Videos.ContainsKey(_data[item]))
+                    {
+                        data[item] = Videos[_data[item]];
+                    }
+                    else
+                    {
+                        data[item] = null;
+                        if (_data.ContainsKey(item))
+                            Logger.Instance.Warn("Не найдено видео {0} в {1} для {2}", _data[item], item, SeasonID);
+                        else
+                            Logger.Instance.Warn("Не найдено видео в {1} для {2}", item, SeasonID);
+                    }
+
+                return data;
+            }
         }
 
         public DateTime CreatedDate => GetValueDate("created_date");
@@ -276,11 +323,7 @@ namespace HomeTheater.API.Serial
             }
 
             Videos = parseVideo(data);
-            foreach (var item in Videos)
-            {
-                item.Value.VideoNextID = getNextVideoID(item.Value.VideoID);
-                item.Value.SaveAsync();
-            }
+            Parallel.ForEach(Videos, item => item.Value.SaveAsync());
         }
 
         private Dictionary<int, Video> parseVideo(List<Response.Video> data, Dictionary<int, Video> _videos = null)
@@ -292,11 +335,18 @@ namespace HomeTheater.API.Serial
                 {
                     var id = IntVal(item.vars);
                     if (_videos.ContainsKey(id))
+                    {
                         _videos[id].parseVideo(item);
+                    }
+                    else if (Videos.ContainsKey(id))
+                    {
+                        _videos[id] = Videos[id];
+                        _videos[id].parseVideo(item);
+                    }
                     else
+                    {
                         _videos.Add(id, new Video(id, SeasonID, item, Translate));
-                    if (!_videos.ContainsKey(id))
-                        Console.WriteLine("Отсутствует видео идентификатор {0} для {1}", id, SeasonID);
+                    }
                 }
                 else
                 {
@@ -304,13 +354,6 @@ namespace HomeTheater.API.Serial
                 }
 
             return _videos;
-        }
-
-        private string getNextVideoID(string ID)
-        {
-            if (VideosOrder.ContainsKey(ID))
-                return VideosOrder[ID];
-            return "";
         }
 
         #endregion

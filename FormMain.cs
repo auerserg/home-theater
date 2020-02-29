@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
 using HomeTheater.API;
+using HomeTheater.API.Serial;
 using HomeTheater.Helper;
 
 namespace HomeTheater
@@ -103,6 +104,48 @@ namespace HomeTheater
             else
             {
                 prepareMDI(new FormDiffUpdate(newSeason, OldSeason, OldestSeason));
+            }
+        }
+
+        public void FormMain_ShowSeason(int ID)
+        {
+            Form form = null;
+            foreach (var childForm in MdiChildren)
+                if (childForm is FormSeason && (childForm as FormSeason).Season.ID == ID)
+                {
+                    form = childForm as FormSeason;
+                    break;
+                }
+
+            if (null != form)
+            {
+                form.Focus();
+                (form as FormSeason).UpdateSeason();
+            }
+            else
+            {
+                prepareMDI(new FormSeason(ID));
+            }
+        }
+
+        public void FormMain_ShowSeason(Season Season)
+        {
+            Form form = null;
+            foreach (var childForm in MdiChildren)
+                if (childForm is FormSeason && (childForm as FormSeason).Season.ID == Season.ID)
+                {
+                    form = childForm as FormSeason;
+                    break;
+                }
+
+            if (null != form)
+            {
+                form.Focus();
+                (form as FormSeason).UpdateSeason(Season);
+            }
+            else
+            {
+                prepareMDI(new FormSeason(Season));
             }
         }
 

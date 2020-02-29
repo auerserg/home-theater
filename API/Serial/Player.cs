@@ -1,20 +1,21 @@
-﻿using System;
+﻿using HomeTheater.Helper;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using HomeTheater.Helper;
+using System.Threading.Tasks;
 
 namespace HomeTheater.API.Serial
 {
-    internal class Player : Abstract.Serial
+    public class Player : Abstract.Serial
     {
+        public const int TRAILERS_ID = 68;
         private DateTime __cache_date;
         private string __secure = "";
 
         public Dictionary<int, Playlist>
             Playlists = new Dictionary<int, Playlist>();
 
-        private Dictionary<int, Playlist>
-            PlaylistsOld = new Dictionary<int, Playlist>();
+        public Playlist Trailers;
 
         public int SeasonID, SerialID, timeout;
 
@@ -52,9 +53,11 @@ namespace HomeTheater.API.Serial
             var data = DB.Instance.PlaylistGets(SeasonID);
             foreach (var item in data)
             {
-                var TranslateID = IntVal(item["translate_id"]);
-                if (!Playlists.ContainsKey(TranslateID))
-                    Playlists.Add(TranslateID, new Playlist(TranslateID, SeasonID, item, timeout));
+                var id = IntVal(item["translate_id"]);
+                if (TRAILERS_ID == id)
+                    Trailers = new Playlist(id, SeasonID, item, timeout);
+                else if (!Playlists.ContainsKey(id))
+                    Playlists.Add(id, new Playlist(id, SeasonID, item, timeout));
             }
         }
 
@@ -89,9 +92,22 @@ namespace HomeTheater.API.Serial
             if (0 == Playlists.Count)
                 sync();
             var result = true;
-            foreach (var item in Playlists)
+            Parallel.ForEach(Playlists, item =>
             {
-                var _result = item.Value.sync(forsed);
+                try
+                {
+                    var _result = item.Value.sync(forsed);
+                    result = result && _result;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error(ex);
+                }
+
+            });
+            if (null != Trailers)
+            {
+                var _result = Trailers.sync(forsed);
                 result = result && _result;
             }
 
@@ -110,17 +126,19 @@ namespace HomeTheater.API.Serial
             var start = DateTime.UtcNow;
 #endif
             var js = _getOnlyJS(html);
-            PlaylistsOld = _parseScripts(js);
+            Playlists = _parseScripts(js);
+            if (Playlists.ContainsKey(TRAILERS_ID))
+            {
+                Trailers = Playlists[TRAILERS_ID];
+                Playlists.Remove(TRAILERS_ID);
+            }
             js = Match(js, "var arEpisodes = ([[{].*?[]}]);", REGEX_ICS, 1);
             _parseSeries(js);
 
             html = Match(html, "<ul class=\"pgs-trans\">(.*?)</ul>", REGEX_ICS, 1);
             _parseTranslate(html);
-            Playlists = PlaylistsOld;
 
-            if (0 < Playlists.Count)
-                foreach (var item in Playlists)
-                    Playlists[item.Key].SaveAsync();
+            Parallel.ForEach(Playlists, item => item.Value.SaveAsync());
             DB.Instance.PlaylistSetOld(SeasonID, new List<int>(Playlists.Keys));
 #if DEBUG
             Console.WriteLine("\tParse Player\t{0}\t{1}:\t{2}", SerialID, SeasonID,
@@ -144,22 +162,39 @@ namespace HomeTheater.API.Serial
                     .DeserializeObject<Dictionary<string, Dictionary<string, Dictionary<string, string>>>>(js);
                 if (null != _data)
                 {
-                    foreach (var item in _data)
+                    Parallel.ForEach(_data, item =>
                     {
-                        var id = IntVal(item.Key);
-                        if (!PlaylistsOld.ContainsKey(id))
-                            PlaylistsOld.Add(id, new Playlist(id, SeasonID, Secure, timeout));
-                        PlaylistsOld[id].tempOrderVideo(item.Value);
-                    }
+                        try
+                        {
+                            var id = IntVal(item.Key);
+                            if (TRAILERS_ID == id)
+                            {
+                                if (null == Trailers)
+                                    Trailers = new Playlist(id, SeasonID, Secure, timeout);
+                                Trailers.tempOrderVideo(item.Value);
+                            }
+                            else
+                            {
+                                if (!Playlists.ContainsKey(id))
+                                    Playlists.Add(id, new Playlist(id, SeasonID, Secure, timeout));
+                                Playlists[id].tempOrderVideo(item.Value);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Instance.Error(ex);
+                        }
+
+                    });
                 }
                 else
                 {
                     var __data = SimpleJson.SimpleJson
                         .DeserializeObject<List<Dictionary<string, Dictionary<string, string>>>>(js);
                     var id = 0;
-                    if (!PlaylistsOld.ContainsKey(id))
-                        PlaylistsOld.Add(id, new Playlist(id, SeasonID, Secure, timeout));
-                    PlaylistsOld[id].tempOrderVideo(__data[id]);
+                    if (!Playlists.ContainsKey(id))
+                        Playlists.Add(id, new Playlist(id, SeasonID, Secure, timeout));
+                    Playlists[id].tempOrderVideo(__data[id]);
                 }
             }
             catch (Exception ex)
@@ -192,6 +227,11 @@ namespace HomeTheater.API.Serial
                 var url = SERVER_URL + match.Groups[2];
                 if (data.ContainsKey(id))
                     data[id].URL = url;
+                else if (Playlists.ContainsKey(id))
+                {
+                    data[id] = Playlists[id];
+                    data[id].URL = url;
+                }
                 else
                     data.Add(id, new Playlist(id, url, timeout));
             }
@@ -236,10 +276,20 @@ namespace HomeTheater.API.Serial
 
                 var id = IntVal(_id);
                 var percent = floatVal(Match(args, "data-translate-percent=\"([0-9.]+)\"", REGEX_IC, 1));
-                if (!PlaylistsOld.ContainsKey(id))
-                    PlaylistsOld.Add(id, new Playlist(id, SeasonID, Secure, timeout));
-                PlaylistsOld[id].TranslateName = name;
-                PlaylistsOld[id].TranslatePercent = percent;
+                if (TRAILERS_ID == id)
+                {
+                    if (null == Trailers)
+                        Trailers = new Playlist(id, SeasonID, Secure, timeout);
+                    Trailers.TranslateName = name;
+                    Trailers.TranslatePercent = percent;
+                }
+                else
+                {
+                    if (!Playlists.ContainsKey(id))
+                        Playlists.Add(id, new Playlist(id, SeasonID, Secure, timeout));
+                    Playlists[id].TranslateName = name;
+                    Playlists[id].TranslatePercent = percent;
+                }
             }
         }
 
