@@ -1,8 +1,8 @@
-﻿using HomeTheater.Helper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HomeTheater.Helper;
 
 namespace HomeTheater.API.Serial
 {
@@ -15,9 +15,9 @@ namespace HomeTheater.API.Serial
         public Dictionary<int, Playlist>
             Playlists = new Dictionary<int, Playlist>();
 
-        public Playlist Trailers;
-
         public int SeasonID, SerialID, timeout;
+
+        public Playlist Trailers;
 
         public Player(int SeasonID, int SerialID, string Secure = "", int timeout = 60 * 60 * 24 * 10)
         {
@@ -103,7 +103,6 @@ namespace HomeTheater.API.Serial
                 {
                     Logger.Instance.Error(ex);
                 }
-
             });
             if (null != Trailers)
             {
@@ -132,6 +131,7 @@ namespace HomeTheater.API.Serial
                 Trailers = Playlists[TRAILERS_ID];
                 Playlists.Remove(TRAILERS_ID);
             }
+
             js = Match(js, "var arEpisodes = ([[{].*?[]}]);", REGEX_ICS, 1);
             _parseSeries(js);
 
@@ -184,7 +184,6 @@ namespace HomeTheater.API.Serial
                         {
                             Logger.Instance.Error(ex);
                         }
-
                     });
                 }
                 else
@@ -226,14 +225,18 @@ namespace HomeTheater.API.Serial
                 var id = IntVal(match.Groups[1].ToString());
                 var url = SERVER_URL + match.Groups[2];
                 if (data.ContainsKey(id))
+                {
                     data[id].URL = url;
+                }
                 else if (Playlists.ContainsKey(id))
                 {
                     data[id] = Playlists[id];
                     data[id].URL = url;
                 }
                 else
+                {
                     data.Add(id, new Playlist(id, url, timeout));
+                }
             }
 
             return data;
