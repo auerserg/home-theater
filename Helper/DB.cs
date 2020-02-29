@@ -165,6 +165,7 @@ CREATE TABLE IF NOT EXISTS [video] (
             OptionSet("OldesDaysSeason", (365 * 1).ToString());
             OptionSet("SimultaneousDownloads", 3.ToString());
             OptionSet("Timer", "01:00:00");
+            OptionSet("DownloadDir", Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
             OptionSet("NameFiles",
                 "{Collection}\\{SerialName} {Season}\\{SerialName} S{Season}E{Episode} {Translate} {OriginalName}.{Format}");
             OptionSet("listSerialsDisplayIndex", "[0,16,1,2,3,4,5,6,17,18,7,8,9,10,11,12,13,14,15,20,19,21]");
