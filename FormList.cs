@@ -22,7 +22,7 @@ namespace HomeTheater
         public bool firstRun = true;
         private Dictionary<int, Season> Serials;
         private int STEP_EPISODES = 20;
-        public CountDownTimer timer = new CountDownTimer();
+        public CountDownTimer timerSilent = new CountDownTimer();
 
         private FormMain MainParent
         {
@@ -97,15 +97,15 @@ namespace HomeTheater
         {
             if (new DateTime() == time)
                 time = DateTime.Parse("01.01.1753 " + DB.Instance.OptionGet("Timer"));
-            timer.SetTime(time.Hour, time.Minute, time.Second);
-            timer.Reset();
+            timerSilent.SetTime(time.Hour, time.Minute, time.Second);
+            timerSilent.Reset();
         }
 
         private void FormList_Load(object sender, EventArgs e)
         {
-            timer.TimeChanged += () => toolStripSyncTimer.Text = timer.TimeLeftStr;
+            timerSilent.TimeChanged += () => toolStripSyncTimer.Text = timerSilent.TimeLeftStr;
 #pragma warning disable CS4014 // Так как этот вызов не ожидается, выполнение существующего метода продолжается до тех пор, пока вызов не будет завершен
-            timer.CountDownFinished += () => SyncSilent();
+            timerSilent.CountDownFinished += () => SyncSilent();
 #pragma warning restore CS4014 // Так как этот вызов не ожидается, выполнение существующего метода продолжается до тех пор, пока вызов не будет завершен
             LoadTimer();
         }
@@ -140,7 +140,7 @@ namespace HomeTheater
                 SimpleJson.SimpleJson.SerializeObject(listViewDownloadWidth));
             tokenSource.Cancel();
             tokenSilentSource.Cancel();
-            timer.Dispose();
+            timerSilent.Dispose();
         }
 
         private void LoadFormView()
@@ -213,9 +213,12 @@ namespace HomeTheater
         public async Task SyncAsync(bool list = false, bool page = false, bool player = false,
             bool playlist = false, bool all = false)
         {
-            //Console.WriteLine(Thread.CurrentThread.Name);
-            //Console.WriteLine(Thread.CurrentThread.ManagedThreadId);
-            timer.Stop();
+            bool timerSilentPaused = false;
+            if ("1" == DB.Instance.OptionGet("StopTimer") && timerSilent.IsRunnign)
+            {
+                timerSilentPaused = true;
+                timerSilent.Pause();
+            }
             tokenSource.Cancel();
             tokenSource = new CancellationTokenSource();
             var token = tokenSource.Token;
@@ -396,10 +399,12 @@ namespace HomeTheater
                     Logger.Instance.Error(ex);
                 }
             }, token);
-            timer.Restart();
+            if (timerSilentPaused)
+                timerSilent.Start();
+            if(firstRun)
+                timerSilent.Restart();
             await LoadTableSerialsAsync();
             _ = SyncUpdateList();
-
             DB.Instance.OptionSetAsync("firstLaunch", "");
             firstRun = false;
             toolStripSyncTimer.Visible = true;
@@ -411,7 +416,12 @@ namespace HomeTheater
 
         public async Task SyncSilent()
         {
-            timer.Stop();
+            bool timerSilentPaused = false;
+            if ("1" == DB.Instance.OptionGet("StopTimer") && timerSilent.IsRunnign)
+            {
+                timerSilentPaused = true;
+                timerSilent.Pause();
+            }
             CancellationToken token;
             if ("1" == DB.Instance.OptionGet("StopTimer"))
             {
@@ -535,7 +545,8 @@ namespace HomeTheater
                 }
             }, token);
 
-            timer.Restart();
+            if (timerSilentPaused)
+                timerSilent.Start();
             выполнитьСейчасToolStripMenuItem.Visible = true;
             toolStripSyncTimer.Enabled = true;
             toolStripSyncTimer.ToolTipText = "";
@@ -1113,7 +1124,12 @@ namespace HomeTheater
         private async Task SyncSelectedSerialsAsync(bool serials = false, bool playlists = false, bool videos = false)
         {
             var collection = getSelectedIds();
-
+            bool timerSilentPaused = false;
+            if ("1" == DB.Instance.OptionGet("StopTimer") && timerSilent.IsRunnign)
+            {
+                timerSilentPaused = true;
+                timerSilent.Pause();
+            }
             tokenSource.Cancel();
             tokenSource = new CancellationTokenSource();
             var token = tokenSource.Token;
@@ -1199,6 +1215,8 @@ namespace HomeTheater
                     Logger.Instance.Error(ex);
                 }
             }, token);
+            if (timerSilentPaused)
+                timerSilent.Start();
             await LoadTableSerialsAsync(true);
             остановитьToolStripMenuItem.Visible = false;
             остановитьToolStripMenuItem.Enabled = true;
