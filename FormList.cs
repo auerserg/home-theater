@@ -1065,7 +1065,7 @@ namespace HomeTheater
             labelMark.Text = item.Mark;
             labelCompilation.Text = item.Compilation;
             labelSiteUpdated.Text = (new DateTime() != item.SiteUpdated) ? item.SiteUpdated.ToString("dd.MM.yyyy") : "";
-            labelDescription.Text = "    " + item.Description.Replace("\r\n", "\r\n    ");
+            labelDescription.Text = item.Description;
             panelTexts.Visible = true;
             labelDescription.Visible = true;
             labelBlocked.Visible = item.isBlocked;

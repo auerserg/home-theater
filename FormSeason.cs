@@ -31,7 +31,7 @@ namespace HomeTheater
             Text = PREFIX_TITLE + Season.TitleFull;
             linkTitle.Text = Season.TitleFull;
             linkTitle.Tag = Season.URL;
-            labelDescription.Text = "    " + Season.Description.Replace("\r\n", "\r\n    ");
+            labelDescription.Text = Season.Description;
             labelOriginal.Text = Season.TitleOriginal;
             labelLimitation.Text = Season.Limitation;
             labelGenre.Text = Season.Genre;

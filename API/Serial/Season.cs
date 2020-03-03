@@ -701,8 +701,9 @@ namespace HomeTheater.API.Serial
             _html = Match(html, "data-id-season=\"([0-9]+)\"", REGEX_ICS, 1);
             ID = IntVal(_html);
             _html = Match(html, "<p itemprop=\"description\">(.*?)</p>", REGEX_ICS, 1);
-            Description = Regex.Replace(WebUtility.HtmlDecode(_html),
-                "<br[^<>]*>", "\r\n", REGEX_ICS).Replace("\r\n\r\n", "\r\n").Trim();
+            Description = "    " + Regex.Replace(WebUtility.HtmlDecode(_html),
+                                  "<br[^<>]*>", "\r\n", REGEX_ICS).Replace("\r\n\r\n", "\r\n").Trim()
+                              .Replace("\r\n", "\r\n    ");
             _html = Match(html, "data4play = ({.*?})", REGEX_ICS, 1);
             Secure = _parseData4Play(_html);
             _html = Match(html, "mark = ({.*?})", REGEX_ICS, 1);
