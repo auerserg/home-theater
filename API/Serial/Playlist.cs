@@ -257,37 +257,15 @@ namespace HomeTheater.API.Serial
             }
         }
 
-        public Dictionary<string, Video> VideosOrdered
+        public Dictionary<string, Video> VideosByVideoID
         {
             get
             {
-                var _data = new Dictionary<string, int>();
-                Parallel.ForEach(Videos, item =>
-                {
-                    if (_data.ContainsKey(item.Value.VideoID) && _data[item.Value.VideoID] < item.Key)
-                        Logger.Instance.Notice("Присутствует устаревшее видео {0} в {1} для {2}", item.Key,
-                            item.Value.VideoID, SeasonID);
-                    else
-                        _data[item.Value.VideoID] = item.Key;
-                });
                 var data = new Dictionary<string, Video>();
-                var _order = new List<string>(OrderVideos.Values);
-                if (_order.Contains(""))
-                    _order.Remove("");
-
-                foreach (var item in _order)
-                    if (_data.ContainsKey(item) && Videos.ContainsKey(_data[item]))
-                    {
-                        data[item] = Videos[_data[item]];
-                    }
-                    else
-                    {
-                        data[item] = null;
-                        if (_data.ContainsKey(item))
-                            Logger.Instance.Warn("Не найдено видео {0} в {1} для {2}", _data[item], item, SeasonID);
-                        else
-                            Logger.Instance.Warn("Не найдено видео в {1} для {2}", item, SeasonID);
-                    }
+                foreach (var itemVideo in Videos)
+                    if (data.ContainsKey(itemVideo.Value.VideoID) ||
+                        data[itemVideo.Value.VideoID].ID < itemVideo.Value.ID)
+                        data[itemVideo.Value.VideoID] = itemVideo.Value;
 
                 return data;
             }
