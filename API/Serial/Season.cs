@@ -521,6 +521,36 @@ namespace HomeTheater.API.Serial
             private set => SetValue("blocked", value ? 1 : 0);
         }
 
+        public Dictionary<int, Video> Trailers
+        {
+            get
+            {
+                if (null != Player.Trailers)
+                    return Player.Trailers.Videos;
+                return new Dictionary<int, Video>();
+            }
+        }
+
+        public Dictionary<string, Dictionary<int, Video>> Videos
+        {
+            get
+            {
+                var data = new Dictionary<string, Dictionary<int, Video>>();
+                if (0 < Playlists.Count)
+                    foreach (var playlist in Playlists)
+                    foreach (var itemVideo in playlist.Value.Videos)
+                    {
+                        var id = itemVideo.Value.VideoID;
+                        if (!data.ContainsKey(id))
+                            data[id] = new Dictionary<int, Video>();
+                        if (!data[id].ContainsKey(playlist.Key))
+                            data[id][playlist.Key] = itemVideo.Value;
+                    }
+
+                return data;
+            }
+        }
+
         public List<string> OrderVideos
         {
             get
