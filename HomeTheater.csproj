@@ -163,6 +163,8 @@
     <Compile Include="Helper\DB.cs" />
     <Compile Include="Helper\DBCache.cs" />
     <Compile Include="Helper\Decoder.cs" />
+    <Compile Include="Helper\DonwoloadWorker.cs" />
+    <Compile Include="Helper\DownloadManager.cs" />
     <Compile Include="Helper\Logger.cs" />
     <Compile Include="Helper\SimpleJson.cs" />
     <Compile Include="Helper\WebClientEx.cs">

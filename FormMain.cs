@@ -64,6 +64,7 @@ namespace HomeTheater
         private void FormMain_Shown(object sender, EventArgs e)
         {
             DB.Load();
+            DownloadManager.Load();
             statusMain_ClientSizeChanged(null, null);
             List = prepareMDI(new FormList()) as FormList;
 

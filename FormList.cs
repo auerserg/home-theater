@@ -548,7 +548,26 @@ namespace HomeTheater
             LoadTableSerialsAsync();
         }
 
-        public async Task SyncUpdateList()
+        CancellationTokenSource tokenDonwloadSource = new CancellationTokenSource();
+
+        private async void UpdateDownloads(bool isFirstRun = false)
+        {
+            DownloadManager.Instance.isFirstRun = isFirstRun;
+            tokenDonwloadSource.Cancel();
+            tokenDonwloadSource = new CancellationTokenSource();
+            var token = tokenDonwloadSource.Token;
+            await Task.Run(() =>
+            {
+                foreach (var item in Serials)
+                    DownloadManager.Instance.Add(item.Value);
+                //Parallel.ForEach(Serials, item =>
+                //{
+                //    DownloadManager.Instance.Add(item.Value);
+                //});
+            }, token);
+        }
+
+        public async void SyncUpdateList()
         {
             await Task.Run(() =>
             {
