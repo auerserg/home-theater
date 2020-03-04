@@ -207,7 +207,7 @@ namespace HomeTheater
             MainParent.StatusProgressEnd();
             MainParent.StatusMessageSet(Serials.Count + " сериалов");
             остановитьToolStripMenuItem.Visible = false;
-            _ = LoadTableSerialsAsync();
+            LoadTableSerialsAsync();
         }
 
         public async Task SyncAsync(bool list = false, bool page = false, bool player = false,
@@ -401,10 +401,11 @@ namespace HomeTheater
             }, token);
             if (timerSilentPaused)
                 timerSilent.Start();
-            if(firstRun)
+            if (firstRun)
                 timerSilent.Restart();
-            await LoadTableSerialsAsync();
-            _ = SyncUpdateList();
+            LoadTableSerialsAsync();
+            SyncUpdateList();
+            UpdateDownloads("1" == DB.Instance.OptionGet("firstLaunch"));
             DB.Instance.OptionSetAsync("firstLaunch", "");
             firstRun = false;
             toolStripSyncTimer.Visible = true;
@@ -417,11 +418,7 @@ namespace HomeTheater
         public async Task SyncSilent()
         {
             bool timerSilentPaused = false;
-            if ("1" == DB.Instance.OptionGet("StopTimer") && timerSilent.IsRunnign)
-            {
-                timerSilentPaused = true;
-                timerSilent.Pause();
-            }
+            timerSilent.Stop();
             CancellationToken token;
             if ("1" == DB.Instance.OptionGet("StopTimer"))
             {
@@ -544,13 +541,11 @@ namespace HomeTheater
                     Logger.Instance.Error(ex);
                 }
             }, token);
-
-            if (timerSilentPaused)
-                timerSilent.Start();
+            timerSilent.Restart();
             выполнитьСейчасToolStripMenuItem.Visible = true;
             toolStripSyncTimer.Enabled = true;
             toolStripSyncTimer.ToolTipText = "";
-            await LoadTableSerialsAsync();
+            LoadTableSerialsAsync();
         }
 
         public async Task SyncUpdateList()
@@ -648,7 +643,7 @@ namespace HomeTheater
             });
         }
 
-        public async Task LoadTableSerialsAsync(bool load = false)
+        public async void LoadTableSerialsAsync(bool load = false)
         {
             await Task.Run(() =>
             {
@@ -659,40 +654,30 @@ namespace HomeTheater
                         {
                             item.Value.Load();
                         }
-
-                    Invoke(new Action(() =>
-                    {
-                        MainParent.StatusProgressReset(Serials.Count);
-                        MainParent.StatusMessageSet("Обновление таблицы...");
-                    }));
-                    foreach (KeyValuePair<int, Season> item in Serials)
-                    {
-                        Invoke(new Action(() =>
-                        {
-                            item.Value.ToListViewItem();
-                            item.Value.ListViewItem.Group = listSerials.Groups["listViewGroup" + item.Value.Type];
-                            if (item.Value.URL == pictureSeasonImage.Tag as string)
-                            {
-                                item.Value.ListViewItem.Selected = true;
-                                item.Value.ListViewItem.Focused = true;
-                            }
-
-                            MainParent.StatusProgressStep();
-                        }));
-                    }
-
-                    Invoke(new Action(() =>
-                    {
-                        MainParent.StatusProgressEnd();
-                        MainParent.StatusMessageSet(Serials.Count + " сериалов");
-                        listSerials_ClientSizeChanged(null, null);
-                    }));
                 }
                 catch (Exception ex)
                 {
                     Logger.Instance.Error(ex);
                 }
             });
+            MainParent.StatusProgressReset(Serials.Count);
+            MainParent.StatusMessageSet("Обновление таблицы...");
+            foreach (KeyValuePair<int, Season> item in Serials)
+            {
+                item.Value.ToListViewItem();
+                item.Value.ListViewItem.Group = listSerials.Groups["listViewGroup" + item.Value.Type];
+                if (item.Value.URL == pictureSeasonImage.Tag as string)
+                {
+                    item.Value.ListViewItem.Selected = true;
+                    item.Value.ListViewItem.Focused = true;
+                }
+
+                MainParent.StatusProgressStep();
+            }
+
+            MainParent.StatusProgressEnd();
+            MainParent.StatusMessageSet(Serials.Count + " сериалов");
+            listSerials_ClientSizeChanged(null, null);
         }
 
         private async Task listSerials_updateAsync(Dictionary<int, Season> collection)
@@ -1217,7 +1202,7 @@ namespace HomeTheater
             }, token);
             if (timerSilentPaused)
                 timerSilent.Start();
-            await LoadTableSerialsAsync(true);
+            LoadTableSerialsAsync(true);
             остановитьToolStripMenuItem.Visible = false;
             остановитьToolStripMenuItem.Enabled = true;
             toolStripUpdate.Enabled = true;
@@ -1297,7 +1282,7 @@ namespace HomeTheater
                     Logger.Instance.Error(ex);
                 }
             });
-            _ = LoadTableSerialsAsync();
+            LoadTableSerialsAsync();
         }
 
         private void отметитьНаПоследнейСерииToolStripMenuItem_Click(object sender, EventArgs e)
