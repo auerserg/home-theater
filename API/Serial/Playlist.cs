@@ -59,7 +59,7 @@ namespace HomeTheater.API.Serial
                 if (null == __videos)
                 {
                     __videos = new Dictionary<int, Video>();
-                    var videoData = DB.Instance.VideoGets(SeasonID);
+                    var videoData = DB.Instance.VideoGets(SeasonID, TranslateID);
                     foreach (var item in videoData)
                     {
                         var id = IntVal(item["id"]);
@@ -263,7 +263,7 @@ namespace HomeTheater.API.Serial
             {
                 var data = new Dictionary<string, Video>();
                 foreach (var itemVideo in Videos)
-                    if (data.ContainsKey(itemVideo.Value.VideoID) ||
+                    if (!data.ContainsKey(itemVideo.Value.VideoID) ||
                         data[itemVideo.Value.VideoID].ID < itemVideo.Value.ID)
                         data[itemVideo.Value.VideoID] = itemVideo.Value;
 
