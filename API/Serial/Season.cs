@@ -531,24 +531,52 @@ namespace HomeTheater.API.Serial
             }
         }
 
-        public Dictionary<string, Dictionary<int, Video>> Videos
+        public Dictionary<string, Video> Videos
         {
             get
             {
-                var data = new Dictionary<string, Dictionary<int, Video>>();
+                var data = new Dictionary<string, Video>();
                 if (0 < Playlists.Count)
-                    foreach (var playlist in Playlists)
-                    foreach (var itemVideo in playlist.Value.Videos)
+                {
+                    if (1 == Playlists.Count)
                     {
-                        var id = itemVideo.Value.VideoID;
-                        if (!data.ContainsKey(id))
-                            data[id] = new Dictionary<int, Video>();
-                        if (!data[id].ContainsKey(playlist.Key))
-                            data[id][playlist.Key] = itemVideo.Value;
+                        var id = new List<int>(Playlists.Keys)[0];
+                        return Playlists[id].VideosByVideoID;
                     }
+
+                    var ListTranslate = TranslateOrder();
+                    if (null == ListTranslate)
+                        ListTranslate = DB.Instance.OptionGetTranslateOrder();
+                    var ListTranslateBlack = DB.Instance.OptionGetTranslateBlackList();
+                    var index = 0;
+                    foreach (var playlist in Playlists)
+                    foreach (var itemVideo in playlist.Value.VideosByVideoID)
+                    {
+                        var TranslateName = itemVideo.Value.TranslateName;
+                        var _index = ListTranslate.IndexOf(TranslateName);
+                        if (0 > _index)
+                            _index = ListTranslate.Count *
+                                     (0 > ListTranslateBlack.IndexOf(TranslateName) ? 2 : 1);
+                        if (!data.ContainsKey(itemVideo.Key))
+                        {
+                            data[itemVideo.Key] = itemVideo.Value;
+                            index = _index;
+                        }
+                        else if (index > _index)
+                        {
+                            data[itemVideo.Key] = itemVideo.Value;
+                        }
+                    }
+                }
+
 
                 return data;
             }
+        }
+
+        private List<string> TranslateOrder()
+        {
+            return null; // UNDONE Сделать вывод транслейтов текущего сезона
         }
 
         public List<string> OrderVideos
