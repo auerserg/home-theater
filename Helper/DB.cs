@@ -383,6 +383,25 @@ CREATE TABLE IF NOT EXISTS [video] (
             cachedOptions = data;
         }
 
+        public List<string> OptionGetTranslateOrder()
+        {
+            return OptionGetTranslate("TranslateOrder");
+        }
+
+        public List<string> OptionGetTranslateBlackList()
+        {
+            return OptionGetTranslate("TranslateBlackLis");
+        }
+
+        private List<string> OptionGetTranslate(string name)
+        {
+            var data = new List<string>();
+            var str = Instance.OptionGet(name);
+            if (!string.IsNullOrWhiteSpace(str))
+                data = SimpleJson.SimpleJson.DeserializeObject<List<string>>(str);
+            return data;
+        }
+
         #endregion
 
         #region Cache

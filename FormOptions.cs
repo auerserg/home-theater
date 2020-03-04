@@ -301,10 +301,7 @@ namespace HomeTheater
 
         private void listTranslate_Load()
         {
-            var List = new List<string>();
-            var str = DB.Instance.OptionGet("TranslateOrder");
-            if (!string.IsNullOrWhiteSpace(str))
-                List = SimpleJson.SimpleJson.DeserializeObject<List<string>>(str);
+            var List = DB.Instance.OptionGetTranslateOrder();
             listTranslate.Items.Clear();
             foreach (var item in List)
                 if (!listTranslateBlackList.Items.Contains(item) && !listTranslate.Items.Contains(item))
@@ -317,10 +314,7 @@ namespace HomeTheater
 
         private void listTranslateBlackList_Load()
         {
-            var List = new List<string>();
-            var str = DB.Instance.OptionGet("TranslateBlackList");
-            if (!string.IsNullOrWhiteSpace(str))
-                List = SimpleJson.SimpleJson.DeserializeObject<List<string>>(str);
+            var List = DB.Instance.OptionGetTranslateBlackList();
             listTranslateBlackList.Items.Clear();
             foreach (var item in List)
                 if (!listTranslateBlackList.Items.Contains(item))
