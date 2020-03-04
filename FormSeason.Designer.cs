@@ -30,9 +30,10 @@
         {
             this.panelMain = new System.Windows.Forms.Panel();
             this.tabsMain = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.tabSeries = new System.Windows.Forms.TabPage();
+            this.tabRelated = new System.Windows.Forms.TabPage();
             this.panelInfo = new System.Windows.Forms.Panel();
+            this.checkedCompilation = new System.Windows.Forms.CheckedListBox();
             this.panelTexts = new System.Windows.Forms.Panel();
             this.labelLOriginal = new System.Windows.Forms.Label();
             this.labelLLimitation = new System.Windows.Forms.Label();
@@ -53,7 +54,7 @@
             this.linkTitle = new System.Windows.Forms.LinkLabel();
             this.labelDescription = new System.Windows.Forms.Label();
             this.pictureSeasonImage = new System.Windows.Forms.PictureBox();
-            this.checkedCompilation = new System.Windows.Forms.CheckedListBox();
+            this.tabSettings = new System.Windows.Forms.TabPage();
             this.panelMain.SuspendLayout();
             this.tabsMain.SuspendLayout();
             this.panelInfo.SuspendLayout();
@@ -73,34 +74,36 @@
             // 
             // tabsMain
             // 
-            this.tabsMain.Controls.Add(this.tabPage1);
-            this.tabsMain.Controls.Add(this.tabPage2);
+            this.tabsMain.Controls.Add(this.tabSeries);
+            this.tabsMain.Controls.Add(this.tabRelated);
+            this.tabsMain.Controls.Add(this.tabSettings);
             this.tabsMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabsMain.Location = new System.Drawing.Point(0, 300);
+            this.tabsMain.ItemSize = new System.Drawing.Size(250, 18);
+            this.tabsMain.Location = new System.Drawing.Point(0, 310);
             this.tabsMain.Name = "tabsMain";
             this.tabsMain.SelectedIndex = 0;
-            this.tabsMain.Size = new System.Drawing.Size(996, 417);
-            this.tabsMain.TabIndex = 80;
+            this.tabsMain.Size = new System.Drawing.Size(996, 407);
+            this.tabsMain.TabIndex = 20;
             // 
-            // tabPage1
+            // tabSeries
             // 
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(988, 391);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "tabPage1";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this.tabSeries.Location = new System.Drawing.Point(4, 22);
+            this.tabSeries.Name = "tabSeries";
+            this.tabSeries.Padding = new System.Windows.Forms.Padding(3);
+            this.tabSeries.Size = new System.Drawing.Size(988, 381);
+            this.tabSeries.TabIndex = 0;
+            this.tabSeries.Text = "Эпизоды";
+            this.tabSeries.UseVisualStyleBackColor = true;
             // 
-            // tabPage2
+            // tabRelated
             // 
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(988, 391);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "tabPage2";
-            this.tabPage2.UseVisualStyleBackColor = true;
+            this.tabRelated.Location = new System.Drawing.Point(4, 22);
+            this.tabRelated.Name = "tabRelated";
+            this.tabRelated.Padding = new System.Windows.Forms.Padding(3);
+            this.tabRelated.Size = new System.Drawing.Size(988, 381);
+            this.tabRelated.TabIndex = 1;
+            this.tabRelated.Text = "Возможно, вам понравятся эти сериалы";
+            this.tabRelated.UseVisualStyleBackColor = true;
             // 
             // panelInfo
             // 
@@ -112,8 +115,17 @@
             this.panelInfo.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelInfo.Location = new System.Drawing.Point(0, 0);
             this.panelInfo.Name = "panelInfo";
-            this.panelInfo.Size = new System.Drawing.Size(996, 300);
+            this.panelInfo.Size = new System.Drawing.Size(996, 310);
             this.panelInfo.TabIndex = 10;
+            // 
+            // checkedCompilation
+            // 
+            this.checkedCompilation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkedCompilation.FormattingEnabled = true;
+            this.checkedCompilation.Location = new System.Drawing.Point(794, 146);
+            this.checkedCompilation.Name = "checkedCompilation";
+            this.checkedCompilation.Size = new System.Drawing.Size(202, 154);
+            this.checkedCompilation.TabIndex = 30;
             // 
             // panelTexts
             // 
@@ -323,14 +335,14 @@
             this.pictureSeasonImage.TabStop = false;
             this.pictureSeasonImage.Click += new System.EventHandler(this.pictureSeasonImage_Click);
             // 
-            // checkedCompilation
+            // tabSettings
             // 
-            this.checkedCompilation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkedCompilation.FormattingEnabled = true;
-            this.checkedCompilation.Location = new System.Drawing.Point(794, 146);
-            this.checkedCompilation.Name = "checkedCompilation";
-            this.checkedCompilation.Size = new System.Drawing.Size(202, 154);
-            this.checkedCompilation.TabIndex = 30;
+            this.tabSettings.Location = new System.Drawing.Point(4, 22);
+            this.tabSettings.Name = "tabSettings";
+            this.tabSettings.Size = new System.Drawing.Size(988, 381);
+            this.tabSettings.TabIndex = 2;
+            this.tabSettings.Text = "Настройки";
+            this.tabSettings.UseVisualStyleBackColor = true;
             // 
             // FormSeason
             // 
@@ -376,8 +388,9 @@
         private System.Windows.Forms.Label labelOriginal;
         private System.Windows.Forms.Label labelLimitation;
         private System.Windows.Forms.TabControl tabsMain;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage tabSeries;
+        private System.Windows.Forms.TabPage tabRelated;
         private System.Windows.Forms.CheckedListBox checkedCompilation;
+        private System.Windows.Forms.TabPage tabSettings;
     }
 }
