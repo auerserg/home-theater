@@ -918,8 +918,17 @@ ORDER BY percent DESC, items DESC;");
 
         public List<Dictionary<string, string>> VideoGets(int SeasonID)
         {
-            return _ExecuteReader(@"SELECT * FROM video WHERE season_id=@id AND removed_date='' ORDER BY video_id ASC;",
-                new Dictionary<string, string> {{"id", SeasonID.ToString()}});
+            return _ExecuteReader(
+                @"SELECT * FROM video WHERE season_id=@season_id AND removed_date='' ORDER BY video_id ASC;",
+                new Dictionary<string, string> {{"season_id", SeasonID.ToString()}});
+        }
+
+        public List<Dictionary<string, string>> VideoGets(int SeasonID, int TranslateId)
+        {
+            return _ExecuteReader(
+                @"SELECT * FROM video WHERE season_id=@season_id AND translate_id=@translate_id AND removed_date='' ORDER BY video_id ASC;",
+                new Dictionary<string, string>
+                    {{"season_id", SeasonID.ToString()}, {"translate_id", TranslateId.ToString()}});
         }
 
         //public bool VideoSetOld(int seasonID, int translateID, List<int> videoIDs)
